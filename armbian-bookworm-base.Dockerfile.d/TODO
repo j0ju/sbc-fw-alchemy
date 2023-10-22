@@ -1,0 +1,17 @@
+# * / - ext4
+#
+# * /boot - ext4 active?
+#   /     - f2fs
+#   rootfs via armbian.bootenv override
+#   adapt /etc/fstab
+#   so we need the initrd
+#
+# * add user DTBOs
+#     https://forum.armbian.com/topic/23166-activation-of-eth0-on-banana-pi-m2-zero-how-to-do-best/
+#       https://forum.armbian.com/topic/23166-activation-of-eth0-on-banana-pi-m2-zero-how-to-do-best/
+#     https://forum.armbian.com/topic/19625-spi-issues-with-banana-pi-m2-zero-wrong-sensor-readings-and-spi-display-not-working/
+#       https://forum.banana-pi.org/t/spidev-not-found-in-armbian-with-bpi-m2z/13190
+#       https://forum.banana-pi.org/t/banana-pi-bpi-m4-how-to-get-i2c-and-spi-running-tutorial/12824
+#       https://hackaday.io/page/14523-changing-i2c-clock-speed-sdc-on-banana-pi-bpi-m2-zero-armbian
+#
+# ? https://spotpear.com/index/study/detail/id/676.html
