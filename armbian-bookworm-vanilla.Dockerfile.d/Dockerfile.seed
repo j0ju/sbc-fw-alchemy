@@ -1,0 +1,8 @@
+# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+FROM bpi2m0:Armbian-23.08-Bookworm-CLI
+
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash -l ;\
+: # eo CMD
