@@ -9,8 +9,10 @@ if [ "$DST" = / ]; then
   DST=
 fi
 
+FSDIR="$0.d"
+
 echo "I: add fs modifications"
-  cd "$SRC/filesystem"
+  cd "$FSDIR"
   find . ! -type d | while read f; do
     f="${f#./}"
     rm -f "${DST}/$f"
