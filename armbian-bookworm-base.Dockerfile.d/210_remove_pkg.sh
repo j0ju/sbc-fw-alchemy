@@ -30,7 +30,7 @@ PS4='> ${0##*/}: '
       pciutils \
       man-db \
       iperf3 iozone3 \
-      fonts-cantarell fonts-dejavu-core ttf-bitstream-vera \
+      fonts-dejavu-core ttf-bitstream-vera \
       flex bison binutils \
       chrony \
       apt-file \

@@ -19,5 +19,4 @@ mv /target/etc/apt/sources.list /target/etc/apt/sources.list.d/debian.list
 echo "# sources.list - disabled see sources.list.d" > /target/etc/apt/sources.list
 rm -f /target/etc/apt/sources.list.d/*.disabled
 
-chroot /target apt-get update
 chroot /target etckeeper commit -m "pre-seed config for git, vim, mc, apt"
