@@ -62,7 +62,7 @@ build: $(WORK_FILES)
 #--- export mangled rootfs to image for sdcard
 %.sdcard.img: .deps/%.built Makefile
 	$(E) "IMG $@"
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.zst=) sh -eu /src/img-mangler/gen-image "$@"
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.sdcard.img=) sh -eu /src/"img-mangler/gen-image.sh" "$@"
 
 #--- create development workspaces
 .deps/%.volume:
