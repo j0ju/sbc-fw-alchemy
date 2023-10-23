@@ -53,16 +53,17 @@ build: $(WORK_FILES)
 #--- export mangled rootfs to tar
 %.rootfs.tar.gz: .deps/%.built Makefile
 	$(E) "ROOTFS $@"
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.gz=) tar czf - -C /target . > "$@"
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.gz=) sh -eu -c "set -x; chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null; exec tar czf - -C /target ." > "$@"
 
 %.rootfs.tar.zst: .deps/%.built Makefile
 	$(E) "ROOTFS $@"
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.zst=) tar cf - -I zstd -C /target . > "$@"
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.gz=) sh -eu -c "set -x; chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null; exec tar czf - -I zstd -C /target ." > "$@"
 
 #--- export mangled rootfs to image for sdcard
-%.sdcard.img: .deps/%.built Makefile
+%.sdcard.img: .deps/%.built Makefile img-mangler/gen-image.sh
 	$(E) "IMG $@"
 	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.sdcard.img=) sh -eu /src/"img-mangler/gen-image.sh" "$@"
+
 
 #--- create development workspaces
 .deps/%.volume:

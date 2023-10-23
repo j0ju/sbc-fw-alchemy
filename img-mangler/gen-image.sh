@@ -6,12 +6,17 @@ set -x
 # prepare a image file
 # * create sparse file (if FS supports)
 
-# sane defaults
-ROUND_UP=1024
-MIN_FREE=512
+#--- sane defaults
+ROUND_UP=512
+MIN_FREE=768
 
 ROUND_UP_boot=32
 MIN_FREE_boot=32
+
+#--- cleanup image before generating the image
+if [ -f /target/lib/cleanup-rootfs ]; then
+  chroot /target sh /lib/cleanup-rootfs.sh
+fi
 
 #--- calculate image size
 USAGE_KB="$(du -sk /target | { read kb _; echo $kb; })"
@@ -29,6 +34,14 @@ IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_SPACE_KB + PART_SIZE_KB_boot ))
 IMAGE_SIZE_KB=$(( ( IMAGE_SIZE_KB / ROUND_UP_KB + 1 ) * ROUND_UP_KB ))
 
 IMAGE="$1"
+
+cleanup() {
+  if [ -f "$IMAGE" ]; then
+    [ -z "$OWNER" ] || \
+      chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
+  fi
+}
+trap 'cleanup' EXIT TERM KILL HUP INT QUIT
 
 : > $IMAGE
 #--- generate sparse image

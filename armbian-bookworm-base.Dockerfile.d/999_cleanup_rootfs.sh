@@ -1,1 +1,0 @@
-../img-mangler.Dockerfile.d/999_cleanup_rootfs.sh
