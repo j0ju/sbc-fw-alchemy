@@ -27,12 +27,12 @@ $(cat "$SEEDFILE")
 #---- END "$SEEDFILE"
 
 #---- auto generated section by $0 - mode: $MODE
-COPY ${SEEDDIR} /src/${SEEDDIR}/
 ENV SRC=/src/$SEEDDIR
 EOF
 
 case "$MODE" in
   onestep )
+    echo "COPY ${SEEDDIR} /src/${SEEDDIR}/"
     echo 'RUN set -eu ;\'
     for i in "$SEEDDIR"/[0-9][0-9][0-9]_*; do
       [ -f "$i" ] || \
@@ -48,6 +48,9 @@ case "$MODE" in
     
         echo ""
         echo "#- $i"
+        echo "COPY $i /src/$i"
+        [ ! -d "$i.d" ] || \
+          echo "COPY $i.d/ /src/$i.d/"
         echo "RUN exec /bin/sh -eu /src/${i#/}"
     done
     ;;

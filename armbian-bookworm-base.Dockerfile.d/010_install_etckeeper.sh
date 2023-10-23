@@ -6,9 +6,9 @@ PS4='> ${0##*/}: '
 
 find /target/ -name .git -exec rm -rf {} \+
 
+cp "$0.d/etc-dot-gitignore" /target/etc/.gitignore
 ( cd /target/etc
   git init .
-  cp /src/armbian-bookworm-base.Dockerfile.d/100_add_files.sh.d/etc/.gitignore .gitignore
   git add .gitignore
   git commit -m "initial commit"
   git add .
