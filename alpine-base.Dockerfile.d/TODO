@@ -1,0 +1,73 @@
+#FROM raspbian:Diet-Pi-Latest.64 as kernel-source
+FROM raspbian:openwrt-base.64 as kernel-source
+
+FROM raspbian:MiniRoot-Alpine-3.18.64
+
+RUN set -ex ;\
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  cp -ax /dev/* /target/dev ;\
+: # eo RUN
+
+RUN set -ex ;\
+  chroot /target /sbin/apk update ;\
+  chroot /target /sbin/apk add \
+    openrc \
+    minicom vim mc procps psmisc coreutils bash avrdude screen tmux \
+    bash-completion alpine-repo-tools-bash-completion openrc-bash-completion util-linux-bash-completion util-linux procs-bash-completion \
+    raspberrypi-userland raspberrypi-bootloader raspberrypi-utils \
+    git \
+    lua 7zip findutils file strace bind-tools \
+    sfdisk sgdisk btrfs-progs btrfs-compsize e2fsprogs f2fs-tools dosfstools lvm2 mdadm cryptsetup \
+    mtr tcptraceroute traceroute fping arping iproute2 iproute2-bash-completion iproute2 ifupdown dhclient tcpdump sntpc \
+    zip unzip 7zip unarj xz zstd bzip2 \
+    iproute2-bash-completion git-bash-completion util-linux-bash-completion \
+    openssh \
+    ; \
+: # eo RUN
+
+# copy kernel and modules from diet-pi
+COPY --from=kernel-source /target/boot /target/tmp/boot
+COPY --from=kernel-source /target/lib/modules /target/tmp/modules
+COPY --from=kernel-source /target/lib/firmware /target/tmp/firmware
+
+COPY rpi-tar.gz2SD.sh /target/usr/local/bin/rpi-tar.gz2SD
+COPY bullseye/base/root-scripts/clone-to.sh /target/usr/local/bin/clone-to
+
+RUN set -ex ; umask 022 ;\
+  rm -rf /target/boot ;\
+  mv /target/tmp/boot /target/boot ;\
+  rm -rf /lib/modules ;\
+  mv /target/tmp/modules /target/lib/modules ;\
+  rm -rf /lib/firmware ;\
+  mv /target/tmp/firmware /target/lib/firmware ;\
+  depmod -b /target $(ls -1 /target/lib/modules/) ;\
+: # eo RUN
+
+COPY alpine/lib-initrd /target/lib/initrd
+
+RUN set -ex ;\
+  cd /target/lib/initrd; \
+  find . -mindepth 2 -type f | while read f; do \
+    f="${f#./}" ;\
+    src="$(echo "${f%/*}" | sed -r -e 's|[^/]+|..|g')/lib/initrd/$f" ;\
+    case "$f" in \
+      etc/hostname ) cat $f > /target/$f ;;\
+      * ) ln -s $src /target/$f ;;\
+    esac ;\
+  done ;\
+  chmod 0644 /target/etc/network/interfaces ;\
+  chmod 0744 /target/etc/network/if-*.d/* ;\
+  chmod 0744 /target/etc/preinit ;\
+  chmod 0744 /target/lib/initrd/serial-login.sh ;\
+  chmod 0755 /target/usr/local/bin/* ;\
+  chroot /target rc-update add networking sysinit ;\
+  chroot /target rc-update add sshd default ;\
+: # eo RUN
+
+RUN set -ex ;\
+  rm -f /target/etc/resolv.conf ;\
+  rm -f /target/etc/*- ;\
+: # eo RUN
+
+CMD rm -f /target/etc/resolv.conf; cp /etc/resolv.conf /target/etc/resolv.conf; rm -f /target/etc/ld.so.preload; chroot /target su -

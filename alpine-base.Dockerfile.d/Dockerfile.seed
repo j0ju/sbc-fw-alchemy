@@ -1,0 +1,17 @@
+FROM bpi2m0:armbian-bookworm-vanilla AS kernel-source
+
+FROM bpi2m0:MiniRoot-Alpine-3.18.64
+# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+RUN set -ex ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf
+
+COPY --from=kernel-source /target/boot/ /target/boot/
+COPY --from=kernel-source /target/lib/modules/ /target/lib/modules/
+
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash -l ;\
+: # eo CMD
