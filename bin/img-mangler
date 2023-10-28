@@ -74,6 +74,16 @@ case "$MODE" in
     eval "exec docker run --rm -v $PWD:/src -w '$WORKDIR' -e 'OWNER=$(id -u)' -e 'GROUP=$(id -g)' $OPTS '$IMAGE_REPO:$IMAGE_TAG' \"\$@\""
     ;;
   list )
-    docker image ls | awk '$1 ~ "^(REPO|'"$IMAGE_REPO"')"'
+    header=0
+    fmt='%35s %15s %15s\n'
+    docker image ls | sort | while read pfx tag hash time time_unit ago docker_size; do
+      [ "$pfx" = "$IMAGE_REPO" ] || continue
+      if [ "$header" = 0 ]; then
+        printf "$fmt" "IMAGE" "FS SIZE" "DOCKER USAGE"
+        header=1
+      fi
+      img_size="$( docker run --rm --network=none $pfx:$tag sh -ec "[ ! -x /target/bin/sh ] || chroot /target sh /lib/cleanup-rootfs.sh; du -sh /target" | ( read size _; echo $size) )"
+      printf "$fmt" "$tag" "$img_size" "$docker_size"
+    done
     ;;
 esac
