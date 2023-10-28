@@ -27,6 +27,9 @@ for d in /usr/share/man/*; do
   setx rm -rf "$d"
 done
 
+find /etc -name *.dpkg-* -delete
+find /etc -name *.ucf-* -delete
+
 rm -f 2> /dev/null \
   /var/cache/apt/archives/* \
   /var/cache/apt/archives/partial/* \
