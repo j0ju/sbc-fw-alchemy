@@ -41,7 +41,11 @@ PS4='> ${0##*/}: '
       fbset \
       html2text \
       network-manager netplan.io \
+      ntfs-3g \
+      nano \
       $(chroot /target dpkg -l *-dev | awk '$1 == "ii" && $2 ~ "-dev(:|$)" {print $2}')
+
+    rm -rf /target/etc/netplan
     
     chroot /target /bin/sh -c "\
       cd /etc; \
