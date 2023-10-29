@@ -31,7 +31,7 @@ cleanup() {
 trap cleanup EXIT TERM HUP INT USR1 USR2 STOP CONT
 
 # generate block devices from image file
-DEVS="$(kpartx -rav "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
+DEVS="$( kpartx -rav "$IMAGE" | sort -u | grep -oE 'loop[^ ]+' )"
 for dev in $DEVS; do
   part_no="${dev#loop*p}"
   mkdir -p "/mnt/part$part_no"
