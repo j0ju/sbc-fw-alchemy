@@ -13,11 +13,22 @@ FSDIR="$0.d"
 
 echo "I: add fs modifications"
   cd "$FSDIR"
-  find . ! -type d | while read f; do
-    f="${f#./}"
-    rm -f "${DST}/$f"
+  find . ! -type d | \
+    while read f; do
+      f="${f#./}"
+      rm -f "${DST}/$f"
+
       mkdir -p "${DST}/${f%/*}"
+      chmod 0755 "${DST}/${f%/*}"
+      
       mv "$f" "${DST}/$f"
+      if [ ! -L "${DST}/$f" ]; then
+        if [ -x "${DST}/$f" ]; then
+          chmod 0755 "${DST}/$f"
+        else
+          chmod 0644 "${DST}/$f"
+        fi
+      fi
     done
 
 [ ! -d "/target" ] || \
