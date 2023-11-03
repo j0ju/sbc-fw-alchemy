@@ -42,6 +42,11 @@ case "$MODE" in
     echo ': # eo RUN'
     ;;
   singlestep )
+    i="$SEEDDIR/lib.sh"
+    if [ -f "$i" ]; then
+      echo "COPY $i /src/$i"
+    fi
+
     for i in "$SEEDDIR"/[0-9][0-9][0-9]_*; do
       [ -f "$i" ] || \
         continue
