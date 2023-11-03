@@ -38,6 +38,7 @@ build: $(WORK_FILES)
 
 # keep all image files, even from intermediate steps no longer needed
 .PRECIOUS: %.img
+.PRECIOUS: %.xz
 
 #---- import tar files into img-mangler image
 .deps/%.built: %.tar ./img-mangler/tar-import.sh
