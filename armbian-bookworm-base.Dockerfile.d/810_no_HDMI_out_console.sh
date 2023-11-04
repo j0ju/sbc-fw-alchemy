@@ -3,7 +3,7 @@
 
 PS4='> ${0##*/}: '
 #set -x
-
-. "$SRC/lib.sh"; init
-
-chroot /target apt-get dist-upgrade -y
+    
+# no local console
+  chroot /target \
+    systemctl mask getty@.service

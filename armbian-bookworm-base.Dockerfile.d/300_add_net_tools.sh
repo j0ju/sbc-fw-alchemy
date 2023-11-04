@@ -6,4 +6,5 @@ PS4='> ${0##*/}: '
 
 . "$SRC/lib.sh"; init
 
-chroot /target apt-get dist-upgrade -y
+chroot /target apt-get install -y \
+  ppp udhcpc

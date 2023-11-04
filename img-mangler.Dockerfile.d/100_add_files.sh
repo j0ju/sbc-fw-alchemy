@@ -9,6 +9,7 @@ if [ "$DST" = / ]; then
   DST=
 fi
 
+SRC="${SRC%/}"
 FSDIR="$0.d"
 
 echo "I: add fs modifications"
@@ -35,6 +36,6 @@ echo "I: add fs modifications"
   chroot /target /bin/sh -e <<EOF
     PS4="$PS4"
     if which etckeeper > /dev/null; then
-      etckeeper commit -m "add filesystem mods"
+      etckeeper commit -m "${SRC##*/}: add filesystem mods"
     fi
 EOF
