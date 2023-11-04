@@ -1,8 +1,8 @@
+# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+
 FROM bpi2m0:armbian-bookworm-vanilla AS kernel-source
 
 FROM bpi2m0:MiniRoot-Alpine-3.18.64
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
-# meta: onestep
 
 RUN set -ex ;\
   cp /etc/resolv.conf /target/etc/resolv.conf
