@@ -182,4 +182,4 @@ include $(URL_DEPS)
 
 .PHONY: all build depends deps dep mrproper clean clean-files docker-image-clean docker-image-prune
 
-# vim: ts=2 sw=2 noet ft=make
+# vim: ts=2 sw=2 noet ft=make foldmethod=indent

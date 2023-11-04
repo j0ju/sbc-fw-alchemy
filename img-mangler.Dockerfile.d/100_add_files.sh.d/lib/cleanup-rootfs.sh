@@ -2,19 +2,13 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 set -e
 
-usage() {
-  echo "usage: $0 <template> <container name>" 1>&2
-  if [ -n "$*" ]; then
-    echo "$*" 1>&2
-  fi
-  exit 1
-}
-
 setx() {
   #echo "+$*"
   "$@"
 }
-apt-get clean
+if which apt-get > /dev/null; then
+  apt-get clean
+fi
 
 for d in /usr/share/man/*; do
   [ -d "$d" ] || continue
