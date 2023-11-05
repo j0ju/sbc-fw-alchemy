@@ -1,5 +1,5 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
-# metA: onestep
+# meta: onestep
 
 # set base, copy scripts & out-of-tree resources
 FROM bpi2m0:armbian-bookworm-vanilla
