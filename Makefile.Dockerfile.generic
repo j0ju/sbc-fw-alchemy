@@ -28,14 +28,14 @@ WORK_FILES :=
 V = 0
 E = @ :
 Q =
-SHOPT = -e -x
+SHOPT = -e -u -x
 SHREDIR =
 WGETOPT =
 ifeq ($(V), 0)
 	Q = @
 	E = $(Q)echo
 	SHREDIR = > /dev/null
-	SHOPT = -e
+	SHOPT = -e -u
 	WGETOPT = -q
 endif
 
@@ -173,7 +173,7 @@ $(DEPDIR)/%.pushed: $(DEPDIR)/%.built
 #--- generate Dockerfiles from template in Dockerfile.d, to use the build/buildx caching layer
 %.Dockerfile: %.Dockerfile.d/Dockerfile.seed img-mangler/gen-dockerfile.sh
 	$(E) DOCKERFILE $@
-	$(Q) ./img-mangler/gen-dockerfile.sh $@ $<
+	$(Q) $(SHELL) $(SHOPT) ./img-mangler/gen-dockerfile.sh $@ $<
 
 .PRECIOUS: %.Dockerfile
 
