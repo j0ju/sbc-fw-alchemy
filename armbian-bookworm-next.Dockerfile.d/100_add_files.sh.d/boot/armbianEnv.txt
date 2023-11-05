@@ -4,6 +4,7 @@ console=serial
 disp_mode=1920x1080p60
 overlay_prefix=sun8i-h3
 rootdev=/dev/mmcblk0p2
+rootfstype=ext4
 earlycon=on
 usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
 overlays=i2c0 uart3 w1-gpio

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+PREREQ="busybox"
+
+CMDS=
+CMDS="$CMDS strace"
+
+CMDS="$CMDS wipefs"
+CMDS="$CMDS sfdisk cfdisk fdisk"
+CMDS="$CMDS e2fsck tune2fs mke2fs resize2fs"
+CMDS="$CMDS mkfs.vfat fsck.vfat"
+CMDS="$CMDS mkfs.f2fs fsck.f2fs resize.f2fs"
+CMDS="$CMDS tty reset stty"
+CMDS="$CMDS lsblk blkid"
+CMDS="$CMDS gzip xz zstd"
+
+prereqs() { echo "$PREREQ"; exit 0; }
+[ "$1" = "prereqs" ] && prereqs
+. /usr/share/initramfs-tools/hook-functions
+
+echo "I: add '$0'"
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+for cmd in $CMDS; do
+  if file="$(which "$cmd")"; then
+    rm -f "$DESTDIR/$file"
+    copy_exec "$file"
+  else
+    echo "W: warning '$cmd' not avail, thus not installed into initrd" >&2
+  fi
+done
+
+# vim: ft=sh sw=2 ts=2 et fdm=marker fmr=#{,#}
