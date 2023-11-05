@@ -146,17 +146,17 @@ EOF
       -e 's/^(rootdev=).*/\1'"$BLKDEV"'/' \
       -e 's/^(rootfstype=).*/\1'"$FS"'/' \
     /mnt/boot/armbianEnv.txt
-    #
-    grep -H -e "$BLKDEV|$FS" /mnt/etc/fstab /mnt/boot/armbianEnv.txt | sed -r -e 's!^/mnt!  !' -e 's/:/\n    /'
+    #grep -H -E "$BLKDEV|$FS" /mnt/etc/fstab /mnt/boot/armbianEnv.txt | sed -r -e 's!^/mnt!  !' -e 's/:/\n    /'
   )
   ( FS="$BOOT_FS" MNT=/boot BLKDEV="UUID=$BOOT_UUID"
   #- adapt /etc/fstab
     sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "/mnt/etc/fstab"
-    #
-    grep -H -e "$BLKDEV|$FS" /mnt/etc/fstab /mnt/boot/armbianEnv.txt | sed -r -e 's!^/mnt!  !' -e 's/:/\n    /'
+    #grep -H -E "$BLKDEV|$FS" /mnt/etc/fstab /mnt/boot/armbianEnv.txt | sed -r -e 's!^/mnt!  !' -e 's/:/\n    /'
   )
 
 #--- update initrd if available
+  #Q: is this needed? 
+  #Q: how to update uInitrd properly?
   #mount -t proc proc /mnt/proc -r
   #mount -t sysfs sysfs /mnt/sys -r
   #mount -t tmpfs tmpfs /mnt/tmp
@@ -165,7 +165,7 @@ EOF
 
 #--- status
   ( cd /mnt
-    df -h ./ ./boot | sed -r -e 's!/mnt/?!/!' -e 's/^/  /'
+    df -h ./ ./boot | sed -r -e 's!/mnt/?!/!' -e 's!^/!  !' -e 's!^!  !'
   )
 
 # vim: ts=2 sw=2 foldmethod=indent
