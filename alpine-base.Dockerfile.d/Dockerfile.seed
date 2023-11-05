@@ -1,12 +1,14 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
-FROM bpi2m0:armbian-bookworm-vanilla AS kernel-source
+# take kernel from unmodified Armbian image
+#FROM bpi2m0:armbian-bookworm-vanilla AS kernel-source
+# take updated kernel
+FROM bpi2m0:armbian-bookworm-base AS kernel-source
 
 FROM bpi2m0:MiniRoot-Alpine-3.18.64
 
 RUN set -ex ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\
-  cp /lib/cleanup-rootfs.sh /target/lib/cleanup-rootfs.sh ;\
 : # eo RUN
 
 COPY --from=kernel-source /target/boot/ /target/boot/

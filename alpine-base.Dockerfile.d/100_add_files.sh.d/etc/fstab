@@ -2,7 +2,7 @@
 #
 # <file system>                          <mount point>       <type>  <options>                                                      <dump>  <pass>
 /dev/mmcblk0p2                            /                  auto   auto,noatime                                                    0       0
-/dev/mmcblk0p1                            /boot              auto   auto,noatime,x-systemd.automount,x-systemd.idle-timeout=60      0       0
+/dev/mmcblk0p1                            /boot              auto   auto,noatime                                                    0       0
 
 proc                                      /proc              proc   noauto,rprivate                                                 0       0
 sysfs                                     /sys               sysfs  noauto,rprivate                                                 0       0

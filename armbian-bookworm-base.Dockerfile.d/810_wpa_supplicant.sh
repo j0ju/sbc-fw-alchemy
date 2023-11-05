@@ -4,7 +4,15 @@
 PS4='> ${0##*/}: '
 #set -x
 
+rm -f /target/etc/systemd/system/dbus-fi.w1.wpa_supplicant1.service
+
 chroot /target \
-  systemctl unmask wpa_supplicant@
+  systemctl mask dbus-fi.w1.wpa_supplicant1.service
+
 chroot /target \
-  systemctl enable wpa_supplicant@wlan0
+  systemctl mask wpa_supplicant.service
+
+chroot /target \
+  systemctl unmask wpa_supplicant@.service
+chroot /target \
+  systemctl enable wpa_supplicant@wlan0.service

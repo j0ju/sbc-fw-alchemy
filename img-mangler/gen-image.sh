@@ -42,8 +42,8 @@ set -eu
       rm -f "$IMAGE"
     cd /
 
-    for m in /mnt/part* /mnt; do
-      umount "$m" 2> /dev/null || :
+    for m in /mnt/boot /mnt; do
+      while umount "$m" 2> /dev/null; do :; done
     done
     for d in $DEVS; do
       if [ -b "/dev/mapper/$d" ]; then
@@ -72,41 +72,55 @@ set -eu
   dd if=/dev/zero bs=1024 count=0 seek=$IMAGE_SIZE_KB of=$IMAGE status=none
 
 #--- write u-boot, SPL, EGON
-  echo "UBOOT MAKE BOOTABLE"
+  echo "UBOOT"
   dd if=/target/boot/uboot.egn of="$IMAGE" bs=8192 seek=1 conv=notrunc status=none
 
 #--- partition it
-  sfdisk $IMAGE > /dev/null <<"  EOF"
-    label: dos
-    1: type=83 start=2048 bootable
-  EOF
+sfdisk $IMAGE > /dev/null <<EOF
+  label: dos
+  1: type=83 start=2048 size=${PART_SIZE_KB_boot}KiB bootable
+  2: type=83
+EOF
 
 #--- mount image fs
   DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
 
   P1="$(echo $DEVS | grep -E -o "[^ ]+p1")"
+  P2="$(echo $DEVS | grep -E -o "[^ ]+p2")"
   mkdir -p /mnt/
 
   echo "MKFS"
-  mkfs.ext4 -q -L root /dev/mapper/$P1
-  mount -t ext4 /dev/mapper/$P1 /mnt
+  mkfs.ext4 -q -L boot /dev/mapper/$P1
+  mkfs.ext4 -q -L root /dev/mapper/$P2
+  mount -t ext4 /dev/mapper/$P2 /mnt
+  mkdir -p /mnt/boot
+  mount -t ext4 /dev/mapper/$P1 /mnt/boot
 
   #--- copy rootfs
   echo "COPY"
   tar cf - -C /target . --xattrs --acl | tar xf - -C /mnt --atime-preserve --xattrs --acl
 
 #--- adapt uboot scripts
-  echo "UBOOT CONFIG"
-  FSUUID="$( blkid -o value -s PARTUUID "/dev/mapper/$P1" )"
-  if [ -z "$FSUUID" ]; then
+  echo "BOOT CONFIG"
+  ROOT_UUID="$( blkid -o value -s UUID "/dev/mapper/$P2" )"
+  ROOT_FS="$( blkid -o value -s TYPE "/dev/mapper/$P2" )"
+  BOOT_UUID="$( blkid -o value -s UUID "/dev/mapper/$P1" )"
+  BOOT_FS="$( blkid -o value -s TYPE "/dev/mapper/$P1" )"
+  if [ -z "$ROOT_UUID" ]; then
     echo "E: FS UUID of data partition not found"
     exit 2
   fi
-  echo "   /       UUID=$FSUUID"
-  ( FS=ext4 MNT=/ BLKDEV="UUID=$FSUUID"
+  echo "   /       $ROOT_FS UUID=$ROOT_UUID"
+  echo "   /boot   $BOOT_FS UUID=$BOOT_UUID"
+  ( FS="$ROOT_FS" MNT=/ BLKDEV="UUID=$ROOT_UUID"
   #- adapt /etc/fstab
-      sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "/target/etc/fstab"
+      sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "/mnt/etc/fstab"
   #- adapt /boot/armbianEnv.txt
+      sed -i -r -e 's/^(rootdev=).*/\1'"$BLKDEV"'/' /mnt/boot/armbianEnv.txt
+  )
+  ( FS="$BOOT_FS" MNT=/boot BLKDEV="UUID=$BOOT_UUID"
+  #- adapt /etc/fstab
+      sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "/mnt/etc/fstab"
   )
 
 # vim: ts=2 sw=2 foldmethod=marker foldmarker=#-{,#}-
