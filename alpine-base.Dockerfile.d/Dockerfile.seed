@@ -5,11 +5,7 @@
 # take updated kernel
 FROM bpi2m0:armbian-bookworm-base AS kernel-source
 
-FROM bpi2m0:MiniRoot-Alpine-3.18.64
-
-RUN set -ex ;\
-  cp /etc/resolv.conf /target/etc/resolv.conf ;\
-: # eo RUN
+FROM bpi2m0:MiniRoot-Alpine-3.18.armhf
 
 COPY --from=kernel-source /target/boot/ /target/boot/
 COPY --from=kernel-source /target/lib/modules/ /target/lib/modules/
