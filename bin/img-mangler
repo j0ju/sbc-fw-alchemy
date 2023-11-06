@@ -71,7 +71,7 @@ case "$MODE" in
   exec )
     [ -f "$BUILT_FLAG" ] || \
       make img-mangler
-    eval "exec docker run --rm -v $PWD:/src -w '$WORKDIR' -e 'OWNER=$(id -u)' -e 'GROUP=$(id -g)' $OPTS '$IMAGE_REPO:$IMAGE_TAG' \"\$@\""
+    eval "exec docker run --rm -v $PWD:/src -w '$WORKDIR' --log-driver none -e 'OWNER=$(id -u)' -e 'GROUP=$(id -g)' $OPTS '$IMAGE_REPO:$IMAGE_TAG' \"\$@\""
     ;;
   list )
     header=0
