@@ -1,10 +1,8 @@
-#!/bin/sh -e
+#!/bin/sh -eu
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 PS4='> ${0##*/}: '
-set -x
-
-cp /lib/cleanup-rootfs.sh /target/lib/cleanup-rootfs.sh
+#set -x
 
 # pre-seed git config
 ( cd /target/etc

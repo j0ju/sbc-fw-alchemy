@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh -eu
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 PS4='> ${0##*/}: '
@@ -9,5 +9,5 @@ cd /target/boot
 rm -f \
   armbian_first_run.txt \
   armbian_first_run.txt.template \
-  uInitrd* \
+  initrd* \
 # EO rm -f
