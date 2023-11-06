@@ -13,7 +13,7 @@ PS4='> ${0##*/}: '
     git commit -m "init" -q
 )
 
-chroot /target /sbin/apk update
+#chroot /target /sbin/apk update
 chroot /target /sbin/apk add --no-cache \
   openrc \
   minicom xxd vim mc procps psmisc coreutils bash avrdude screen tmux wavemon htop \
@@ -31,4 +31,7 @@ chroot /target /sbin/apk add --no-cache \
   file \
   usbutils hwids-usb \
   pv \
+  ppp \
+  wireguard-tools wireguard-tools-bash-completion \
+  runit \
 # EO chroot apk add

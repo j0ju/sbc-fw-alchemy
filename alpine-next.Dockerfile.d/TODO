@@ -1,0 +1,27 @@
+
+depmod -b /target $(ls -1 /target/lib/modules/) ;\
+: # eo RUN
+
+RUN set -ex ;\
+  cd /target/lib/initrd; \
+  find . -mindepth 2 -type f | while read f; do \
+    f="${f#./}" ;\
+    src="$(echo "${f%/*}" | sed -r -e 's|[^/]+|..|g')/lib/initrd/$f" ;\
+    case "$f" in \
+      etc/hostname ) cat $f > /target/$f ;;\
+      * ) ln -s $src /target/$f ;;\
+    esac ;\
+  done ;\
+  chmod 0644 /target/etc/network/interfaces ;\
+  chmod 0744 /target/etc/network/if-*.d/* ;\
+  chmod 0744 /target/etc/preinit ;\
+  chmod 0744 /target/lib/initrd/serial-login.sh ;\
+  chmod 0755 /target/usr/local/bin/* ;\
+  chroot /target rc-update add networking sysinit ;\
+  chroot /target rc-update add sshd default ;\
+: # eo RUN
+
+RUN set -ex ;\
+  rm -f /target/etc/resolv.conf ;\
+  rm -f /target/etc/*- ;\
+: # eo RUN

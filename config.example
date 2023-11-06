@@ -13,13 +13,15 @@ DOCKER_IMAGES :=
 WORK_FILES :=
 
 #WORK_FILES += armbian-bookworm-vanilla.rootfs.tar.zst
-
+#WORK_FILES += armbian-bookworm-base.rootfs.tar.zst
 #WORK_FILES += armbian-bookworm-base.sdcard.img
+#WORK_FILES += armbian-bookworm-next.rootfs.tar.zst
 
-WORK_FILES += armbian-bookworm-next.rootfs.tar.zst
 WORK_FILES += armbian-bookworm-next.sdcard.img
 
-WORK_FILES += alpine-base.rootfs.tar.zst
-WORK_FILES += alpine-base.sdcard.img
+#WORK_FILES += alpine-base.sdcard.img
+#WORK_FILES += alpine-base.rootfs.tar.zst
+
+WORK_FILES += alpine-next.rootfs.tar.zst
 
 # vim: noet ts=2 sw=2 ft=Makefile
