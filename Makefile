@@ -54,11 +54,11 @@ build: $(WORK_FILES)
 #--- export mangled rootfs to tar
 %.rootfs.tar.gz: .deps/%.built
 	$(E) "ROOTFS $@"
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.gz=) sh $(SHOPT) -c "chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null; exec tar czf - -C /target ." > "$@" || { rm -f "$@"; exit 1; }
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.gz=) sh $(SHOPT) -c "chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null; exec tar czf - -C /target . --atime-preserve --xattrs --acl" > "$@" || { rm -f "$@"; exit 1; }
 
 %.rootfs.tar.zst: .deps/%.built
 	$(E) "ROOTFS $@"
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.zst=) sh $(SHOPT) -c "chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null; exec tar cf - -I zstd -C /target ." > "$@" || { rm -f "$@"; exit 1; }
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.zst=) sh $(SHOPT) -c "chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null; exec tar cf - -I zstd -C /target . --atime-preserve --xattrs --acl" > "$@" || { rm -f "$@"; exit 1; }
 
 #--- export mangled rootfs to image for sdcard
 %.sdcard.img: .deps/%.built img-mangler/gen-image.sh
