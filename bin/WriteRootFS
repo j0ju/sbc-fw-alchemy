@@ -44,18 +44,18 @@ EOF
 }
 #}-
 #-{ parse arguments for source tarball and target block device
-  if [ -z "$1" ]; then
+  if [ -z "${1:-}" ]; then
     echo "E: SRC_TAR is missing." >&2
     usage
     exit 1
   fi
-  if [ -z "$2" ]; then
+  if [ -z "${2:-}" ]; then
     echo "E: TARGET_DEV is missing." >&2
     usage
     exit 1
   fi
 
-  TARGET_DEV="$2"
+  TARGET_DEV="${2:-}"
   if [ ! -b "$TARGET_DEV" ]; then
     echo "E: TARGET_DEV($TARGET_DEV) not a block device." >&2
     exit 1
@@ -66,7 +66,7 @@ EOF
     *[0-9] ) PART_SEP=p ;;
   esac
 
-  SRC_TAR="$1"
+  SRC_TAR="${1:-}"
   if [ ! -r "$SRC_TAR" ]; then
     echo "E: TAR does not exist." >&2
     exit 1
@@ -249,7 +249,7 @@ EOF
 #}-
 #-{ show df, sync & unmount
   echo "I: sync (MNTPNT=$TMPDIR)"
-  df -h "$TMPDIR/boot" "$TMPDIR" | sed -r -e "s!$TMPDIR/?!/!"
+  df -h "$TMPDIR/boot" "$TMPDIR" | sed -r -e "s!$TMPDIR/?!/!" -e 's/^/  /' -e 's|/|  |'
   $SUDO sync
 #}-
 #-{ de-init and cleanup is done via trap
