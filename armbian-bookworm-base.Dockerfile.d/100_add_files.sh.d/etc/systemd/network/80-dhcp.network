@@ -1,6 +1,6 @@
 [Match]
 Name=*
-Type=ether
+Type=ether wlan
 
 [Network]
 DHCP=yes
