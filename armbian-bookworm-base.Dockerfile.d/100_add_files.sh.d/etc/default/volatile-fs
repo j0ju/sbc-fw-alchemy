@@ -1,0 +1,10 @@
+DIRS=
+DIRS="$DIRS /var/log"
+DIRS="$DIRS /var/lib/systemd"
+DIRS="$DIRS /var/lib/sudo"
+DIRS="$DIRS /var/lib/logrotate"
+DIRS="$DIRS /var/lib/bluetooth"
+DIRS="$DIRS /var/lib/nginx/body"
+DIRS="$DIRS /var/lib/php/sessions"
+DIRS="$DIRS /var/lib/samba/private"
+DIRS="$DIRS /var/cache/samba"
