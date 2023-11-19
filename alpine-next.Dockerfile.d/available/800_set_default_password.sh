@@ -1,1 +1,0 @@
-../../armbian-bookworm-next.Dockerfile.d/available/800_set_default_password.sh

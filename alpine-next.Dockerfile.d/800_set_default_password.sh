@@ -1,1 +1,0 @@
-available/800_set_default_password.sh
