@@ -65,3 +65,8 @@ passwd-
 shadow-
 subgid-
 subuid-
+resolv.conf-
+
+*.orig
+*-
+*.O

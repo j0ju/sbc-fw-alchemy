@@ -28,6 +28,11 @@ chroot /target \
 chroot /target \
   systemctl enable systemd-resolved.service
 
+rm -f \
+  /target/etc/.resolv.conf.systemd-resolved.bak \
+  /target/etc/resolv.conf-
+ln -s /run/systemd/resolve/resolv.conf /target/etc/resolv.conf-
+
 chroot /target \
   systemctl disable systemd-networkd-wait-online.service
 chroot /target \
@@ -39,3 +44,4 @@ rm -f /target//etc/systemd/system/serial-getty@.service.d/override.conf
 chroot /target \
   systemctl enable etc-machine-id.service
 rm -f /target/etc/machine-id
+
