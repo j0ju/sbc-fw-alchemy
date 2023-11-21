@@ -7,7 +7,8 @@
   export LANG=C.UTF-8
 #}-
 #-{ defaults
-  FS=f2fs
+  FS=f2fs # ext4
+  BOOT_FS=ext4 # vfat
   BOOT_SIZE=144MiB
   AUTO_SUDO=yes
 #}-
@@ -24,9 +25,13 @@ cat >&2 << EOF
 
   Options:
 
-    -t <FS>                              - target filesystem
-                                           (ext2, ext3, ext4, f2fs)
+    -t <FS>                              - / filesystem
+    --root-fs <FS>                         (ext2, ext3, ext4, f2fs)
                                            (default: $FS)
+
+    --boot-fs <FS>                       - /boot filesystem
+                                           (ext2, ext3, ext4, vfat)
+                                           (default: $BOOT_FS)
 
     --/-size <SIZE>                      - create the root partition with an specific size
                                            (default: maximize)
@@ -157,10 +162,15 @@ TMPDIR="$(mktemp -d)"
   echo "I: wipe $TARGET_DEV"
 
   echo "I: partition $TARGET_DEV"
+  case "$BOOT_FS" in
+    ext[234] ) BOOT_PART_TYPE=83 ;;
+    vfat )     BOOT_PART_TYPE=0c ;;
+    * )        echo "E: unknown filesystem type '$BOOT_FS' for /boot" >&2; exit 2;
+  esac
   $SUDO wipefs -af "$TARGET_DEV" 1> /dev/null 2> /dev/null || :
 $SUDO sfdisk "$TARGET_DEV" 1> /dev/null <<EOF
   label: dos
-  1: type=83 start=2048 size=${BOOT_SIZE} bootable
+  1: type=$BOOT_PART_TYPE start=2048 size=${BOOT_SIZE} bootable
   2: type=83
 EOF
   $SUDO fdisk -l "$TARGET_DEV" | sed -nre '/^[/]/ s/^/  / p'
@@ -174,7 +184,17 @@ EOF
     #
 
   echo "I: create /boot (ext4)"
-  $SUDO mkfs.ext4 -L boot -q "$BOOT_DEV" > /dev/null
+  case "$BOOT_FS" in
+    ext4 )
+      $SUDO mkfs.ext4 -L boot -m 0 -q "$BOOT_DEV"
+      ;;
+    vfat )
+      $SUDO mkfs.vfat -n boot -F32    "$BOOT_DEV"
+      ;;
+    * )
+      echo "E: unknown or unsupport filesystem '$FS'" >&2
+      exit 2
+  esac > /dev/null
 
   MOUNT_OPTS=
   echo "I: create / ($FS)"
@@ -187,7 +207,7 @@ EOF
       ;;
     * )
       echo "E: unknown or unsupport filesystem '$FS'" >&2
-      exit 137
+      exit 2
   esac > /dev/null
 
   echo "I: mount /       ($TMPDIR)"
@@ -198,7 +218,6 @@ EOF
 #}-
 #-{ extract tarball
   echo "I: extract $SRC_TAR"
-
   $DECOMPRESSOR -d < "$SRC_TAR" | \
     pv -brat | \
       $SUDO tar xf - -C "$TMPDIR" --atime-preserve --xattrs --acl
