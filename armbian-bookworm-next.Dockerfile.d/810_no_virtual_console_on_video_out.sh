@@ -1,0 +1,1 @@
+available/810_no_virtual_console_on_video_out.sh
