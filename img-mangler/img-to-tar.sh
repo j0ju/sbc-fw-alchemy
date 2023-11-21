@@ -10,6 +10,7 @@ cleanup() {
   local d
   cd /
   for m in /mnt/part*; do
+    [ -d "$m" ] || continue
     umount "$m" 2> /dev/null || :
   done
   for d in $DEVS; do
