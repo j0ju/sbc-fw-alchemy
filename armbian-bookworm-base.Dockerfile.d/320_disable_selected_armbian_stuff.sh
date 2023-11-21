@@ -4,6 +4,8 @@
 PS4='> ${0##*/}: '
 #set -x
 
+. "$SRC/lib.sh"; init
+
 DISABLE=
 
 #DISABLE="$DISABLE armbian-resize-filesystem.service"
@@ -37,4 +39,5 @@ rm -f \
   /target/etc/profile.d/armbian-check-first-login-reboot.sh \
   /target/etc/profile.d/armbian-check-first-login.sh \
   /target/etc/profile.d/armbian-ssh-title.sh \
+  /target/etc/cron.d/armbian-* \
 # EO rm -f

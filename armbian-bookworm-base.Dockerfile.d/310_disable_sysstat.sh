@@ -4,6 +4,8 @@
 PS4='> ${0##*/}: '
 #set -x
 
+. "$SRC/lib.sh"; init
+
 sed -i -r \
     -e 's/^([0-9])/#\1/' \
   /target/etc/cron.d/sysstat

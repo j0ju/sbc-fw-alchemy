@@ -4,6 +4,8 @@
 PS4='> ${0##*/}: '
 #set -x
 
+. "$SRC/lib.sh"; init
+
 chroot /target \
   apt-get install -y \
     vim-nox mc \
@@ -16,8 +18,5 @@ chroot /target \
     busybox \
     sysstat ifstat \
     wavemon htop \
-  ;\
-chroot /target /bin/sh -c "\
-  cd /etc; \
-  git commit --amend -m 'apt-get: install base tooling' ;\
-" ;\
+  # EO apt-get
+# EO chroot

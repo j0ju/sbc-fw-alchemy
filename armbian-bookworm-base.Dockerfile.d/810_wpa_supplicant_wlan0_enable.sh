@@ -4,6 +4,8 @@
 PS4='> ${0##*/}: '
 #set -x
 
+. "$SRC/lib.sh"; init
+
 rm -f /target/etc/systemd/system/dbus-fi.w1.wpa_supplicant1.service
 
 chroot /target \

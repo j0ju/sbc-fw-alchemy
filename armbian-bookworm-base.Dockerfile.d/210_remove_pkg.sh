@@ -4,6 +4,8 @@
 PS4='> ${0##*/}: '
 #set -x
 
+. "$SRC/lib.sh"; init
+
 #- prevent initial login dialog
   rm -f /target//root/.not_logged_in_yet
 
@@ -12,6 +14,8 @@ PS4='> ${0##*/}: '
   chroot /target etckeeper commit -m "nfs-common: pre-removal"
 
   rm /target/var/lib/dpkg/info/nfs-common.postrm
+  rm -rf /target/etc/netplan /target/etc/NetworkManager
+
   mv /target/usr/sbin/invoke-rc.d /target/usr/sbin/invoke-rc.d.dist
     ln -s /bin/true /target/usr/sbin/invoke-rc.d
     chroot /target apt-get remove --purge -y \
@@ -44,16 +48,4 @@ PS4='> ${0##*/}: '
       nano \
       $(chroot /target dpkg -l *-dev | awk '$1 == "ii" && $2 ~ "-dev(:|$)" {print $2}')
 
-    rm -rf /target/etc/netplan
-    
-    chroot /target /bin/sh -c "\
-      cd /etc; \
-      git commit --amend -m 'apt-get: purge packages' ;\
-    "
-    chroot /target apt-get autoremove --purge -y
-    chroot /target /bin/sh -c "\
-      cd /etc; \
-      git commit --amend -m 'apt-get: auto-purge leftovers' ;\
-    "
-    rm -f /target/usr/sbin/invoke-rc.d
-  mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
+  chroot /target apt-get autoremove --purge -y
