@@ -1,9 +1,7 @@
 #!/bin/sh -eu
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
-PS4='> ${0##*/}: '
 #set -x
-
 . "$SRC/lib.sh"; init
 
 chroot /target apt-get install -y \
@@ -44,4 +42,3 @@ rm -f /target//etc/systemd/system/serial-getty@.service.d/override.conf
 chroot /target \
   systemctl enable etc-machine-id.service
 rm -f /target/etc/machine-id
-

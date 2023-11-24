@@ -2,7 +2,6 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 . "$SRC/lib.sh"; init
-PS4='> ${0##*/}: '
 #set -x
 
 sed -i -e s/,,,// /target/etc/passwd
