@@ -106,7 +106,7 @@ $(DEPDIR)/%.d: %.Dockerfile Makefile Makefile.Dockerfile.generic
 			  grep -v "^[-]-from" | \
 				while read f; do \
 				  if [ -d "$$f" ]; then \
-					  find "$$f" -type f; \
+						find "$$f" -type f | grep -v "/[^/]*[.]sw[a-z]$$" || :; \
 				  else \
 					  echo "$$f"; \
 				  fi; \
