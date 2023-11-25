@@ -15,8 +15,10 @@ init() {
 
   # disable invoke-rc.d
   if [ ! "${__lib_sh_init:-no}" = yes ]; then
-    mv /target/usr/sbin/invoke-rc.d /target/usr/sbin/invoke-rc.d.dist
-    ln -s /bin/true /target/usr/sbin/invoke-rc.d
+    if [ -f /target/usr/sbin/invoke-rc.d ]; then
+      mv /target/usr/sbin/invoke-rc.d /target/usr/sbin/invoke-rc.d.dist
+      ln -s /bin/true /target/usr/sbin/invoke-rc.d
+    fi
 
   # ensure we have a working resolv.conf
     mv /target/etc/resolv.conf /target/etc/resolv.conf-
@@ -38,8 +40,11 @@ deinit() {
   
   # restore resolv.conf and invoke-rc.d
   #if [ "${__lib_sh_init:-no}" = yes ]; then # fail hard
-    rm -f /target/usr/sbin/invoke-rc.d /target/etc/resolv.conf
-    mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
+    if [ -f /target/usr/sbin/invoke-rc.d.dist ]; then
+      rm -f /target/usr/sbin/invoke-rc.d
+      mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
+    fi
+    rm -f /target/etc/resolv.conf
     mv /target/etc/resolv.conf-  /target/etc/resolv.conf
   #fi
 
