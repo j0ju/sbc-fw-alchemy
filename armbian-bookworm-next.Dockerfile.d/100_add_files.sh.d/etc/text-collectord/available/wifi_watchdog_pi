@@ -1,0 +1,51 @@
+#!/bin/sh
+# 1. test if we have default route
+# 2. test if we can ping it
+# if nothing is successful, call handle_fail
+#   - try restarting wpa_supplicant@wlan0.service 5 times
+
+STATE_FILE="/run/${0##*/}.state"
+METRIC_NAME="wifi_watchdog_fail"
+MAX_FAIL_TO_REBOOT=5
+IF=wlan0
+
+handle_fail() { :
+  count_err=$((count_err+1))
+
+  if [ -z "$DEFAULT_GW" ]; then
+    echo "${0##*/}: no default route, restarting systemd-networkd" >&2
+    systemctl restart systemd-networkd.service > /dev/null
+  else
+    echo "${0##*/}: try restarting wpa_supplicant @ $IF" >&2
+    systemctl restart wpa_supplicant@$IF.service > /dev/null
+  fi
+
+  if [ $MAX_FAIL_TO_REBOOT -lt $(( count_err - count_last_successful )) ]; then
+    reboot
+  fi
+}
+
+if ! ip link show dev "$IF" 1> /dev/null 2> /dev/null; then
+  exit 0
+fi
+
+count_last_successful=0
+count_err=0
+if [ -f "$STATE_FILE" ]; then
+  read count_err count_last_successful < "$STATE_FILE"
+fi
+# writeout last metric
+echo "# HELP $METRIC_NAME error count of $0"
+echo "# TYPE $METRIC_NAME counter"
+echo "$METRIC_NAME{interface=\"$IF\"} $count_err"
+
+if ! DEFAULT_GW="$(ip r sh | grep -Eo "default via [^ ]+")"; then
+  handle_fail
+elif ! ping -q -c 3 -w 3 "${DEFAULT_GW##* }" 2> /dev/null 1>&2; then
+  handle_fail
+else
+  count_last_successful=$count_err
+fi
+
+echo "$count_err $count_last_successful" > "$STATE_FILE"
+exit 0

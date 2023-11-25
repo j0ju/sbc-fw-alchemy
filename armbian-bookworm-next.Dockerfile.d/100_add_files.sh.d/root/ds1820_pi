@@ -1,0 +1,207 @@
+#!/bin/bash
+
+# learned from https://tutorials-raspberrypi.de/raspberry-pi-temperatur-mittels-sensor-messen/
+
+# add in /boot/config.txt
+#dtoverlay=w1-gpio,gpioin=4,pullup=on
+
+# add in /etc/modules-load.d/w1.conf
+#w1_gpio
+#w1_therm
+
+set -eu
+export LC_ALL=C LANG=C
+
+MAX_TRIES=7
+
+TYPE_10="ds1820"
+TYPE_16="ds18s20"
+TYPE_22="ds1822"
+TYPE_28="ds18b20"
+
+cat << EOF
+# HELP w1_chip_name human readbable name for 1-Wire temperatur sensors
+# TYPE w1_chip_name gauge
+# HELP w1_temp temperatur from  readbable name for 1-Wire temperatur sensors
+# TYPE w1_temp gauge
+EOF
+
+raw2temp() {
+  temp="${raw#* t=}"
+  abs="${temp#-}"
+  signum="${temp%%[0-9]*}"
+  # if we read this errornous measurement, ...
+  case "$abs" in
+  # then try again
+    85000 )
+      echo "ds1820_pi: $sensor: illegal raw: '$raw', SKIP"          >&2
+      continue
+      ;;
+  # on certain DS18b20 the will bei "40" prefixed if negative, and we have len >= 6
+    40????* )
+      echo "ds1820_pi: $sensor: illegal raw: '$raw', SKIP"          >&2
+      continue
+      #
+      abs="${abs#40}"
+      signum=-
+      ;;
+  esac
+  temp="${signum}$(( abs / 1000 )).$(( abs % 1000 ))"
+}
+
+# this converts the data manaully as for certain negative temperatures the conversion of owfs is not correct
+# !!! this is clearly wrong
+# !!! happened on a Raspberry Pi 1b running
+# !!! Linux knigge 5.10.11+ / Debian Buster / RaspbianOS
+# !!!
+#   -8.0625 <-- 7f ff 4b 46 7f ff 0c 10 81 t=4087937
+#   -7.3125 <-- 8b ff 4b 46 7f ff 0c 10 b3 t=4088687
+#   -6.3125 <-- 9b ff 4b 46 7f ff 0c 10 e7 t=4089687
+# !!!
+#      2.75 <-- 2c 00 00 00 7f ff 0c 10 a7 t=2750
+#  -25.0625 <-- 6f fe t=-25.0625
+#
+# ideas for decoding: https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf
+raw2temp_ds18b20() {
+  temp_register=$(( 0x$2$1 ))
+  signum=$(( temp_register & ( 32768 + 16384 + 8192 + 4096 + 2048 ) ))
+  [ $signum -le 0 ] || \
+    temp_register=$(( temp_register ^ 65535 ))
+
+  temp=0
+  [ $(( temp_register &    1 )) = 0 ] || temp=$(( temp +     625 ))
+  [ $(( temp_register &    2 )) = 0 ] || temp=$(( temp +    1250 ))
+  [ $(( temp_register &    4 )) = 0 ] || temp=$(( temp +    2500 ))
+  [ $(( temp_register &    8 )) = 0 ] || temp=$(( temp +    5000 ))
+  [ $(( temp_register &   16 )) = 0 ] || temp=$(( temp +   10000 ))
+  [ $(( temp_register &   32 )) = 0 ] || temp=$(( temp +   20000 ))
+  [ $(( temp_register &   64 )) = 0 ] || temp=$(( temp +   40000 ))
+  [ $(( temp_register &  128 )) = 0 ] || temp=$(( temp +   80000 ))
+  [ $(( temp_register &  256 )) = 0 ] || temp=$(( temp +  160000 ))
+  [ $(( temp_register &  512 )) = 0 ] || temp=$(( temp +  320000 ))
+  [ $(( temp_register & 1024 )) = 0 ] || temp=$(( temp +  640000 ))
+
+  if [ $signum -gt 0 ]; then
+    signum=-
+    temp=$((temp+625))
+  else
+    signum=
+  fi
+
+  # if we have 0.0625 C we have to prefix the string with a 0 to have at least 4 chars for
+  # the conversion below
+  while [ "${#temp}" -lt 4 ]; do
+    temp="0$temp"
+  done
+
+  dig="${temp%????}"
+  frac="${temp#$dig}"
+  [ -n "$dig" ] || dig=0
+  temp="$signum$dig.$frac"
+
+  # remove trailing "0" and "."
+  while [ "${temp%0}" != "$temp" ]; do
+    temp="${temp%0}"
+  done
+  temp="${temp%.}"
+}
+
+
+# it is easier to operate from this directory
+if ! cd /sys/bus/w1/devices/ 2> /dev/null; then
+  exit 0
+fi
+
+# collect all know $sensors in to a list
+sensors=$( ls *-*/w1_slave 2> /dev/null || : )
+sensors_old=
+
+# iterate over $sensors if we have items in the list
+while [ -n "$sensors" ]; do
+
+  if [ "$sensors_old" = "$sensors" ]; then
+    count=$(( count + 1 ))
+    echo "# DEBUG queue of sensors not empty, but not successful for $count tries"
+  else
+    count=0
+  fi
+  if [ "$count" -gt "$MAX_TRIES" ]; then
+    break
+  fi
+  sensors_old="$sensors"
+
+  # iterate over $sensors
+  for sensor in $sensors; do
+    id="${sensor%/w1_slave}"
+    echo "# DEBUG trying sensor $id"
+
+    if [ -f "$sensor" ]; then
+      # if it is a file and we get an error, try again in next iteration
+      raw="$(grep 't=-\?[0-9]\+' "$sensor")" || continue
+
+      chip_id="${id%%-*}"
+      id="${id#*-}"
+
+      # if we've read raw data, the checksum for the rcvd data matches the checksum,
+      # but is the data consistent to the register specs of the ds182x ?
+      # check if raw data has too many binary 1s -> f (hex)
+      #echo "D: sensor $id, raw: $raw" >&2
+      if [ "$( echo "${raw}" | awk -F'f' '{ print (NF==0)?NF:NF-1 }')" -gt 13 ]; then
+        echo "${0##*/}: sensor $id, raw data inconsistent, to many 1s: '$raw', retrying" >&2
+        sensors="${sensors#*$sensor}${sensors%$sensor*} $sensor"
+        sleep 3
+        continue
+      fi
+
+      case "$chip_id" in
+        28 ) raw2temp_ds18b20 $raw ;;
+        * )  raw2temp         $raw ;;
+      esac
+
+      # compare with previos value and log DATA if diff is to large
+      state_file="/run/${0##*/}.$id.state"
+      if [ -f "$state_file" ]; then
+        read state < "$state_file"
+        rm -f "$state_file"
+        diff="$(( ${temp%%.*} - ${state%%.*} ))"
+        # temperatures are continues,
+        # I do not expect a temperature drop of 17 or more degrees in one collect interval
+        if [ "${diff#-}" -gt 7 ]; then
+          echo "${0##*/}: sensor $id, too large diff:$diff raw:'$raw', retrying" >&2
+          # re-enqueue sensor for a later check
+          sensors="${sensors#*$sensor}${sensors%$sensor*} $sensor"
+          sleep 3
+          continue
+        fi
+      else
+        case "$temp" in
+          85 )
+            echo "${0##*/}: sensor $id, no state file, but bad $temp" >&2
+            sleep 3
+            continue
+            ;;
+        esac
+      fi
+
+      # export chip info metric, if not already done
+      type_name=
+      eval "type_name=\"\$TYPE_$chip_id\"; TYPE_$chip_id=;"
+      [ -z "$type_name" ] || \
+        echo "w1_chip{chip_id=\"$chip_id\", name=\"$type_name\"} 1"
+      echo "w1_temp{id=\"$id\", chip_id=\"$chip_id\"} ${temp}"
+
+      echo "${temp}" > "$state_file"
+    fi
+
+    # remove current processed sensor
+    sensors="${sensors#*$sensor}${sensors%$sensor*}"
+  done
+
+  # trim white spaces in list
+  sensors="${sensors# }"
+  sensors="${sensors% }"
+  sensors="${sensors#
+}"
+  sensors="${sensors%
+}"
+done
