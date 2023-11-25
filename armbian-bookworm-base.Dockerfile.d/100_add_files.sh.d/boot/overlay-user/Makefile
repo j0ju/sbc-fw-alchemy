@@ -3,6 +3,9 @@
 DTS := $(shell ls -1 *.dts 2>/dev/null )
 DTBO := $(DTS:.dts=.dtbo)
 
+# get current dtb via 
+#  * dtc -I fs -O dts /sys/firmware/devicetree/base
+
 all: build
 
 build: $(DTBO)

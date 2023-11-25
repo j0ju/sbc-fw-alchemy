@@ -2,6 +2,9 @@
 #   https://forum.armbian.com/topic/15166-how-to-use-1-wire-for-ds18b20-on-odroid-n2/
 #
 
+#    "dtc -I fs -O dts /sys/firmware/devicetree/base"
+#     "dtc -I dts -O dtb youroverlay.dts > youroverlay.dtb"
+
 # * add user DTBOs
 #     https://forum.armbian.com/topic/23166-activation-of-eth0-on-banana-pi-m2-zero-how-to-do-best/
 #       https://forum.armbian.com/topic/23166-activation-of-eth0-on-banana-pi-m2-zero-how-to-do-best/
