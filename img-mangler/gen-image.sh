@@ -78,7 +78,7 @@ set -eu
     fi
     exit $rs
   }
-  trap cleanup EXIT TERM HUP INT USR1 USR2 STOP CONT ABRT
+  trap cleanup EXIT TERM HUP INT USR1 USR2 ABRT
 
 #--- generate sparse image
   echo "SPARSE IMAGE"
