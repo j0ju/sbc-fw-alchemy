@@ -27,4 +27,9 @@ enable en: build
 %.dtbo: %.dts
 	dtc -I dts -O dtb "$<" > "$@"
 
+# get current dtb 
+RUNNING.dtb: /sys/firmware/devicetree/base                                                                                                            
+	dtc -I fs -O dts "$<" > "$@"               
+
+
 # vim: ts=2 noet sw=2
