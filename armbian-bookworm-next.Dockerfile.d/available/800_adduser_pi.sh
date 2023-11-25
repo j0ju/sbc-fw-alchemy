@@ -5,6 +5,6 @@
 PS4='> ${0##*/}: '
 #set -x
 
-chroot /target useradd -m -u 314 -g 100 -s /bin/bash pi
+chroot /target useradd -m -u 963 -g 100 -s /bin/bash pi
 chroot /target adduser pi sudo
 echo pi:raspberry | chroot /target chpasswd

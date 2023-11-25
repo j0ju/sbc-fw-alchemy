@@ -1,54 +1,7 @@
-# * disable HDMI
-#   https://forum.armbian.com/topic/8176-migrating-form-fex-how-to-disable-hdmi-wifi-and-other/
+# * enable onewire, get it running
+#   https://forum.armbian.com/topic/15166-how-to-use-1-wire-for-ds18b20-on-odroid-n2/
 #
-#   A way to disable hardware is by setting its status to disabled in the device tree, 
-#   take a look at 
-#
-#     "dtc -I fs -O dts /sys/firmware/devicetree/base"
-#
-#   to see the runtime devicetree. For instance for sound and video this would look 
-#   like below, which you can convert to dtb with something like 
-#
-#     "dtc -I dts -O dtb youroverlay.dts > youroverlay.dtb" 
-#
-#   and add as a user-overlay (place dtb file in /boot/overlay-user) 
-#   and add "user-overlays=youroverlay" line in /boot/armbianEnv.txt.
 
-#   /dts-v1/;
-#   
-#   / {
-#       compatible = "allwinner,sun8i-h3","allwinner,sun50i-h5","friendlyarm,nanopi-neo2";
-#   
-#       fragment@0 {
-#           target-path = "/soc";
-#   
-#           __overlay__ {
-#   
-#               hdmi@1ee0000 {
-#                           status = "disabled";
-#               };
-#               mixer@1100000 {
-#                            status = "disabled";
-#               };
-#               sound {
-#                            status = "disabled";
-#                };
-#           };
-#       };
-#   
-#       fragment@1 {
-#           target-path = [2f 00];
-#   
-#           __overlay__ {
-#                 sound {
-#                            status = "disabled";
-#                 };
-#           };
-#       };
-#   };
-
-
-#
 # * add user DTBOs
 #     https://forum.armbian.com/topic/23166-activation-of-eth0-on-banana-pi-m2-zero-how-to-do-best/
 #       https://forum.armbian.com/topic/23166-activation-of-eth0-on-banana-pi-m2-zero-how-to-do-best/
@@ -58,7 +11,7 @@
 #       https://hackaday.io/page/14523-changing-i2c-clock-speed-sdc-on-banana-pi-bpi-m2-zero-armbian
 #
 # ? https://spotpear.com/index/study/detail/id/676.html
-#
+
 # * python3 bme280 code
 #     import time
 #     import smbus2
