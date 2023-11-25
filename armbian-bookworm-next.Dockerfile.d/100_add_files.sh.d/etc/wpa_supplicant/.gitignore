@@ -1,0 +1,2 @@
+# allow customisation without leaking credentials
+wpa_supplicant-wlan0.conf
