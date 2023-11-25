@@ -7,10 +7,8 @@ PS4='> ${0##*/}: '
 # pre-seed git config
 ( cd /target/etc
     git init .
-    : > .gitignore
-    echo "*-" >>  .gitignore
     git add -f .gitignore
-    git commit -m "init" -q
+    git commit -m "init: add .gitignore" -q
 )
 
 #chroot /target /sbin/apk update

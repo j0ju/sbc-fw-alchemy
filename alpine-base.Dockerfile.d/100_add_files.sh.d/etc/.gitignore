@@ -4,6 +4,9 @@
 *.dpkg-*
 # new and old versions of conffiles, stored by ucf
 *.ucf-*
+# new and old versions of conffiles, stored by apk
+*.apk-old
+*.apk-new
 
 # old versions of files
 *.old
@@ -65,3 +68,9 @@ passwd-
 shadow-
 subgid-
 subuid-
+resolv.conf-
+resolv.conf
+
+*.orig
+*-
+*.O

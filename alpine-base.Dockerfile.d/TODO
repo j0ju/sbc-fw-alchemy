@@ -1,3 +1,8 @@
+810_disable_hdmi_serial_only.sh
+810_disable_ttyS1-bluetooth.sh
+810_enable_i2c-0.sh
+810_enable_ttyS3.sh
+
 
 depmod -b /target $(ls -1 /target/lib/modules/) ;\
 : # eo RUN
