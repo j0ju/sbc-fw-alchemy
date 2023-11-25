@@ -66,6 +66,7 @@ shadow-
 subgid-
 subuid-
 resolv.conf-
+resolv.conf
 
 *.orig
 *-

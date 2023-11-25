@@ -1,0 +1,1 @@
+alias log="journalctl -f"
