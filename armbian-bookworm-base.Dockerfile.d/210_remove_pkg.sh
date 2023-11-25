@@ -44,6 +44,7 @@
       network-manager netplan.io \
       ntfs-3g \
       nano \
+      alsa-utils libasound2 libasound2-data libatopology2 \
       $(chroot /target dpkg -l *-dev | awk '$1 == "ii" && $2 ~ "-dev(:|$)" {print $2}')
 
   chroot /target apt-get autoremove --purge -y
