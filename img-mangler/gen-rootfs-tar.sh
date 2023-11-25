@@ -45,6 +45,12 @@ chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null
 rm -rf 1> /dev/null \
   /target/run/* /target/run/.[!.]* \
   /target/etc/*- \
+  /target/var/cache/debconf/*-old \
+  /target/var/lib/dpkg/*-old \
+  /target/var/lib/sgml-base/*.old \
+  /target/var/lib/ucf/*.[0-9] \
+  /target/boot/*.old \
+  /target/*.old \
 # EO rm -rf
 
 #- resolv.conf is heavily modified on every docker run ignore it during build, if etckeeper ins installed
