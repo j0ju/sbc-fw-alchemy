@@ -45,6 +45,8 @@ chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null
 rm -rf 1> /dev/null \
   /target/run/* /target/run/.[!.]* \
   /target/etc/*- \
+  /target/etc/etc/machine-id \
+  /target/etc/ssh/ssh_host_*key* \
   /target/var/cache/debconf/*-old \
   /target/var/lib/dpkg/*-old \
   /target/var/lib/sgml-base/*.old \
