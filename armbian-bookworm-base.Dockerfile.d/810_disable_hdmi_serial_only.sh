@@ -24,3 +24,12 @@ chroot /target /bin/sh -$SHOPTS <<EOF
   make
   make enable
 EOF
+
+sed -i -r \
+  -e '/^earlycon=.*$/ d ' \
+  -e '/^console=.*$/ d ' \
+  -e '/^docker_optimization=.*$/ d ' \
+  -e '$a'"earlycon=on" \
+  -e '$a'"console=serial" \
+  -e '$a'"docker_optimization=off" \
+/target/boot/armbianEnv.txt
