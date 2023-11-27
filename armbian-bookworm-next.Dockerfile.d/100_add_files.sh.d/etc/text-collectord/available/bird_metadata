@@ -1,0 +1,171 @@
+#!/bin/sh
+set -e -o noglob
+
+prefix=
+protocol=
+
+MESH_ASN="$(awk -F"[ ;]" '/define MESH_ASN/ {print $(NF-1)}' /etc/bird/proto-mesh.conf)"
+
+PREAMBLE() {
+cat << EOF
+# HELP bird_route_metadata
+# TYPE bird_route_metadata gauge
+
+# HELP bird_route_bgp_metadata
+# TYPE bird_route_bgp_metadata gauge
+
+# HELP bird_route_bgp_metadata_as_pathlen
+# TYPE bird_route_bgp_metadata_as_pathlen gauge
+EOF
+}
+
+birdc_dump_routes() {
+  exec birdc sh route all
+}
+
+output_route_metrics() {
+  if [ -n "$protocol" ]; then
+    assemble_metric bird_route_metadata 1 \
+      prefix device via ip_version session protocol_preference fib_import_error selected protocol
+    if [ "$protocol" = BGP ]; then
+      assemble_metric bird_route_bgp_metadata 1 \
+        prefix session as_peer as_origin local_preference nexthop
+      assemble_metric bird_route_bgp_metadata_as_pathlen $as_pathlen \
+        prefix session as_path path hops
+    fi
+  fi
+}
+
+generate_metrics() {
+  protocol=
+  while read -r line; do
+    case "$line" in
+      [0-9a-f:.]*[0-9a-f:.]/[0-9]* )
+        # if we run for the first time $prefix and $protocol are empty, this is handled in
+        # output_route_metrics()
+        # if we are not the first time we got a new prefix, so we call output_route_metrics()
+        # to generate metrics
+        output_route_metrics
+        # move on to next prefix, reset data before
+        set -- $line
+        prefix="$1"
+        shift
+        line="$*"
+        protocol=
+        ip_version=4
+        case "$prefix" in
+          *:* ) ip_version=6 ;;
+        esac
+        ;;
+    esac
+    #echo "# DEBUG: $prefix: $line"
+
+    [ -n "$prefix" ] || \
+      continue
+
+    case "$line" in
+      "unicast "* )
+        # new route, or same prefix via another protocol
+        # dump current values
+        output_route_metrics
+
+        # reset attributes
+        as_path=
+        as_pathlen=
+        as_origin=
+        as_peer=
+        hops=
+        path=
+        device=
+        nexthop=
+        via=
+        session=
+        local_preference=
+        selected=
+        fib_import_error=
+        parse_nexthop_info $line
+        ;;
+      "dev "* | "via "* )
+        # collect further metadata routes
+        parse_nexthop_info $line
+        ;;
+      "Type: "* )
+        protocol="${line#Type: }"
+        protocol="${protocol%% *}"
+        ;;
+      "BGP.as_path: "* )
+        as_path="${line#BGP.as_path: }"
+        as_path="${as_path##*$MESH_ASN }"
+        as_pathlen="$( set $as_path ; echo $# )"
+        path="$( set $as_path ; o= ; p= ; for i; do [ "$i" != "$MESH_ASN" ] || continue; [ "$p" = "$i" ] || o="$o $i"; p="$i"; done; echo "${o# }" )"
+        hops="$( set $path; echo $# )"
+        as_origin="${as_path##* }"
+        as_peer="${as_path%% *}"
+        ;;
+      "BGP.local_pref: "* )
+        local_preference="${line#BGP.local_pref: }"
+        ;;
+      "BGP.next_hop: "* )
+        nexthop="${line#BGP.next_hop: }"
+        nexthop="${nexthop#:: }"
+        ;;
+    esac
+  done
+  output_route_metrics
+}
+
+parse_nexthop_info() {
+  #echo "# DEBUG: parse_nexthop_info: $*"
+  while [ -n "$1" ]; do
+    case "$1" in
+      dev | on )
+        shift
+        device="$1"
+        ;;
+      via )
+        shift
+        via="$1"
+        ;;
+      "[AS"*"]" ) ;; # ignore so far ORIGIN_AS of route
+      "["* )
+        session="${1#?}"
+        shift
+        ;;
+      "("[0-9]*")" )
+        protocol_preference="${1#?}"
+        protocol_preference="${protocol_preference%?}"
+        ;;
+      "*" )
+        selected="*"
+        ;;
+      "!" )
+        rib_import_error="!"
+        ;;
+    esac
+    shift
+  done
+}
+
+assemble_metric() {
+  local _metric_="$1"
+  shift
+  local _value_="$1"
+  shift
+
+  local _a_ _v_ _attributes_=
+  for _a_; do
+    eval "_v_=\"\${$_a_}\""
+    [ -n "$_v_" ] || \
+      continue
+
+    [ -z "$_attributes_" ] || \
+      _attributes_="${_attributes_},"
+
+    _attributes_="${_attributes_}${_a_}=\"${_v_}\""
+  done
+
+  echo "$_metric_{$_attributes_} $_value_"
+}
+
+PREAMBLE
+birdc_dump_routes | generate_metrics | sort -u

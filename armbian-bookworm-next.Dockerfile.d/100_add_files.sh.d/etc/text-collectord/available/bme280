@@ -65,8 +65,8 @@ if __name__=="__main__":
 	print ('# TYPE bme280_humidity gauge')
 	for k in result_set.keys():
 		v = result_set[k]
-		print ('bme280_temp{i2c_bus="%s", i2c_addr="%x", id="%s"} %s' % (v["bus_id"], v["addr"], k, v["temp"]))
-		print ('bme280_pressure{i2c_bus="%s", i2c_addr="%x", id="%s"} %s' % (v["bus_id"], v["addr"], k, v["pressure"]))
-		print ('bme280_humidity{i2c_bus="%s", i2c_addr="%x", id="%s"} %s' % (v["bus_id"], v["addr"], k, v["humidity"]))
+		print ('bme280_temp{i2c_bus="%s", i2c_addr="%x", id="%s"} %s' % (v["bus_id"], v["addr"], k, round(v["temp"], 2)))
+		print ('bme280_pressure{i2c_bus="%s", i2c_addr="%x", id="%s"} %s' % (v["bus_id"], v["addr"], k, round(v["pressure"], 2)))
+		print ('bme280_humidity{i2c_bus="%s", i2c_addr="%x", id="%s"} %s' % (v["bus_id"], v["addr"], k, round(v["humidity"], 2)))
 
 # vim: noet ts=2 sw=2
