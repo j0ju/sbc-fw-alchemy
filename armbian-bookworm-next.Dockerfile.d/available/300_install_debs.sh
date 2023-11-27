@@ -2,6 +2,7 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 . "$SRC/lib.sh"; init
+. "$SRC/100_add_files.sh"
 #set -x
 
 SHOPTS="$(echo $- | tr -cd 'eux')"
