@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/opt/bme200-collector/bin/python3
 
 # add to /boot/config.txt
 #dtparam=i2c1=on
