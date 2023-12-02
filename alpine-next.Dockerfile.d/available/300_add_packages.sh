@@ -6,6 +6,4 @@ PS4='> ${0##*/}: '
 
 chroot /target /sbin/apk add --no-cache \
   man-db \
-  agetty \
-  openrc-bash-completion \
 # EO chroot apk add

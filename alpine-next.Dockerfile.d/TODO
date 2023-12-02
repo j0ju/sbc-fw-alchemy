@@ -1,7 +1,4 @@
 
-depmod -b /target $(ls -1 /target/lib/modules/) ;\
-: # eo RUN
-
 RUN set -ex ;\
   cd /target/lib/initrd; \
   find . -mindepth 2 -type f | while read f; do \
