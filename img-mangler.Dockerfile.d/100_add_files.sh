@@ -23,7 +23,7 @@ find . ! -type d | \
 
     mkdir -p "${DST}/${f%/*}"
     chmod 0755 "${DST}/${f%/*}"
-    
+
     mv "$f" "${DST}/$f"
     if [ ! -L "${DST}/$f" ]; then
       if [ -x "${DST}/$f" ]; then
