@@ -4,60 +4,49 @@
 // cat /sys/kernel/debug/gpio
 // gpio-6   (CON2-P07 / PA06)
 
-
 / {
-	compatible = "allwinner,sun8i-h3";
-
-	fragment@0 {
-		target = <0xffffffff>;
-
-		__overlay__ {
-
-			w1_pins {
-        // pin name in main DTB
-				pins = "CON2-P07";
-				function = "gpio_in";
-			};
-		};
-	};
-
-	fragment@1 {
-		target-path = "/";
-
-		__overlay__ {
-
-			onewire@0 {
-				compatible = "w1-gpio";
-				pinctrl-names = "default";
-				pinctrl-0 = <0x01>;
-        // In your decompiled overlay ( adopted from https://forum.armbian.com/topic/6859-ds18b20-temperature-sensor-1-wire-fex/ ) 
-        //  * 1st cell of the "gpios" property (0xffffffff) will be the reference to the pin controller node (from the "main" DT)
-        //  * 2nd cell (0x00) is the pin bank number (PA) 
-        //  * 3rd cell (0x06) is the pin number in the bank (0x06).
-				gpios = <0xffffffff 0x00 0x06 0x00>;
-				status = "okay";
-			};
-		};
-	};
-
-	__symbols__ {
-		w1_pins = "/fragment@0/__overlay__/w1_pins";
-	};
-
-	__fixups__ {
-		pio = "/fragment@0:target:0\0/fragment@1/__overlay__/onewire@0:gpios:0";
-	};
-
-	__local_fixups__ {
-
-		fragment@1 {
-
-			__overlay__ {
-
-				onewire@0 {
-					pinctrl-0 = <0x00>;
-				};
-			};
-		};
-	};
+  compatible = "allwinner,sun8i-h3";
+  fragment@0 {
+    target = <0xffffffff>;
+    __overlay__ {
+      w1_pins {
+        pins = "PA06";
+        function = "gpio_in";
+        phandle = <0x00000001>;
+      };
+    };
+  };
+  fragment@1 {
+    target-path = "/";
+    __overlay__ {
+      onewire@0 {
+        compatible = "w1-gpio";
+        pinctrl-names = "default";
+        pinctrl-0 = <0x00000001>;
+                // In your decompiled overlay ( adopted from https://forum.armbian.com/topic/6859-ds18b20-temperature-sensor-1-wire-fex/ )
+                //  * 1st cell of the "gpios" property (0xffffffff) will be the reference to the pin controller node (from the "main" DT)
+                //  * 2nd cell (0x00) is the pin bank number (PA)
+                //  * 3rd cell (0x06) is the pin number in the bank (0x06).
+                gpios = <0xffffffff 0x00000000 0x00000006 0x00000000>;
+        status = "okay";
+      };
+    };
+  };
+  __symbols__ {
+    w1_pins = "/fragment@0/__overlay__/w1_pins";
+  };
+  __fixups__ {
+    pio = "/fragment@0:target:0", "/fragment@1/__overlay__/onewire@0:gpios:0";
+  };
+  __local_fixups__ {
+    fragment@1 {
+      __overlay__ {
+        onewire@0 {
+          pinctrl-0 = <0x00000000>;
+        };
+      };
+    };
+  };
 };
+
+// vim: ts=2 sw=2 et
