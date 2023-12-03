@@ -6,13 +6,13 @@
 
 find /target/ -name .git -exec rm -rf {} \+
 
+cp "$0.d/etc-dot-gitignore" /target/etc/.gitignore
 ( cd /target/etc
   git init .
   git config user.email "root@"
   git config user.name "root"
+  git add .gitignore
+  git commit -m ".gitignore"
 )
-cp "$0.d/etc-dot-gitignore" /target/etc/.gitignore
 
 chroot /target apt-get install -y etckeeper
-rm -f /target/etc/apt/apt.conf.d/02-armbian-postupdate
-chroot /target etckeeper commit -m "armbian: disable /etc/apt/apt.conf.d/02-armbian-postupdate"
