@@ -38,15 +38,12 @@ deinit() {
     * ) return $rs ;;
   esac
   
-  # restore resolv.conf and invoke-rc.d
-  #if [ "${__lib_sh_init:-no}" = yes ]; then # fail hard
-    if [ -f /target/usr/sbin/invoke-rc.d.dist ]; then
-      rm -f /target/usr/sbin/invoke-rc.d
-      mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
-    fi
-    rm -f /target/etc/resolv.conf
-    mv /target/etc/resolv.conf-  /target/etc/resolv.conf
-  #fi
+  if [ -f /target/usr/sbin/invoke-rc.d.dist ]; then
+    rm -f /target/usr/sbin/invoke-rc.d
+    mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
+  fi
+  rm -f /target/etc/resolv.conf
+  mv /target/etc/resolv.conf-  /target/etc/resolv.conf
 
   local PFX="${SRC##*/}"
   PFX="${PFX%.Dockerfile.d/}"
@@ -60,17 +57,12 @@ etckeeper_commit() (
   local git_commit_message="$1"
 
   cd /target/etc
-  if git status -s | grep ^ > /dev/null; then
-    #if ! git status -s | awk '$2 != "resolv.conf"' | grep ^ > /dev/null; then
-    #  local logmsg="$(git show --pretty=format:%s -s HEAD)"
-    #  git commit resolv.conf -n --amend -m "$logmsg"
-    #else
+  if git status -s 2>/dev/null | grep ^ > /dev/null; then
 chroot /target /bin/sh -$SHOPTS <<EOF
       PS4="${PS4% }:chroot: "
       if which etckeeper > /dev/null; then
         etckeeper commit -m "$git_commit_message"
       fi
 EOF
-    #fi
   fi
 )
