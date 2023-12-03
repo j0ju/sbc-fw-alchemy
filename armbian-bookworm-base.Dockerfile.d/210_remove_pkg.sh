@@ -14,9 +14,7 @@
   rm /target/var/lib/dpkg/info/nfs-common.postrm
   rm -rf /target/etc/netplan /target/etc/NetworkManager
 
-  mv /target/usr/sbin/invoke-rc.d /target/usr/sbin/invoke-rc.d.dist
-    ln -s /bin/true /target/usr/sbin/invoke-rc.d
-    chroot /target apt-get remove --purge -y \
+  chroot /target apt-get remove --purge -y \
       zsh armbian-zsh \
       command-not-found \
       expect tcl-expect tcl8.6 \
