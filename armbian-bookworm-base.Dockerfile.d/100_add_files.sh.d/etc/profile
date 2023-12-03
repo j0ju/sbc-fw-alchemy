@@ -3,19 +3,17 @@
 
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
-case "$_GLOBAL_BASH_RC_READ:$-" in
-  yes:* ) ;;
-  *:*i* ) 
-    _GLOBAL_BASH_RC_READ=yes
-    [ ! -f /etc/bash.bashrc ] || \
-      . /etc/bash.bashrc
-    ;;
+case "$_GLOBAL_PROFILE_READ:$-" in
+  yes:* ) return ;;
+  *:*i* ) ;;
+  *     ) return ;;
 esac
+_GLOBAL_PROFILE_RC_READ=yes
+
+[ ! -f /etc/bash.bashrc ] || . /etc/bash.bashrc
 
 # Source configuration files from /etc/profile.d
 for i in /etc/profile.d/*.sh ; do
-	if [ -r "$i" ]; then
-		. $i
-	fi
+	[ ! -r "$i" ] || . $i
 done
 unset i

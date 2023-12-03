@@ -3,12 +3,9 @@
 
 export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
-case "$_GLOBAL_PROFILE_READ:$-" in
-  yes:* ) ;;
-  *:*i* ) 
-    _GLOBAL_PROFILE_READ=yes
-    [ ! -f /etc/profile ] || \
-      . /etc/profile
-    ;;
+case "$_GLOBAL_BASH_BASHRC_READ:$-" in
+  yes:* ) return ;;
 esac
+_GLOBAL_BASH_BASHRC_READ=yes
 
+[ ! -f /etc/profile ] || . /etc/profile
