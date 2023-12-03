@@ -32,10 +32,9 @@ DISABLE="$DISABLE bootsplash-ask-password-console.path"
 chroot /target systemctl disable $DISABLE
 chroot /target systemctl mask $DISABLE
 
-rm -f \
-  /target/etc/profile.d/armbian-activate-profile-sync-daemon.sh \
-  /target/etc/profile.d/armbian-check-first-login-reboot.sh \
-  /target/etc/profile.d/armbian-check-first-login.sh \
-  /target/etc/profile.d/armbian-ssh-title.sh \
-  /target/etc/cron.d/armbian-* \
-# EO rm -f
+sed -i -r -e 's/^[^#]/#\0/' \
+  /target/etc/apt/apt.conf.d/02-armbian-p*update \
+  /target/etc/cron.*/armbian-* \
+  /target/etc/update-motd.d/* \
+  /target/etc/profile.d/armbian-* \
+# EO sed
