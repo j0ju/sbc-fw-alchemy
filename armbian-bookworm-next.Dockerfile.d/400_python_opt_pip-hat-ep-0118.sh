@@ -12,7 +12,11 @@ chroot /target /bin/sh -$SHOPTS <<EOF
   PS4="${PS4% }:chroot: "
   umask 022
 
-  virtualenv -p python3 "$PREFIX"
+  virtualenv -p python3 \
+    --no-vcs-ignore \
+    --system-site-packages \
+    --symlinks \
+    "$PREFIX"
   cd "$PREFIX"
 
   bin/pip3 install pi-ina219
