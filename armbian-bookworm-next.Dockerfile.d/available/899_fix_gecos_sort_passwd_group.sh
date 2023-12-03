@@ -1,1 +1,0 @@
-../../armbian-bookworm-base.Dockerfile.d/available/899_fix_gecos_sort_passwd_group.sh
