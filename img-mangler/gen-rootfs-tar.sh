@@ -54,6 +54,8 @@ rm -rf 1> /dev/null \
   /target/boot/*.old \
   /target/*.old \
 # EO rm -rf
+find /target/etc -name *.dpkg-* -delete
+find /target/etc -name *.ucf-* -delete
 
 #- resolv.conf is heavily modified on every docker run ignore it during build, if etckeeper ins installed
 [ ! -f /target/etc/.gitignore ] || \
