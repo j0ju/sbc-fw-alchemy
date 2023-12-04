@@ -20,4 +20,5 @@ apt-get install -y --no-install-recommends \
   rsync bc cmake bzip2 \
   bspatch bsdiff hexer bbe \
   strace tcpdump \
+  squashfs-tools squashfs-tools-ng \
 # EO apt-get install
