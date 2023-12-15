@@ -28,8 +28,10 @@ EOF
 sed -i -r \
   -e '/^earlycon=.*$/ d ' \
   -e '/^console=.*$/ d ' \
-  -e '/^docker_optimization=.*$/ d ' \
+  -e '/^docker_optimizations?=.*$/ d ' \
+  -e '/^verbosity=.*$/ d' \
   -e '$a'"earlycon=on" \
   -e '$a'"console=serial" \
-  -e '$a'"docker_optimization=off" \
+  -e '$a'"docker_optimizations=off" \
+  -e '$a'"verbosity=4" \
 /target/boot/armbianEnv.txt
