@@ -26,6 +26,13 @@ build: $(WORK_FILES)
 	    xz=xz ;\
 	  $$xz -dc < $< > $@
 
+%.img: %.img.gz
+	$(E) "UNGZ $@ <-- $<"
+	$(Q) which pigz > /dev/null && \
+	    gz=pigz || \
+	    gz=gzip ;\
+	  $$gz -dc < $< > $@
+
 #--- extract filesystems from image
 %.tar: %.img img-mangler/img-to-tar.sh
 	$(E) "IMGtoTAR $@ <--- $<"
