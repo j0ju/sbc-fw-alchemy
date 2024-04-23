@@ -13,6 +13,8 @@ SHOPTS="$(echo $- | tr -cd 'eux')"
 chroot /target /bin/sh -$SHOPTS <<EOF
   PS4="${PS4% }:chroot: "
 
+  apt-get install -y make
+
   systemctl disable getty@.service
   systemctl mask getty@.service
 

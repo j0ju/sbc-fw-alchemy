@@ -1,7 +1,7 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
-FROM bpi2m0:Armbian-23.08-Bookworm-CLI
+FROM bpi2m0:Armbian-24.05-Bookworm-CLI
 
 CMD \
   rm -f /target/etc/resolv.conf ;\

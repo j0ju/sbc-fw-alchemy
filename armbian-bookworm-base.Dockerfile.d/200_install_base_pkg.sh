@@ -5,6 +5,9 @@
 #set -x
 
 chroot /target \
+  apt-get update
+
+chroot /target \
   apt-get install -y \
     vim-nox mc \
     screen tmux \

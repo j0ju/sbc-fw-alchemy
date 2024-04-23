@@ -29,7 +29,7 @@ DISABLE="$DISABLE bootsplash-hide-when-booted.service"
 DISABLE="$DISABLE bootsplash-ask-password-console.service"
 DISABLE="$DISABLE bootsplash-ask-password-console.path"
 
-chroot /target systemctl disable $DISABLE
+chroot /target systemctl disable $DISABLE || :
 chroot /target systemctl mask $DISABLE
 
 sed -i -r -e 's/^[^#]/#\0/' \

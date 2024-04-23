@@ -8,10 +8,6 @@
   rm -f /target//root/.not_logged_in_yet
 
 #- purge packages
-  chroot /target /bin/sh /var/lib/dpkg/info/nfs-common.postrm purge
-  chroot /target etckeeper commit -m "nfs-common: pre-removal"
-
-  rm /target/var/lib/dpkg/info/nfs-common.postrm
   rm -rf /target/etc/netplan /target/etc/NetworkManager
 
   chroot /target apt-get remove --purge -y \
