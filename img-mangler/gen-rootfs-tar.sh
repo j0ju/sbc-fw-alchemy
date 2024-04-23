@@ -8,7 +8,7 @@ cleanup() {
   local d i m
   [ $rs = 0 ] || \
     rm -f "$TAR"
-  
+
   if [ -f "$TAR" ]; then
     [ -z "$OWNER" ] || \
       chown "$OWNER${GROUP:+:$GROUP}" "$TAR"
@@ -62,6 +62,6 @@ find /target/etc -name *.ucf-* -delete
   sed -i -e "/^resolv.conf$/ d" /target/etc/.gitignore
 
 #--- gen tar to STDOUT
-tar cf - -I "$COMPRESSOR" -C /target . --atime-preserve --xattrs --acl > "$TAR"
+tar cf - -I "$COMPRESSOR" -C /target . --xattrs --acl > "$TAR"
 
 # vim: ts=2 sw=2 foldmethod=indent
