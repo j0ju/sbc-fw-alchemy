@@ -102,8 +102,8 @@ EOF
 #--- mount image fs
   DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
 
-  P1="$(echo $DEVS | grep -E -o "[^ ]+p1")"
-  P2="$(echo $DEVS | grep -E -o "[^ ]+p2")"
+  P1="$(echo "$DEVS" | grep -E -o "[^ ]+p1( |$)")"
+  P2="$(echo "$DEVS" | grep -E -o "[^ ]+p2( |$)")"
 
   fdisk -l "/dev/${P1%p1}" | sed -r -n -e 's!^(Disk /|Device|/)!  \0! p'
 
