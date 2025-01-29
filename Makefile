@@ -2,7 +2,7 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 include Makefile.Dockerfile.generic
-NAME := bpi2m0
+NAME := sbc
 
 # allow local config overrides, like in main Makefile used above
 -include config

@@ -12,7 +12,7 @@ case "$1:$2" in
     ;;
 esac
 
-CONTAINER="$(docker run --rm -d bpi2m0:img-mangler tail -f /dev/null)"
+CONTAINER="$(docker run --rm -d sbc:img-mangler tail -f /dev/null)"
 trap "docker rm -f $CONTAINER > /dev/null" EXIT HUP INT QUIT PIPE KILL TERM
 
 DECOMPRESSOR=cat

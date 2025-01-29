@@ -1,6 +1,7 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
 
-FROM bpi2m0:alpine-base
+FROM sbc:bpi2m0-armbian-25.02-bookworm-minimal
 
 CMD \
   rm -f /target/etc/resolv.conf ;\

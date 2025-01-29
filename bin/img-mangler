@@ -5,7 +5,7 @@ set -e
 PREFIX="${0%/bin/${0##*/}}"
 DEP_DIR="$PREFIX/.deps"
 BUILT_FLAG="$DEP_DIR/img-mangler.built"
-IMAGE_REPO=bpi2m0
+IMAGE_REPO=sbc
 IMAGE_TAG=img-mangler
 WORKDIR=/src
 MODE=exec
