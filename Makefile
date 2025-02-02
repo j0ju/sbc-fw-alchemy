@@ -41,7 +41,7 @@ build: $(WORK_FILES)
 #--- extract uboot from image
 %.uboot.img: %.img
 	$(E) "UBOOT $@"
-	$(Q) dd if=$< of=$@ bs=1024 skip=8 count=640 status=none
+	$(Q) dd if=$< of=$@ bs=1024 skip=8 count=960 status=none
 
 # keep all image files, even from intermediate steps no longer needed
 .PRECIOUS: %.img
@@ -54,7 +54,7 @@ build: $(WORK_FILES)
 	$(Q) : > "$@"
 
 .deps/%.built: %.tgz ./img-mangler/tar-import.sh
-	$(E) "IMPORT $(NAME_PFX)$(NAME):$(<:.tar=) <--- $<"
+	$(E) "IMPORT $(NAME_PFX)$(NAME):$(<:.tgz=) <--- $<"
 	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(<:.tgz=)
 	$(Q) : > "$@"
 
