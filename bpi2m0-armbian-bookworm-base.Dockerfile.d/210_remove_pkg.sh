@@ -11,12 +11,11 @@
   rm -rf /target/etc/netplan /target/etc/NetworkManager
 
   chroot /target apt-get remove --purge -y \
-      zsh armbian-zsh \
+      zsh \
       command-not-found \
       expect tcl-expect tcl8.6 \
       avahi-autoipd \
       adwaita-icon-theme \
-      armbian-plymouth-theme \
       rsyslog rpcbind nfs-common \
       f3 smartmontools stress \
       toilet \
