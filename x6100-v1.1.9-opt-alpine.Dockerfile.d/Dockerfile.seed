@@ -1,0 +1,69 @@
+# (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+# set base, copy scripts & out-of-tree resources
+FROM sbc:armhf-OptAlpine-3.21      AS opt-alpine
+
+  ENV BINPKG " \
+    /bin/busybox:/opt/alpine/bin/busybox \
+    /usr/bin/ldd:/opt/alpine/bin/ldd \
+    mkimage \
+    ss \
+    nsenter unshare \
+    sfdisk \
+    find \
+  "
+
+  ENV PKG " \
+    ncurses ncurses-terminfo ncurses-terminfo-base \
+    wavemon htop procps psmisc usbutils hwids-usb \
+    e2fsprogs e2fsprogs-extra \
+    file libmagic \
+    vim vim-common lua5.4 \
+    mc \
+    curl wget \
+    git tig \
+    xz zstd bzip2 \
+    pv strace lsof jq \
+    tmux screen minicom \
+    linuxconsoletools \
+    dtc u-boot-tools \
+    wipefs partx \
+    iproute2 \
+    rsync \
+    sntpc \
+    bash-completion iproute2-bash-completion procs-bash-completion util-linux-bash-completion mtr-bash-completion \
+    coreutils \
+    etckeeper \
+    mtr tcpdump \
+    sed \
+    make \
+  "
+    #coreutils \
+
+  # create tarballs from binaries
+  RUN set -e; \
+    : set -x; \
+      apk add $PKG; \
+    : --- dump of tarballs ; \
+      rm -rf /tarballs ; \
+      mkdir /tarballs ; \
+      for P in $BINPKG; do \
+        sh -e /src/img-mangler/alpine-mk-bin-tarball.sh $P /tarballs; \
+      done; \
+      for P in $PKG; do \
+        sh -e /src/img-mangler/alpine-mk-pkg-tarball.sh $P /tarballs; \
+      done; \
+  : # eo RUN
+
+# TODO build packages
+
+FROM sbc:x6100-v1.1.9-vanilla
+COPY --from=opt-alpine /tarballs /tarballs
+
+# set environment - all build containers inherit this
+#ENV - none -
+
+# run scripts that do the modifications steps in one layer
+# * moving files around - see # copy scripts & outoftree resources above
+# * adding stuff, etc
