@@ -33,6 +33,14 @@ build: $(WORK_FILES)
 	    gz=gzip ;\
 	  $$gz -dc < $< > $@
 
+%.img: %.rar img-mangler/unrar-img.sh
+	$(E) "UNPACK $@ <--- $<"
+	$(Q) ./bin/img-mangler -p sh $(SHOPT) img-mangler/unrar-img.sh $< $@
+
+%.img: %.zip img-mangler/unzip-img.sh
+	$(E) "UNPACK $@ <--- $<"
+	$(Q) ./bin/img-mangler -p sh $(SHOPT) img-mangler/unzip-img.sh $< $@
+
 #--- extract filesystems from image
 %.tar: %.img img-mangler/img-to-tar.sh
 	$(E) "IMGtoTAR $@ <--- $<"
