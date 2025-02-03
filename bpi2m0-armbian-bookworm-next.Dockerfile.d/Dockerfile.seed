@@ -1,4 +1,4 @@
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
 
 # set base, copy scripts & out-of-tree resources
 FROM sbc:bpi2m0-armbian-bookworm-base
