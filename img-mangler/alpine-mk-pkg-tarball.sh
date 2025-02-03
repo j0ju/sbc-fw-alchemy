@@ -41,7 +41,7 @@ if [ -n "$FILES$LIBS" ]; then
   # do it this way so we keep the one file input criteria per line intact,
   # as we have unix line ending in variable captured
   ( echo "$FILES"
-    echo "$LIB"
+    echo "$LIBS"
   ) | \
     grep -vE "^$" | \
     tr '\n' '\0' | \
