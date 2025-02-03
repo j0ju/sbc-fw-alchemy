@@ -1,5 +1,5 @@
 # (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
-# meta: onestep
+# meta: #onestep
 
 # set base, copy scripts & out-of-tree resources
 FROM sbc:armhf-OptAlpine-3.21      AS opt-alpine
@@ -58,11 +58,14 @@ FROM sbc:armhf-OptAlpine-3.21      AS opt-alpine
 
 # TODO build packages
 
-FROM sbc:x6100-v1.1.9
+# set base, copy scripts & out-of-tree resources
+FROM sbc:x6100-r1cbu-v0.28.0
+
+# import packages built in above steps
 COPY --from=opt-alpine /tarballs /tarballs
 
-# set environment - all build containers inherit this
-#ENV - none -
+# code re-use - house made - spagetti code yolonese ;)
+COPY x6100-v1.1.9-opt-alpine.Dockerfile.d/ /src/x6100-v1.1.9-opt-alpine.Dockerfile.d/
 
 # run scripts that do the modifications steps in one layer
 # * moving files around - see # copy scripts & outoftree resources above
