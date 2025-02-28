@@ -20,7 +20,7 @@ case "$TYPE" in
     ;;
 esac
 
-CHKSUMFILE=".deps/$FILE.$TYPE"sum
+CHKSUMFILE=".deps/${FILE##*/}.$TYPE"sum
 echo "$CHKSUM $FILE" > "$CHKSUMFILE"
 [ -z "${OWNER:-}" ] || \
   chown "$OWNER${GROUP:+:$GROUP}" "$CHKSUMFILE"

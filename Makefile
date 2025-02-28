@@ -7,13 +7,12 @@ NAME := sbc
 # allow local config overrides, like in main Makefile used above
 -include config
 
+-include *.d/Makefile.ext
+
 ### generics ###
 
 # override & disable push
 DOCKER_IMAGES_PUSH_FLAGS :=
-
-url download:
-	$(Q) $(MAKE) $$( ls *.url | sed 's/.url$$//' )
 
 # additional targets
 build: $(WORK_FILES)
@@ -56,15 +55,15 @@ build: $(WORK_FILES)
 .PRECIOUS: %.xz
 
 #---- import tar files into img-mangler image
-.deps/%.built: %.tar ./img-mangler/tar-import.sh
-	$(E) "IMPORT $(NAME_PFX)$(NAME):$(<:.tar=) <--- $<"
-	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(<:.tar=)
-	$(Q) : > "$@"
+.deps/%.built: input/%.tar ./img-mangler/tar-import.sh
+	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar=)) <--- $<"
+	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar=))
+	$(Q) date +%s > "$@"
 
-.deps/%.built: %.tgz ./img-mangler/tar-import.sh
-	$(E) "IMPORT $(NAME_PFX)$(NAME):$(<:.tgz=) <--- $<"
-	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(<:.tgz=)
-	$(Q) : > "$@"
+.deps/%.built: input/%.tgz ./img-mangler/tar-import.sh
+	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tgz=)) <--- $<"
+	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tgz=))
+	$(Q) date +%s > "$@"
 
 #--- export mangled rootfs to tar
 %.rootfs.tar.zst: .deps/%.built

@@ -82,7 +82,7 @@ case "$MODE" in
         printf "$fmt" "IMAGE" "FS SIZE" "DOCKER USAGE"
         header=1
       fi
-      img_size="$( docker run --rm --network=none $pfx:$tag sh -ec "[ ! -x /target/bin/sh ] || chroot /target sh /lib/cleanup-rootfs.sh; du -sh /target" | ( read size _; echo $size) )"
+      img_size="$( docker run --rm --network=none $pfx:$tag sh -ec "if [ -x /target/lib/cleanup-rootfs.sh ]; then chroot /target sh /lib/cleanup-rootfs.sh; du -sh /target; else du -shx /; fi" | ( read size _; echo $size) )"
       printf "$fmt" "$tag" "$img_size" "$docker_size"
     done
     ;;

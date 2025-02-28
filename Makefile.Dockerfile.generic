@@ -18,8 +18,8 @@ DOCKER_IMAGES_PUSH := $(filter-out $(DOCKER_IMAGES_PUSH_IGNORE),$(DOCKER_IMAGES)
 DOCKER_IMAGES_PUSH_FLAGS := $(DOCKER_IMAGES_PUSH:%=$(DEPDIR)/%.pushed)
 
 URLS := $(shell ls -1 *.url 2>/dev/null )
-URL_FILES := $(URLS:.url=)
-URL_DEPS := $(URL_FILES:%=$(DEPDIR)/%.d)
+URL_FILES :=  $(patsubst %,input/%,$(URLS:.url=))
+URL_DEPS :=  $(patsubst %,$(DEPDIR)/%.d,$(URLS:.url=))
 
 WORK_FILES :=
 
@@ -87,6 +87,9 @@ docker-system-prune:
 	$(E) IMAGE PRUNE
 	$(Q) docker image prune -f > /dev/null
 
+url download:
+	$(Q) $(MAKE) $(URL_FILES)
+
 $(DEPDIR)/%.built: %.Dockerfile
 	$(E) IMAGE $(NAME_PFX)$(NAME):$(<:.Dockerfile=) BUILD
 	$(Q) docker build $(DOCKER_BUILD_OPTS) -t $(NAME_PFX)$(NAME):$(<:.Dockerfile=) -f $< .
@@ -134,7 +137,7 @@ $(DEPDIR)/%.$(VER).built: $(DEPDIR)/%.built Makefile
 $(DEPDIR)/%.d: %.url Makefile.Dockerfile.generic
 	$(E) DEP $(<:.url=)
 	$(Q) set $(SHOPT); ( \
-		DST="$(<:.url=)"; DEPS="$<"; \
+		DST="input/$(<:.url=)"; DEPS="$<"; \
 		while :; do \
 			echo "$$DST: $$DEPS"; \
 			case "$$DST" in \
@@ -146,12 +149,13 @@ $(DEPDIR)/%.d: %.url Makefile.Dockerfile.generic
 		done; \
 	) > "$@"
 
-%: %.url .deps/img-mangler.built
+input/%: %.url .deps/img-mangler.built
 	$(E) "WGET $@ URL: $$(cut -f 1 -d ' ' $<)"
 	$(Q) set $(SHOPT); exec $(SHREDIR); \
 		read URL CKSUM OPTS < $<; \
 		[ ! "$$OPTS" = no-continue ] || \
 			rm -f "$@"; \
+		mkdir -p "$$(dirname "$@")"; \
 		wget $(WGETOPT) -c -O "$@" "$$URL"; \
 		if ! $(SHELL) ./img-mangler/chksum.sh "$@" "$$CKSUM" >&2 ; then \
 		  touch "$<" ; \
@@ -181,6 +185,6 @@ $(DEPDIR)/%.pushed: $(DEPDIR)/%.built
 include $(DOCKER_IMAGES_DEPS)
 include $(URL_DEPS)
 
-.PHONY: all build depends deps dep mrproper clean clean-files docker-image-clean docker-image-prune
+.PHONY: all build depends deps dep mrproper clean clean-files docker-image-clean docker-image-prune url download
 
 # vim: ts=2 sw=2 noet ft=make foldmethod=indent
