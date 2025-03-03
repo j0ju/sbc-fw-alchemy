@@ -1,0 +1,1 @@
+console=serial0,115200 root=PARTUUID=fb33757d-02 rootwait pcie_aspm=off init=/usr/lib/raspberrypi-sys-mods/firstboot

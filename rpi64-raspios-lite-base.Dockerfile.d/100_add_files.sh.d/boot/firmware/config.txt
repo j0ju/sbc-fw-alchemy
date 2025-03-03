@@ -1,0 +1,41 @@
+[all]
+# Additional overlays and parameters are documented /boot/firmware/overlays/README
+#dtparam=i2c_arm=on
+#dtparam=i2s=on
+#dtparam=spi=on
+#dtparam=audio=on
+
+# Automatically load overlays for detected cameras
+camera_auto_detect=1
+# Automatically load overlays for detected DSI displays
+display_auto_detect=1
+
+# Don't have the firmware create an initial video= setting in cmdline.txt.
+# Use the kernel's default instead.
+disable_fw_kms_setup=1
+
+# enable HDMI and 3d
+#dtoverlay=vc4-kms-v3d
+#max_framebuffers=2
+
+# disables HDMI
+max_framebuffer=0
+disable_splash=1
+
+# enable USB
+#dtoverlay=dwc2
+#otg_mode=1
+
+arm_64bit=1
+
+auto_initramfs=1
+disable_overscan=1
+arm_boost=1
+
+enable_uart=1
+
+[cm4]
+otg_mode=1
+
+[all]
+

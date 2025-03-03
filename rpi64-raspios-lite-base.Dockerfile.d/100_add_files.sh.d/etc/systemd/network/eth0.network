@@ -1,0 +1,11 @@
+[Match]
+Name=eth0
+
+[Network]
+LinkLocalAddressing=yes
+DHCP=no
+ConfigureWithoutCarrier=yes
+
+[Address]
+Address=fe80::314:314/64
+Scope=link
