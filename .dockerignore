@@ -2,6 +2,8 @@
 .git
 .env
 config
+input
+output
 
 *.img
 *.img.gz
