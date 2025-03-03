@@ -1,0 +1,73 @@
+#!/bin/sh
+set -eu
+#set -x
+
+VER=3.21
+CMD=
+
+while [ ! $# = 0 ]; do
+  case "$1" in
+    -V | --version ) VER=$2; shift ;;
+    -d | --debug )   set -x ;;
+    #
+    [!-]* )          break ;;
+    -- )             shift; break ;;
+  esac
+  shift
+done
+
+IMG="sbc:armhf-OptAlpine-$VER"
+OUTDIR="output/${IMG#*:}"
+
+OP="${1:-}"
+[ $# = 0 ] || shift
+
+shell() {
+  docker run -ti --rm "$IMG"
+}
+
+C=
+cleanup() {
+  [ -z "$C" ] || \
+    docker rm -f "$C" > /dev/null
+}
+pkg() {
+  trap cleanup EXIT
+  C="$(docker run --rm -d "$IMG" tail -f /dev/null)"
+  #docker exec $C apk update
+  for p in "$@"; do
+    PKG=
+    case "$p" in
+      /* )
+        docker exec $C sh /src/img-mangler/alpine-mk-bin-tarball.sh $p /tmp
+        ;;
+      * )
+        docker exec $C apk add $p
+        PKG="$PKG $p $(docker exec $C apk info -R $p | grep =[0-9] | grep -Eo ^[^=]+ | sort -u)"
+        for p in $PKG; do
+          docker exec $C sh /src/img-mangler/alpine-mk-pkg-tarball.sh $p /tmp
+        done
+        ;;
+    esac
+  done
+  PKGs="$(docker exec $C sh -c "ls /tmp/*.bin.tar.gz /tmp/*.pkg.tar.gz 2> /dev/null")"
+  for f in $PKGs; do
+    mkdir -p "$OUTDIR"
+    docker cp "$C:$f" "$OUTDIR"
+  done
+}
+
+search() {
+  trap cleanup EXIT
+  C="$(docker run --rm -d "$IMG" tail -f /dev/null)"
+  docker exec $C apk update
+  docker exec $C apk search "$@"
+}
+
+case "${OP}" in
+  pkg | p )         pkg "$@" ;;
+  search | s )      search "$@" ;;
+  shell | sh | "" ) shell "$@" ;;
+esac
+
+
