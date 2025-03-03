@@ -1,0 +1,13 @@
+# (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+# set base, copy scripts & out-of-tree resources
+FROM sbc:rpi64-RasPiOS-lite-24.11
+
+# set environment - all build containers inherit this
+# - ENV - none
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash -l ;\
+: # eo CMD
