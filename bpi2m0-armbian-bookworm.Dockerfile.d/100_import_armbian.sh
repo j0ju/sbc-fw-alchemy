@@ -2,6 +2,7 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 PS4='> ${0##*/}: '
+set -eu
 #set -x
 
 mv /target /target.old
