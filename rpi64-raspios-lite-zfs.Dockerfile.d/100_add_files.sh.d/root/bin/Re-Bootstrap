@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+set -x
+cp /boot/firmware/to.sh/cmdline.txt /boot/firmware/cmdline.txt
