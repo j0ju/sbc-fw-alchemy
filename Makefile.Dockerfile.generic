@@ -1,5 +1,5 @@
 # - Makefile -
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 
 NAME = $(shell basename "$$PWD" )
 NAME_PFX =
@@ -8,11 +8,15 @@ REGISTRY =
 DEPDIR              = .deps
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 
-DOCKER_FILES := $(shell ls -1 *.Dockerfile 2>/dev/null )
 DOCKER_DIRS := $(shell ls -1 *.Dockerfile.d/Dockerfile.seed 2>/dev/null )
-DOCKER_IMAGES := $(DOCKER_FILES:.Dockerfile=) $(DOCKER_DIRS:.Dockerfile.d/Dockerfile.seed=)
+#DOCKER_FILES := $(shell ls -1 *.Dockerfile 2>/dev/null )
+
+DOCKER_IMAGES :=
+#DOCKER_IMAGES += $(DOCKER_FILES:.Dockerfile=)
+DOCKER_IMAGES += $(DOCKER_DIRS:.Dockerfile.d/Dockerfile.seed=)
+
 DOCKER_IMAGES_FLAGS := $(DOCKER_IMAGES:%=$(DEPDIR)/%.built)
-DOCKER_IMAGES_DEPS := $(DOCKER_IMAGES:%=$(DEPDIR)/%.d)
+DOCKER_IMAGES_DEPS  := $(DOCKER_IMAGES:%=$(DEPDIR)/%.d)
 
 DOCKER_IMAGES_PUSH := $(filter-out $(DOCKER_IMAGES_PUSH_IGNORE),$(DOCKER_IMAGES))
 DOCKER_IMAGES_PUSH_FLAGS := $(DOCKER_IMAGES_PUSH:%=$(DEPDIR)/%.pushed)
@@ -90,20 +94,20 @@ docker-system-prune:
 url download:
 	$(Q) $(MAKE) $(URL_FILES)
 
-$(DEPDIR)/%.built: %.Dockerfile
-	$(E) IMAGE $(NAME_PFX)$(NAME):$(<:.Dockerfile=) BUILD
-	$(Q) docker build $(DOCKER_BUILD_OPTS) -t $(NAME_PFX)$(NAME):$(<:.Dockerfile=) -f $< .
+$(DEPDIR)/%.built: input/%.Dockerfile
+	$(E) IMAGE $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=)) BUILD
+	$(Q) docker build $(DOCKER_BUILD_OPTS) -t $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=)) -f $< .
 	$(Q) date > $@
-	$(Q) docker image ls $(NAME_PFX)$(NAME):$(<:.Dockerfile=) >> $@
+	$(Q) docker image ls $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=)) >> $@
 
-$(DEPDIR)/%.d: %.Dockerfile Makefile Makefile.Dockerfile.generic
-	$(E) DEP $(NAME_PFX)$(NAME):$(<:.Dockerfile=)
+$(DEPDIR)/%.d: input/%.Dockerfile Makefile Makefile.Dockerfile.generic
+	$(E) "DEP $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=))"
 	$(Q) set $(SHOPT); \
 		awk '$$1 == "FROM" { print $$2 }' $< | ( \
 		  while read image; do \
 			  image_pfx="$${image%%:*}"; \
 			  if [ "$$image_pfx" = "$(NAME_PFX)$(NAME)" ]; then \
-				  echo "$(DEPDIR)/$(<:.Dockerfile=.built): $(DEPDIR)/$${image##$(NAME):}.built"; \
+				  echo "$(DEPDIR)/$(patsubst input/%,%,$(<:.Dockerfile=.built)): $(DEPDIR)/$${image##$(NAME):}.built"; \
 			  fi; \
 		  done; \
 		  awk '$$1 ~ "^(ADD|COPY)$$" && $$2 !~ "[*?]" {print $$2}' "$<" | \
@@ -115,13 +119,13 @@ $(DEPDIR)/%.d: %.Dockerfile Makefile Makefile.Dockerfile.generic
 					  echo "$$f"; \
 				  fi; \
 			  done | \
-				  xargs echo "$(DEPDIR)/$(<:.Dockerfile=.built): "; \
-		  echo "$(<:.Dockerfile=): $(DEPDIR)/$(<:.Dockerfile=).built" ; \
-		  echo ".PHONY: $(<:.Dockerfile=)" ; \
+				  xargs echo "$(DEPDIR)/$(patsubst input/%,%,$(<:.Dockerfile=.built)): "; \
+		  echo "$(patsubst input/%,%,$(<:.Dockerfile=)): $(DEPDIR)/$(patsubst input/%,%,$(<:.Dockerfile=.built))" ; \
+		  echo ".PHONY: $(patsubst input/%,%,$(<:.Dockerfile=.built))" ; \
 	  ) > "$@"
 
 # docker file generation versioned
-%.$(VER).Dockerfile: %.Dockerfile Makefile
+%.$(VER).Dockerfile: input/%.Dockerfile Makefile
 	$(E) GEN Dockerfile $@
 	$(Q) cat $< > $@
 
@@ -134,7 +138,7 @@ $(DEPDIR)/%.$(VER).built: $(DEPDIR)/%.built Makefile
 		docker tag $(NAME_PFX)$(NAME):$$TAG $(NAME_PFX)$(NAME):$$TAG.$(VER) ; \
 			date > "$@"
 
-$(DEPDIR)/%.d: %.url Makefile.Dockerfile.generic
+$(DEPDIR)/%.d: %.url
 	$(E) DEP $(<:.url=)
 	$(Q) set $(SHOPT); ( \
 		DST="input/$(<:.url=)"; DEPS="$<"; \
@@ -176,11 +180,11 @@ $(DEPDIR)/%.pushed: $(DEPDIR)/%.built
 		: > $@
 
 #--- generate Dockerfiles from template in Dockerfile.d, to use the build/buildx caching layer
-%.Dockerfile: %.Dockerfile.d/Dockerfile.seed img-mangler/gen-dockerfile.sh
+input/%.Dockerfile: %.Dockerfile.d/Dockerfile.seed img-mangler/gen-dockerfile.sh
 	$(E) DOCKERFILE $@
 	$(Q) $(SHELL) $(SHOPT) ./img-mangler/gen-dockerfile.sh $@ $<
 
-.PRECIOUS: %.Dockerfile
+.PRECIOUS: input/%.Dockerfile
 
 include $(DOCKER_IMAGES_DEPS)
 include $(URL_DEPS)
