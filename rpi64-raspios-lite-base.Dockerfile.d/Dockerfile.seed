@@ -1,6 +1,12 @@
 # (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
+# This image is an image which uses only
+#  * systemd-journal for logging, /dev/log, syslog, so no logrotations is needed
+#  * systemd-networkd - dhcp per default
+#  * systemd-resolved
+#  * systemd-timesyncd
+
 # set base, copy scripts & out-of-tree resources
 FROM sbc:rpi64-raspios-lite
 
