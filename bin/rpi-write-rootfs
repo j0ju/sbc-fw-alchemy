@@ -17,7 +17,7 @@
   USE_UUID=yes
   ADD_TOOLS=no
 
-  ENABLE_JOURNALD=yes
+  ENABLE_JOURNALD=no
   ENABLE_NETWORKD=no
   ENABLE_SSH=yes
   NEW_MACHINE_ID=yes
@@ -25,12 +25,12 @@
 
   BOOT_FILES=
   ROOT_SIZE=
-  BOOT_SIZE=255M
+  BOOT_SIZE=383M
 
   AUTO_SUDO=yes
   PART=yes
 
-  BOOT_DIR=/boot
+  BOOT_DIR=/boot/firmware
 #}-
 
 #-{ usage()
@@ -66,9 +66,9 @@ cat >&2 << EOF
     --pi-uid <PI_UID>                      sets the UID of the PI user
                                            (default: $PI_UID)
 
-    --enable-journald | --disable-journald (default: enable)
+    --enable-journald | --disable-journald (default: untouched)
     --enable-rsyslog  | --disable-rsyslog  (default: untouched)
-    --enable-networkd | --disable-networkd (default: enable)
+    --enable-networkd | --disable-networkd (default: untouched)
 
     --restore                            - disable mods from above
 
@@ -315,13 +315,13 @@ fi
       exit 137
   esac > /dev/null
 
-  echo "I: mount /       ($TMPDIR)"
+  echo "I: mount /              ($TMPDIR)"
   $SUDO mount "$ROOT_DEV" "$TMPDIR" $MOUNT_OPTS
   $SUDO mount --make-private "$TMPDIR"
-  echo "I: mount /boot   ($TMPDIR/boot)"
-  $SUDO mkdir -p $TMPDIR/boot
-  $SUDO mount "$BOOT_DEV" "$TMPDIR/boot"
-  $SUDO mount --make-private "$TMPDIR/boot"
+  echo "I: mount /boot/firmware ($TMPDIR/boot)"
+  $SUDO mkdir -p $TMPDIR/boot/firmware
+  $SUDO mount "$BOOT_DEV" "$TMPDIR/boot/firmware"
+  $SUDO mount --make-private "$TMPDIR/boot/firmware"
 #}-
 #-{ extract tarball
   echo "I: extract $SRC_TAR"
@@ -329,21 +329,6 @@ fi
   $DECOMPRESSOR -d < "$SRC_TAR" | \
     pv -brat | \
       $SUDO tar xf - -C "$TMPDIR"
-#}-
-
-#-{ if /boot/firmware is present we have a newer firmware layout
-  if [ -d "$TMPDIR/boot/firmware" ]; then
-    $SUDO mount --move "$TMPDIR/boot" "$TMPDIR/tmp"
-    BOOT_DIR=/tmp
-    $SUDO mkdir -p "$TMPDIR/boot/firmware"
-    $SUDO mount --move "$TMPDIR/tmp" "$TMPDIR/boot/firmware"
-    BOOT_DIR=/boot/firmware
-    ( cd "$TMPDIR/$BOOT_DIR"
-      $SUDO mv * .. || :
-      $SUDO mv firmware/* .
-      $SUDO rmdir firmware
-    )
-  fi
 #}-
 
 #-{ rename ld.so.preload, while modding
