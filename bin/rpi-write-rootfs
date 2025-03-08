@@ -1,0 +1,530 @@
+#!/bin/sh
+
+#-{ init
+  umask 022
+  set -e
+  export LC_ALL=C.UTF-8
+  export LANG=C.UTF-8
+#}-
+#-{ defaults
+  PI_UID=314
+  FS=f2fs
+  PINAME=
+  KVER=
+
+  UID_REMAP=no
+  GID_REMAP=no
+  USE_UUID=yes
+  ADD_TOOLS=no
+
+  ENABLE_JOURNALD=yes
+  ENABLE_NETWORKD=no
+  ENABLE_SSH=yes
+  NEW_MACHINE_ID=yes
+  DISABLE_RSYSLOG=
+
+  BOOT_FILES=
+  ROOT_SIZE=
+  BOOT_SIZE=255M
+
+  AUTO_SUDO=yes
+  PART=yes
+
+  BOOT_DIR=/boot
+#}-
+
+#-{ usage()
+usage() {
+cat >&2 << EOF
+
+  $0 usage:
+    ${0##*/} <TAR-root+boot> <BLOCKDEV> [OPTIONS] ...
+
+    <TAR-root+boot>
+    <BLOCKDEV>
+
+  Options:
+
+    -t <FS>                              - target filesystem
+                                           (ext2, ext3, ext4, f2fs)
+                                           (default: $FS)
+
+    --hostname <HOSTNAME>                - (default: untouched)
+
+    --ssh             | --no-ssh         - enable sshd on boot
+                                           (default: on)
+    --add-tools                          - pre-install some helpers
+                                           (default: no)
+
+    --use-uuid        | --not-use-uuid   - use UUIDs for root= and /etc/fstab
+                                           (default: yes)
+
+    --uid-remap       | --no-uid-remap   - remap default UID to $PI_UID
+                                           (default: $UID_REMAP)
+    --gid-remap       | --no-gid-remap   - remap default GID to $PI_UID
+                                           (default: $GID_REMAP)
+    --pi-uid <PI_UID>                      sets the UID of the PI user
+                                           (default: $PI_UID)
+
+    --enable-journald | --disable-journald (default: enable)
+    --enable-rsyslog  | --disable-rsyslog  (default: untouched)
+    --enable-networkd | --disable-networkd (default: enable)
+
+    --restore                            - disable mods from above
+
+    --/boot <FILE>                       - place files in /boot,
+                                           can be specified more than once
+                                           e.g.:
+                                             /some/path/to/wpa_supplicant.conf
+                                             --> /boot/wpa_supplicant.conf
+
+    --/-size <SIZE>                      - create the root partition with an specific size
+                                           (default: maximize)
+                                           e.g.
+                                           --/-size 8G -- would create an root partition of 8 GB
+
+    --/boot-size <SIZE>                  - create the root partition with an specific size
+                                           (default: $BOOT_SIZE)
+                                           e.g.
+                                           --/boot-size 127M -- would create an boot partition of 127 MB
+
+    --[no-]auto-sudo                     - enables/disables auto sudo, if run as user
+
+    --no-part                            - re-use existing partitions, part1 --> /boot, part2 --> /
+                                           it is the user's job to ensure proper sizing
+
+EOF
+}
+#}-
+#-{ parse arguments for source tarball and target block device
+  if [ -z "$1" ]; then
+    echo "E: SRC_TAR is missing." >&2
+    usage
+    exit 1
+  fi
+  if [ -z "$2" ]; then
+    echo "E: TARGET_DEV is missing." >&2
+    usage
+    exit 1
+  fi
+
+  TARGET_DEV="$2"
+  if [ ! -b "$TARGET_DEV" ]; then
+    echo "E: TARGET_DEV($TARGET_DEV) not a block device." >&2
+    exit 1
+  fi
+
+  PART_SEP=
+  case "$TARGET_DEV" in
+    *[0-9] ) PART_SEP=p ;;
+  esac
+
+  SRC_TAR="$1"
+  if [ ! -r "$SRC_TAR" ]; then
+    echo "E: TAR does not exist." >&2
+    exit 1
+  fi
+
+  shift
+  shift
+#}-
+#-{ parse options
+  while [ $# -ge 1 ]; do
+    case "$1" in
+      -k ) KVER="$2"; shift ;;
+      -t ) FS="$2"; shift ;;
+      --hostname )
+        if [ -z "$2" ]; then
+           echo "E: HOSTNAME is missing." >&2
+           usage
+           exit 1
+        fi
+        PINAME="$2"
+        shift ;;
+      #
+      --add-tools )        ADD_TOOLS=yes ;;
+      #
+      --pi-uid )
+        if [ -z "$2" ]; then
+          echo "E: --pi-uid <PI_UID> needs number for the UID and GID." >&2
+          exit 1
+        fi
+        PI_UID="${2}";
+        shift
+        ;;
+      #
+      --uid-remap )        UID_REMAP=yes ;;
+      --no-uid-remap )     UID_REMAP= ;;
+      #
+      --gid-remap )        GID_REMAP=yes ;;
+      --no-gid-remap )     GID_REMAP= ;;
+      #
+      --use-uuid )         USE_UUID=yes ;;
+      --not-use-uuid )     USE_UUID= ;;
+      #
+      --ssh )              ENABLE_SSH=yes ;;
+      --no-ssh )           ENABLE_SSH= ;;
+      #
+      --enable-journald )  ENABLE_JOURNALD=yes ;;
+      --disable-journald ) ENABLE_JOURNALD= ;;
+      #
+      --enable-rsyslog )   DISABLE_RSYSLOG= ;;
+      --disable-rsyslog )  DISABLE_RSYSLOG=yes ;;
+      #
+      --enable-networkd )  ENABLE_NETWORKD=yes ;;
+      --disable-networkd ) ENABLE_NETWORKD= ;;
+      #
+      --restore )
+        ADD_TOOLS=
+        UID_REMAP=
+        GID_REMAP=
+        ENABLE_SSH=
+        ENABLE_JOURNALD=
+        DISABLE_RSYSLOG=
+        ENABLE_NETWORKD=
+        NEW_MACHINE_ID=
+        ;;
+      #
+      --/boot )
+        if [ ! -r "$2" ]; then
+           echo "E: $1 $2: file does not exist or is not readable." >&2
+           exit 1
+        fi
+        BOOT_FILES="$BOOT_FILES $2";
+        shift
+        ;;
+      #
+      --/-size )
+        if [ -z "$2" ]; then
+          echo "E: --/-size <SIZE> needs a size specifier, 'sfdisk' understands (man sfdisk)." >&2
+           exit 1
+        fi
+        ROOT_SIZE="${2}";
+        shift
+        ;;
+      --/boot-size )
+        if [ -z "$2" ]; then
+          echo "E: --/boot-size <SIZE> needs a size specifier, 'sfdisk' understands (man sfdisk)." >&2
+           exit 1
+        fi
+        BOOT_SIZE="${2}";
+        shift
+        ;;
+      #
+      --auto-sudo )
+        AUTO_SUDO=yes
+        ;;
+      --no-auto-sudo )
+        AUTO_SUDO=no
+        ;;
+      --no-part )
+        PART=no
+        ;;
+      "-?" | --help | -* ) usage; exit 1;;
+    esac
+    shift
+  done
+#}-
+#-{ if AUTO_SUDO=yes, detect if needed
+  SUDO=
+  case "$AUTO_SUDO:$(id -u)" in
+    yes:0 ) ;; # we are root, no sudo needed
+    yes:* )
+      SUDO=sudo
+      ;;
+  esac
+#}-
+#-{ detect decompressor
+  DECOMPRESSOR=
+  case "$SRC_TAR" in
+    *.gz | *.tgz )   DECOMPRESSOR=gzip ;;
+    *.bz2 | *.tbz2 ) DECOMPRESSOR=bzip2 ;;
+    *.zstd | *.zst ) DECOMPRESSOR=zstd ;;
+    *.xz | *.tpxz )  DECOMPRESSOR=xz ;;
+    *.lzop | *.lzo ) DECOMPRESSOR=lzop ;;
+  esac
+  if [ -z "DECOMPRESSOR" ]; then
+    usage
+    echo "E: unknown extension for choosing decompressor (gz, xz, zstd, lzo, bzip2)." >&2
+  fi
+
+  if which pigz > /dev/null; then
+    gzip() { pigz "$@"; }
+  fi
+  if which pixz > /dev/null; then
+    xz() { pixz "$@"; }
+  fi
+#}-
+#-{ create temporary working directory and ensure cleanup
+TMPDIR=
+trap cleanup EXIT 15 INT QUIT STOP CONT USR1 HUP USR2
+cleanup() {
+  local rs=$?
+  trap '' EXIT
+  [ ! -f "$TMPDIR/etc/.ld.so.preload.swp" ] || \
+    $SUDO mv -f "$TMPDIR/etc/.ld.so.preload.swp" "$TMPDIR/etc/ld.so.preload"
+  [ ! -f "$TMPDIR/etc/.resolv.conf.swp" ] || \
+    $SUDO mv -f "$TMPDIR/etc/.resolv.conf.swp" "$TMPDIR/etc/resolv.conf"
+  for f in "$TMPDIR$BOOT_DIR" "$TMPDIR"; do
+    grep " $f " /proc/mounts > /dev/null && \
+      $SUDO umount "$f" || :
+  done
+  $SUDO rmdir "$TMPDIR"
+  exit $rs
+}
+TMPDIR="$(mktemp -d)"
+#}-
+#-{ wipe, partition, format and mount disk
+  echo "I: wipe $TARGET_DEV"
+
+if [ "$PART" = no ]; then
+  echo "I: keep partitioning $TARGET_DEV"
+else
+  echo "I: partition $TARGET_DEV"
+  $SUDO wipefs -af "$TARGET_DEV" 1> /dev/null 2> /dev/null || :
+$SUDO sfdisk "$TARGET_DEV" 1> /dev/null << EOF
+label: dos
+,${BOOT_SIZE},c
+,${ROOT_SIZE},83
+EOF
+fi
+  $SUDO fdisk -l "$TARGET_DEV" | sed -nre '/^[/]/ s/^/  / p'
+
+  BOOT_DEV="$TARGET_DEV""$PART_SEP"1
+  ROOT_DEV="$TARGET_DEV""$PART_SEP"2
+
+  $SUDO wipefs -af 1> /dev/null \
+    "$BOOT_DEV" \
+    "$ROOT_DEV" \
+    #
+
+  echo "I: create /boot (vfat)"
+  $SUDO mkfs.vfat -n PI-BOOT -F32 "$BOOT_DEV" > /dev/null
+
+  MOUNT_OPTS=
+  echo "I: create / ($FS)"
+  case "$FS" in
+    ext4 )
+      $SUDO mkfs.ext4 -L PI -m 1 "$ROOT_DEV"
+      ;;
+    f2fs )
+      $SUDO mkfs.f2fs -l PI      "$ROOT_DEV"
+      ;;
+    * )
+      echo "E: unknown or unsupport filesystem '$FS'" >&2
+      exit 137
+  esac > /dev/null
+
+  echo "I: mount /       ($TMPDIR)"
+  $SUDO mount "$ROOT_DEV" "$TMPDIR" $MOUNT_OPTS
+  $SUDO mount --make-private "$TMPDIR"
+  echo "I: mount /boot   ($TMPDIR/boot)"
+  $SUDO mkdir -p $TMPDIR/boot
+  $SUDO mount "$BOOT_DEV" "$TMPDIR/boot"
+  $SUDO mount --make-private "$TMPDIR/boot"
+#}-
+#-{ extract tarball
+  echo "I: extract $SRC_TAR"
+
+  $DECOMPRESSOR -d < "$SRC_TAR" | \
+    pv -brat | \
+      $SUDO tar xf - -C "$TMPDIR"
+#}-
+
+#-{ if /boot/firmware is present we have a newer firmware layout
+  if [ -d "$TMPDIR/boot/firmware" ]; then
+    $SUDO mount --move "$TMPDIR/boot" "$TMPDIR/tmp"
+    BOOT_DIR=/tmp
+    $SUDO mkdir -p "$TMPDIR/boot/firmware"
+    $SUDO mount --move "$TMPDIR/tmp" "$TMPDIR/boot/firmware"
+    BOOT_DIR=/boot/firmware
+    ( cd "$TMPDIR/$BOOT_DIR"
+      $SUDO mv * .. || :
+      $SUDO mv firmware/* .
+      $SUDO rmdir firmware
+    )
+  fi
+#}-
+
+#-{ rename ld.so.preload, while modding
+# disable libc optimisazions for ARM during build
+#  * build runs with random errors, due to optimizions that probably fuzzed qemu.
+#  * slower due to more work during ELF start
+#  * garbled output during build
+  $SUDO rm -f \
+    "$TMPDIR/etc/.ld.so.preload.swp" \
+    "$TMPDIR/etc/.resolv.conf.swp" \
+    # EO rm -f
+  [ ! -f "$TMPDIR/etc/ld.so.preload" ] || \
+    $SUDO mv -f "$TMPDIR/etc/ld.so.preload" "$TMPDIR/etc/.ld.so.preload.swp"
+  $SUDO mv -f "$TMPDIR/etc/resolv.conf" "$TMPDIR/etc/.resolv.conf.swp"
+  $SUDO cp "/etc/resolv.conf" "$TMPDIR/etc/resolv.conf"
+#}-
+#-{ set hostname
+  if [ -n "$PINAME" ]; then
+    echo "I: set hostname to $PINAME"
+    echo "$PINAME" | $SUDO tee $TMPDIR/etc/hostname > /dev/null
+    $SUDO sed -i -r -e "s/^127.0.1.1.*$/127.0.0.1 $(cat $TMPDIR/etc/hostname)/g" $TMPDIR/etc/hosts
+  fi
+#}-
+#-{ fix fstab to UUID
+  if [ "$USE_UUID" = yes ]; then
+    echo "I: adapt /etc/fstab"
+    BOOT_UUID="$( $SUDO blkid -o value -s UUID "$BOOT_DEV" )"
+    ROOT_UUID="$( $SUDO blkid -o value -s UUID "$ROOT_DEV" )"
+    ROOT_PARTUUID="$( $SUDO blkid -o value -s PARTUUID "$ROOT_DEV" )"
+    echo "   /"
+    echo "      UUID=$ROOT_UUID PARTUUID=$ROOT_PARTUUID"
+    echo "   $BOOT_DIR"
+    echo "      UUID=$BOOT_UUID"
+    # /
+    ( FS=$FS MNT=/ BLKDEV="UUID=$ROOT_UUID"
+      $SUDO sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "$TMPDIR/etc/fstab"
+    )
+    # /boot  /boot/firmware
+    ( FS=vfat MNT=$BOOT_DIR BLKDEV="UUID=$BOOT_UUID"
+      $SUDO sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "$TMPDIR/etc/fstab"
+    )
+  fi
+#}-
+#-{ mangle cmdline.txt
+  echo "I: adapt cmdline.txt"
+  if [ "$USE_UUID" = yes ]; then
+    $SUDO sed -i -r \
+      -e 's!root=[^ ]+!root='"PARTUUID=$ROOT_PARTUUID"'!' \
+      "$TMPDIR/$BOOT_DIR/cmdline.txt"
+  fi
+  $SUDO sed -i -r \
+    -e 's! (quiet|rootfstype|init)(=[^ ]+)?!!g' \
+      "$TMPDIR/$BOOT_DIR/cmdline.txt"
+#}-
+#-{ deactivate/purge services
+  echo "I: deactivating services"
+  for svc in resize2fs_once.service dphys-swapfile.service; do
+    $SUDO chroot "$TMPDIR" systemctl disable $svc || :
+    $SUDO chroot "$TMPDIR" systemctl mask $svc
+  done
+  $SUDO chroot "$TMPDIR" dpkg -P \
+    tasksel tasksel-data dmidecode dphys-swapfile
+#}-
+#-{ generate a fresh machine id /etc/machine-id
+  if [ "$NEW_MACHINE_ID" = yes ]; then
+    echo "I: generate a fresh random /etc/machine-id"
+    $SUDO rm -f "$TMPDIR/etc/machine-id"
+    echo $(tr -c -d 'a-f0-9' < /dev/urandom 2> /dev/null | head -c 32 | sed -re 's/^(.{12})./\14/') | $SUDO tee "$TMPDIR/etc/machine-id" > /dev/null
+  fi
+#}-
+#-{ enable systemd-networkd
+  if [ "$ENABLE_NETWORKD" = yes ]; then
+    echo "I: configure systemd-networkd"
+
+(
+cat << EOF
+[Match]
+Name=wlan0 eth0 wwan0
+
+[Network]
+DHCP=yes
+EOF
+) | $SUDO tee "$TMPDIR/etc/systemd/network/80-dhcp.network" > /dev/null
+    $SUDO chmod 0444 "$TMPDIR/etc/systemd/network/80-dhcp.network"
+    $SUDO chroot $TMPDIR systemctl enable systemd-networkd
+    $SUDO chroot $TMPDIR systemctl enable systemd-resolved
+    $SUDO chroot $TMPDIR systemctl disable systemd-networkd-wait-online
+    $SUDO chroot $TMPDIR systemctl mask systemd-networkd-wait-online
+    $SUDO chroot "$TMPDIR" dpkg -P dhcpcd5 raspberrypi-net-mods
+    $SUDO sed -i -r -e '/\s\/var\/lib\/dhcpcd5\s/ d' "$TMPDIR/etc/fstab"
+    $SUDO rm -rf "$TMPDIR/var/lib/dhcpcd5"
+    $SUDO rm -f "$TMPDIR/etc/resolv.conf"
+    $SUDO ln -s "$TMPDIR/run/systemd/resolve/resolv.conf" "$TMPDIR/etc/resolv.conf"
+  fi
+#}-
+#-{ enable systemd-journald
+  if [ "$ENABLE_JOURNALD" = yes ]; then
+    echo "I: configure systemd-journald"
+    $SUDO mkdir -p "/etc/systemd/journald.conf.d"
+(
+cat << EOF
+[Journal]
+Storage=volatile
+MaxRetentionSec=7day
+EOF
+) | $SUDO tee "/etc/systemd/journald.conf.d/base.conf" > /dev/null
+    $SUDO chroot "$TMPDIR" systemctl enable systemd-journald 2> /dev/null 1>&2 || :
+  fi
+#}-
+#-{ disable/purge rsyslog
+  if [ "$DISABLE_RSYSLOG" = yes ]; then
+    $SUDO chroot "$TMPDIR" dpkg -P rsyslog
+  fi
+#}-
+#-{ if we have standard image ensure user "pi" is allowed to sudo
+  if $SUDO chroot "$TMPDIR" getent passwd pi 2> /dev/null; then
+    echo "I: ensure pi user default pw and sudo permissions"
+    LC_ALL=C.UTF-8 $SUDO chroot $TMPDIR adduser pi sudo
+    echo pi:raspberry | $SUDO chroot $TMPDIR chpasswd
+  fi
+#}-
+#-{ user ID remaps
+  if [ "$UID_REMAP" = yes ]; then
+    echo "I: move pi user to UID $PI_UID"
+    $SUDO sed -i -e "s/:1000/:$PI_UID/g" $TMPDIR/etc/passwd $TMPDIR/etc/group
+    LC_ALL=C.UTF-8 $SUDO chroot $TMPDIR getent passwd $PI_UID | \
+      while IFS=: read user _ _ _ _ home shell; do
+        if [ -d "$TMPDIR/$home" ]; then
+          $SUDO chown -R $PI_UID:$PI_UID "$TMPDIR/$home"
+        fi
+      done
+  fi
+#}-
+#-{ group ID remaps
+  if [ "$GID_REMAP" = yes ]; then
+    if $SUDO chroot "$TMPDIR" getent passwd systemd-coredump 2> /dev/null 1>&2; then
+      echo "I: ensure fixed UID/GID for systemd-coredump"
+      $SUDO sed -i -e '/^systemd-coredump:x:/ d' $TMPDIR/etc/passwd $TMPDIR/etc/group
+      echo "systemd-coredump:x:99:99:systemd Core Dumper:/:/usr/sbin/nologin" | $SUDO tee -a "$TMPDIR/etc/passwd" > /dev/null
+      echo "systemd-coredump:x:99:" | $SUDO tee -a "$TMPDIR/etc/group" > /dev/null
+    fi
+
+    echo "I: ensure fixed UID/GID ( != 999) for spi"
+    $SUDO sed -i -r -e 's/^spi:x:999:/spi:x:899:/' $TMPDIR/etc/group
+  fi
+#}-
+#-{ enable SSH
+  if [ "$ENABLE_SSH" = yes ]; then
+    echo "I: enable ssh on next boot"
+    $SUDO touch "$TMPDIR"/boot/ssh
+  fi
+#}-
+#-{ add some tools
+  if [ "$ADD_TOOLS" = yes ]; then
+    echo "I: install some packages"
+    $SUDO chroot "$TMPDIR" apt-get update
+    $SUDO chroot "$TMPDIR" apt-get install -y \
+      vim-nox iftop sysstat htop wavemon tcpdump nmap tmux screen minicom lrzsz mc git unzip gpm
+  fi
+#}-
+#-{ add files to /boot
+  for local_file in $BOOT_FILES; do
+    $SUDO cp -v "$local_file" "$TMPDIR/boot/${local_file##*/}" | sed -r -e "s!$TMPDIR/?!/!"
+  done
+#}-
+#-{ meta information: how was this script calles / image name
+(
+cat << EOF
+cmdline: $(tr '\0' '\n' < /proc/$$/cmdline | sed -r -e "s/^/'/" -e "s/$/'/" | tr '\n' ' ')
+image: $SRC_TAR
+EOF
+) | $SUDO tee "$TMPDIR/boot/${0##*/}.meta" > /dev/null
+#}-
+
+#-{ show df, sync & unmount
+  echo "I: sync (MNTPNT=$TMPDIR)"
+  df -h "$TMPDIR$BOOT_DIR" "$TMPDIR" | sed -r -e "s!$TMPDIR/?!/!"
+  $SUDO sync
+#}-
+#-{ de-init and cleanup is done via trap
+  echo "I: unmount (MNTPNT=$TMPDIR)"
+#}-
+
+# vim: ts=2 sw=2 foldmethod=marker foldmarker=#-{,#}-
