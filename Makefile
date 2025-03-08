@@ -62,12 +62,13 @@ build: $(WORK_FILES)
 	$(Q) date +%s > "$@"
 
 #--- export mangled rootfs to tar
-%.rootfs.tar.zst: .deps/%.built
+output/%.rootfs.tar.zst: .deps/%.built
 	$(E) "ROOTFS $@"
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(@:.rootfs.tar.zst=) sh $(SHOPT) /src/"img-mangler/gen-rootfs-tar.sh" "$@"
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) /src/"img-mangler/gen-rootfs-tar.sh" "$@"
 
+# TODO/FIXME
 #--- export mangled rootfs to image for sdcard
-%.sdcard.img: .deps/%.built img-mangler/gen-image.sh
+output/%.sdcard.img: .deps/%.built img-mangler/gen-image.sh
 	$(E) "IMG $@"
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(@:.sdcard.img=) sh $(SHOPT) /src/"img-mangler/gen-image.sh" "$@"
 
