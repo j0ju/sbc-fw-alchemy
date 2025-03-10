@@ -7,21 +7,14 @@
 # ignore auto-build of docker images, as they will be automatically build
 # as base of this config
 DOCKER_IMAGES :=
-#DOCKER_IMAGES += armbian-bookworm-base
 
 # reset WORK_FILES and add which images we want
 WORK_FILES :=
 
-#WORK_FILES += armbian-bookworm-vanilla.rootfs.tar.zst
-#WORK_FILES += armbian-bookworm-base.rootfs.tar.zst
-#WORK_FILES += armbian-bookworm-base.sdcard.img
-#WORK_FILES += armbian-bookworm-next.rootfs.tar.zst
+#WORK_FILES += output/bpi2m0-armbian-bookworm-next.rootfs.tar.zst
 
-WORK_FILES += armbian-bookworm-next.sdcard.img
-
-#WORK_FILES += alpine-base.sdcard.img
-#WORK_FILES += alpine-base.rootfs.tar.zst
-
-WORK_FILES += alpine-next.rootfs.tar.zst
+#WORK_FILES += output/rpi64-raspios-lite-base.rootfs.tar.zst
+#WORK_FILES += output/rpi64-raspios-lite-zfs.rootfs.tar.zst
+#WORK_FILES += output/rpi64-raspios-lite-birdnet.rootfs.tar.zst
 
 # vim: noet ts=2 sw=2 ft=Makefile
