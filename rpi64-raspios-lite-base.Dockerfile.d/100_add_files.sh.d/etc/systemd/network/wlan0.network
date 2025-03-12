@@ -1,5 +1,5 @@
 [Match]
-Name=eth0
+Name=wlan0
 
 [Network]
 LinkLocalAddressing=ipv6
