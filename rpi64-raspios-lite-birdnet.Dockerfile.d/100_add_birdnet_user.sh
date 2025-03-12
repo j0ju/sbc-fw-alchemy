@@ -31,14 +31,14 @@ EOchroot
 
 # ensure password less sudo
 cat > /target/etc/sudoers <<-EOF
-  Defaults        env_reset
-  Defaults        mail_badpass
-  Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Defaults        env_reset
+Defaults        mail_badpass
+Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-  root    ALL=(ALL:ALL) NOPASSWD:ALL
+root    ALL=(ALL:ALL) NOPASSWD:ALL
 
-  %admin  ALL=(ALL:ALL) NOPASSWD:ALL
-  %sudo   ALL=(ALL:ALL) NOPASSWD:ALL
+%admin  ALL=(ALL:ALL) NOPASSWD:ALL
+%sudo   ALL=(ALL:ALL) NOPASSWD:ALL
 
-  #includedir /etc/sudoers.d
+#includedir /etc/sudoers.d
 EOF
