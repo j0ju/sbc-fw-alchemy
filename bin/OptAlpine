@@ -18,11 +18,6 @@ OPERATIONS:
   pkg    - geneate packages for [ALPINEPACKES] in '$OUTDIR'
          - the generated tarball contains all needed libraries
            (from ldd) and all package files
-           It can be extracted to the desired system via
-             tar xf TARBALL -C /
-           NOTES:
-             * this overwrites all files, so check first what you overwrite
-             * there is now package management for uninstalling
   search - search alpine repositories for packages
   shell  - shell into the $IMG container
 
@@ -31,6 +26,20 @@ OPTS:
   --debug   | -d  -  enable debug
   --arch    | -a  -  specify Alpine architecture
   --help    | -h  -  display this text
+
+EXAMPLES:
+  * OptAlpine pkg bash mc screen minicom
+    This generates tarballs for
+      bash mc screen minicom
+  * OptAlpine pkg /bin/busybox:/opt/alpine/bin/busybox
+    This generates a tarball only containing Alpine's busybox
+    installed to /opt/alpine/bin/busybox
+
+NOTES:
+  * The tarballs can be It can be extracted to the desired system via
+      tar xf TARBALL -C /
+  * this overwrites all files, so check first what you overwrite
+  * there is now package management for uninstalling packages
 
 EOF
   exit 1
