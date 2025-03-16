@@ -4,11 +4,47 @@ set -eu
 
 VER=3.21
 CMD=
+ARCH=armhf
+HELP=
+
+usage() {
+  cat <<EOF
+$0: this generates OptAlpine tarballs"
+
+USAGE:
+  ${0##*/} [OPTS] [OPERATION] -- [ALPINEPACKES]+
+
+OPERATIONS:
+  pkg    - geneate packages for [ALPINEPACKES] in '$OUTDIR'
+         - the generated tarball contains all needed libraries
+           (from ldd) and all package files
+           It can be extracted to the desired system via
+             tar xf TARBALL -C /
+           NOTES:
+             * this overwrites all files, so check first what you overwrite
+             * there is now package management for uninstalling
+  search - search alpine repositories for packages
+  shell  - shell into the $IMG container
+
+OPTS:
+  --version | -V  -  specify Alpine version
+  --debug   | -d  -  enable debug
+  --arch    | -a  -  specify Alpine architecture
+  --help    | -h  -  display this text
+
+EOF
+  exit 1
+}
 
 while [ ! $# = 0 ]; do
   case "$1" in
     -V | --version ) VER=$2; shift ;;
     -d | --debug )   set -x ;;
+    -h | --help )    HELP=yes ;;
+
+    # for now only armhf is supported, Dockerfiles are needed
+    -a | --arch )    ARCH="$2" ; shift ;;
+
     #
     [!-]* )          break ;;
     -- )             shift; break ;;
@@ -16,8 +52,13 @@ while [ ! $# = 0 ]; do
   shift
 done
 
-IMG="sbc:armhf-OptAlpine-$VER"
-OUTDIR="output/${IMG#*:}"
+IMG="sbc:$ARCH-OptAlpine-$VER"
+OUTDIR="./output/${IMG#*:}"
+
+if [ "$HELP" = yes ]; then
+  usage
+  exit 1
+fi
 
 OP="${1:-}"
 [ $# = 0 ] || shift
@@ -34,25 +75,26 @@ cleanup() {
 pkg() {
   trap cleanup EXIT
   C="$(docker run --rm -d "$IMG" tail -f /dev/null)"
-  #docker exec $C apk update
   for p in "$@"; do
     PKG=
     case "$p" in
       /* )
-        docker exec $C sh /src/img-mangler/alpine-mk-bin-tarball.sh $p /tmp
+        docker exec $C sh /src/img-mangler/alpine-mk-bin-tarball.sh $p "$OUTDIR"
         ;;
       * )
         docker exec $C apk add $p
         PKG="$PKG $p $(docker exec $C apk info -R $p | grep =[0-9] | grep -Eo ^[^=]+ | sort -u)"
         for p in $PKG; do
-          docker exec $C sh /src/img-mangler/alpine-mk-pkg-tarball.sh $p /tmp
+          docker exec $C sh /src/img-mangler/alpine-mk-pkg-tarball.sh $p "$OUTDIR"
         done
         ;;
     esac
   done
-  PKGs="$(docker exec $C sh -c "ls /tmp/*.bin.tar.gz /tmp/*.pkg.tar.gz 2> /dev/null")"
+  PKGs="$(docker exec $C sh -c "ls $OUTDIR/*.bin.tar.gz $OUTDIR/*.pkg.tar.gz 2> /dev/null || :")"
   for f in $PKGs; do
     mkdir -p "$OUTDIR"
+    echo "${f##*/}: "
+    echo -n "  "
     docker cp "$C:$f" "$OUTDIR"
   done
 }
