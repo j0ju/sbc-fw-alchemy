@@ -125,7 +125,7 @@ $(DEPDIR)/%.d: input/%.Dockerfile Makefile Makefile.Dockerfile.generic
 	  ) > "$@"
 
 # docker file generation versioned
-%.$(VER).Dockerfile: input/%.Dockerfile Makefile
+input/%.$(VER).Dockerfile: input/%.Dockerfile Makefile
 	$(E) GEN Dockerfile $@
 	$(Q) cat $< > $@
 
@@ -182,6 +182,7 @@ $(DEPDIR)/%.pushed: $(DEPDIR)/%.built
 #--- generate Dockerfiles from template in Dockerfile.d, to use the build/buildx caching layer
 input/%.Dockerfile: %.Dockerfile.d/Dockerfile.seed img-mangler/gen-dockerfile.sh
 	$(E) DOCKERFILE $@
+	$(Q) mkdir -p "$$(dirname "$@")"
 	$(Q) $(SHELL) $(SHOPT) ./img-mangler/gen-dockerfile.sh $@ $<
 
 .PRECIOUS: input/%.Dockerfile

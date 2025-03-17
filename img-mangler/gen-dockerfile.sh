@@ -50,7 +50,7 @@ case "$MODE" in
     for i in "$SEEDDIR"/[0-9][0-9][0-9]_*; do
       [ -f "$i" ] || \
         continue
-    
+
         echo ""
         echo "#- $i"
         echo "COPY $i /src/$i"
