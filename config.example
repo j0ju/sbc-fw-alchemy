@@ -6,7 +6,12 @@
 
 # ignore auto-build of docker images, as they will be automatically build
 # as base of this config
-DOCKER_IMAGES :=
+#DOCKER_IMAGES :=
+
+# generate all rpi docker images
+#DOCKER_IMAGES += $(shell ls -1d rpi*Dockerfile.d | sed 's/.Dockerfile.d//')
+# generate all OptAlpine images
+#DOCKER_IMAGES += $(shell ls -1d *-OptAlpine*.Dockerfile.d | sed 's/.Dockerfile.d//' )
 
 # reset WORK_FILES and add which images we want
 WORK_FILES :=
