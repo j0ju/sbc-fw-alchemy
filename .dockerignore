@@ -2,6 +2,7 @@
 .git
 .env
 config
+config.example
 input
 output
 
