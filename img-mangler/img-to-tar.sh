@@ -44,7 +44,7 @@ DEVS="$( kpartx -rav "$IMAGE" | sort -u | grep -oE 'loop[^ ]+' )"
 
 for dev in $DEVS; do
   for t in 3 2 1; do
-    if [ ! -b "/dev/${dev%p[0-9]}" ]; then
+    if [ ! -b "/dev/${dev%p[0-9]*}" ]; then
       sleep 1
       continue
     fi
@@ -55,16 +55,27 @@ for dev in $DEVS; do
     break
   done
 
-  if [ ! -b "/dev/${dev%p[0-9]}" ]; then
+  if [ ! -b "/dev/${dev%p[0-9]*}" ]; then
     echo "E: block device '$dev' has not been created."
     exit 1
   fi
   part_no="${dev#loop*p}"
+
+  # this assumes that we have a dumpable filesystem
+  # --> SKIP EF02 - legacy BIOS GPT boot partition
+  parttype="$(gdisk -l "$IMAGE" | awk '/^Number/ {out=1} /^ *[0-9]+/ {if (out==1 && $1=='"$part_no"') print $NF}')"
+  case "$parttype" in
+    EF02 )
+      touch /mnt/part$part_no.$parttype
+      continue
+      ;;
+  esac
+
   mkdir -p "/mnt/part$part_no"
   mount -r "/dev/mapper/$dev" "/mnt/part$part_no"
 done
 dd if="$IMAGE" of=/mnt/uboot.egn bs=1024 skip=8 count=512 status=none
-fdisk -l "/dev/${dev%p[0-9]}" > /mnt/fdisk.lst
+gdisk -l "$IMAGE" > /mnt/fdisk.lst
 
 if [ -z "$COMPRESSOR" ]; then
   COMPRESSOR="zstd"
