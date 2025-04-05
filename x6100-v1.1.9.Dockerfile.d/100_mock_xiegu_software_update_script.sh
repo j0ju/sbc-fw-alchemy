@@ -30,3 +30,5 @@ echo "I: run post installation by mocking official update script"
   mkdir /target/tmp /target/run
   chmod 1777 /target/tmp
   chmod 0755 /target/run
+
+  cp /target/usr/share/emmc_sources/u-boot-sunxi-with-spl.bin /target/boot/uboot.egn
