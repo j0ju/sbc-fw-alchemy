@@ -22,4 +22,10 @@ WORK_FILES :=
 #WORK_FILES += output/rpi64-raspios-lite-zfs.rootfs.tar.zst
 #WORK_FILES += output/rpi64-raspios-lite-birdnet.rootfs.tar.zst
 
+#X6100_MIN_FREE=3072
+#WORK_FILES += output/x6100-v1.1.9-mod.img
+#WORK_FILES += output/x6100-v1.1.9-mod.update,img
+#WORK_FILES += output/x6100-r1cbu-v0.28.0-mod.img
+#WORK_FILES += output/x6100-r1cbu-v0.28.0-mod.update.img
+
 # vim: noet ts=2 sw=2 ft=Makefile
