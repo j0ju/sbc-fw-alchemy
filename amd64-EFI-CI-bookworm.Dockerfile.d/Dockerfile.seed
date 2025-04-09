@@ -3,6 +3,12 @@
 
 FROM sbc:amd64-Debian-Bookworm-Cloud-Image
 
+RUN \
+  dpkg --add-architecture amd64 ;\
+  apt-get update ;\
+  apt-get install -y grub-efi-amd64-bin/stable grub-efi/stable ;\
+: # eo RUN
+
 CMD \
   rm -f /target/etc/resolv.conf ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\
