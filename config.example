@@ -8,24 +8,26 @@
 # as base of this config
 #DOCKER_IMAGES :=
 
-# generate all rpi docker images
+#DOCKER_IMAGES += rpi64-raspios-lite-base
+#DOCKER_IMAGES += bpi2m0-armbian-bookworm-base
+#DOCKER_IMAGES += bpi2m0-armbian-bookworm-next
+#DOCKER_IMAGES += armhf-OptAlpine-3.21
+#DOCKER_IMAGES += x6100-v1.1.9-mod
+#DOCKER_IMAGES += x6100-r1cbu-v0.28.0-mod
+
+# generate specific images in docker
 #DOCKER_IMAGES += $(shell ls -1d rpi*Dockerfile.d | sed 's/.Dockerfile.d//')
-# generate all OptAlpine images
 #DOCKER_IMAGES += $(shell ls -1d *-OptAlpine*.Dockerfile.d | sed 's/.Dockerfile.d//' )
+#DOCKER_IMAGES += $(shell ls -1d x6100-*.Dockerfile.d | sed 's/.Dockerfile.d//' )
+#DOCKER_IMAGES += $(shell ls -1d bpi2m0-*.Dockerfile.d | sed 's/.Dockerfile.d//' )
+#DOCKER_IMAGES += $(shell ls -1d amd64-*.Dockerfile.d | sed 's/.Dockerfile.d//' )
 
 # reset WORK_FILES and add which images we want
 WORK_FILES :=
-
-#WORK_FILES += output/bpi2m0-armbian-bookworm-next.rootfs.tar.zst
-
-#WORK_FILES += output/rpi64-raspios-lite-base.rootfs.tar.zst
-#WORK_FILES += output/rpi64-raspios-lite-zfs.rootfs.tar.zst
-#WORK_FILES += output/rpi64-raspios-lite-birdnet.rootfs.tar.zst
-
-#X6100_MIN_FREE=3072
-#WORK_FILES += output/x6100-v1.1.9-mod.img
-#WORK_FILES += output/x6100-v1.1.9-mod.update,img
-#WORK_FILES += output/x6100-r1cbu-v0.28.0-mod.img
-#WORK_FILES += output/x6100-r1cbu-v0.28.0-mod.update.img
+# generate specific image files
+# X6100 specifics - minfree space of rootfs in KBytes
+#X6100_MIN_FREE=512
+#WORK_FILES += $(shell ls -1d x6100-*.Dockerfile.d | sed -e 's/.Dockerfile.d/.img/' -e 's|^|output/|' )
+#WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d | sed -e 's/.Dockerfile.d/.img/' -e 's|^|output/|' )
 
 # vim: noet ts=2 sw=2 ft=Makefile
