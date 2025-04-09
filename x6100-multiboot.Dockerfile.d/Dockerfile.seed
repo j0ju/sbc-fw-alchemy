@@ -1,7 +1,6 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 
 FROM sbc:armhf-OptAlpine-3.21 AS alpine
-
   env ALPINE_BINARIES " \
     busybox \
     sfdisk \
@@ -23,13 +22,20 @@ FROM sbc:armhf-OptAlpine-3.21 AS alpine
       done; \
   : # eo RUN
 
-FROM sbc:img-mangler
 
+
+# --- included images
+FROM sbc:x6100-v1.1.9-mod AS xiegu
+FROM sbc:x6100-r1cbu-v0.28.0-mod AS r1cbu
+
+# --- trampoline rootfs
+FROM sbc:img-mangler
   COPY --from=alpine /tarballs /tarballs
   RUN set -e; \
     : set -x; \
     mkdir -p \
       /target/proc \
+      /target/boot \
       /target/etc \
       /target/dev \
       /target/bin \
@@ -61,5 +67,14 @@ FROM sbc:img-mangler
   #  ln -s armbian Button2 ;\
   #  ln -s YetAnother Button3 ;\
   #: # eo RUN
+
+  COPY --from=xiegu /target /target/Xiegu
+
+  COPY --from=r1cbu /target /target/R1CBU
+
+
+RUN set -e ;\
+  cp /target/Xiegu/boot/uboot.egn /target/boot/uboot.egn ;\
+  : # eo RUN
 
 # vim: foldmethod=indent
