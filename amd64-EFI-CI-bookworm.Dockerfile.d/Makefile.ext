@@ -1,4 +1,5 @@
 output/amd64-EFI-CI-%.img: .deps/amd64-EFI-CI-%.built
 	$(E) "IMG $@"
-	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) /src/amd64-EFI-CI-bookworm.Dockerfile.d/generate-image.sh $@
+	$(Q) mkdir -p output ;\
+		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) /src/amd64-EFI-CI-bookworm.Dockerfile.d/generate-image.sh $@
 

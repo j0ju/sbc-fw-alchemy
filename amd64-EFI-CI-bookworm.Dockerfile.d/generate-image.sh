@@ -1,7 +1,7 @@
 #!/bin/sh
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
-set -x
+#set -x
 
 #---
 EFI_SIZE_k=102400
@@ -18,6 +18,7 @@ IMAGE="$1"
 dd if=/dev/zero bs=1024 count=0 seek=$IMAGE_SIZE_k of=$IMAGE status=none
 
 echo "PARTITION"
+# this includes only EFI boot, not legecy BIOS boot partition
 sgdisk -Z -n 4::+300M -t 4:ef02 -n 1:: -t 1:8300 "$IMAGE"
 
 #--- mount image fs
