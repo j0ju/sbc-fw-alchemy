@@ -66,12 +66,6 @@ output/%.rootfs.tar.zst: .deps/%.built
 	$(E) "ROOTFS $@"
 	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) /src/"img-mangler/gen-rootfs-tar.sh" "$@"
 
-# TODO/FIXME
-#--- export mangled rootfs to image for sdcard
-output/%.sdcard.img: .deps/%.built img-mangler/gen-image.sh
-	$(E) "IMG $@"
-	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(@:.sdcard.img=) sh $(SHOPT) /src/"img-mangler/gen-image.sh" "$@"
-
 #--- extend clean-local target
 clean-local: clean-volumes
 	$(Q) rm -f *.zst *.img *.rar *.zip *.tar *.img.xz
