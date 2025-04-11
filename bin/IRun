@@ -1,0 +1,28 @@
+#!/bin/sh
+set -eu
+#set -x
+    
+CRIOPTS=
+IMAGE=
+
+while [ $# != 0 ]; do
+  case "${1:-}" in
+    -p ) CRIOPTS="$CRIOPTS -p" ;;
+    -- ) shift; break ;;
+    * ) IMAGE="${1:-}"; shift ; break ;;
+  esac
+  shift
+done
+
+if [ -z "$IMAGE" ]; then
+  echo "E: no image given"
+  exit 1
+fi
+
+# user convenience, allow using, file commandline completion, strip Directory / and Dockerfile.d at the end
+if [ -d "$IMAGE" ]; then
+  IMAGE="${IMAGE%/}"
+  IMAGE="${IMAGE%.Dockerfile.d}"
+fi
+
+exec img-mangler $CRIOPTS -ti --image sbc:"$IMAGE" "$@"
