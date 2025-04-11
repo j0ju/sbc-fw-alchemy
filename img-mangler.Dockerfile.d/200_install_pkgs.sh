@@ -21,4 +21,12 @@ apt-get install -y --no-install-recommends \
   bspatch bsdiff hexer bbe \
   strace tcpdump \
   squashfs-tools squashfs-tools-ng \
+  mtools xorriso mkisofs \
+  live-build live-boot live-config \
 # EO apt-get install
+
+# this ensures that an EFI grub and binaries are installed so we can build bootable images for AMD64
+# this implies building onyl works on amd64/arm64/i386
+dpkg --add-architecture amd64
+apt-get update
+apt-get install -y grub-efi-amd64-bin grub-efi
