@@ -1,0 +1,11 @@
+#cloud-config
+
+chpasswd:
+  expire: no
+
+ssh_pwauth: false
+
+runcmd:
+  - |
+    PS4="runcmd: "; set -e; trap `exit $?` EXIT
+    echo "live init cloud config"
