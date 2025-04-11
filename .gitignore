@@ -25,3 +25,6 @@
 
 authorized_keys
 config
+
+input
+output
