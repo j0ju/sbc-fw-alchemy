@@ -6,6 +6,6 @@ set -eu
 #set -x
 
 chroot /target apt-get clean
-chroot /target apt-get install -yd live-boot live-config
+chroot /target apt-get install -yd live-boot
 mkdir -p /prefetch.deb
 mv /target/var/cache/apt/archives/*.deb /prefetch.deb

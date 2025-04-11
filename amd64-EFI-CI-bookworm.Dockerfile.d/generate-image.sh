@@ -64,9 +64,18 @@ mount "$ROOT_DEV" /mnt
 mkdir -p /mnt/boot/efi
 mount -t vfat "$EFI_DEV" /mnt/boot/efi
 
+#--- cleanup rootfs
+chroot /target apt-get clean
+rm -f \
+    /target/var/lib/apt/lists/*.* \
+    /target/var/lib/apt/lists/partial/* \
+    /target/var/cache/apt/archives/*.* \
+    /target/var/cache/apt/archives/partial/*.* \
+# EO rm -f
+
 #--- copy rootfs
 echo "COPY"
-chroot /target apt-get clean
+
 tar cf - --numeric-owner --acls --xattrs -C /target . | tar xf - -C /mnt --numeric-owner --acls --xattrs
 rm -rf /target/sys /target/proc /target/tmp /target/run /target/var/tmp
 mkdir -p /target/sys /target/proc /target/tmp /target/run /target/var/tmp
