@@ -19,6 +19,10 @@ init() {
       mv /target/usr/sbin/invoke-rc.d /target/usr/sbin/invoke-rc.d.dist
       ln -s /bin/true /target/usr/sbin/invoke-rc.d
     fi
+    if [ -f /bin/systemd-detect-virt ]; then
+      mv /target/bin/systemd-detect-virt /target//bin/systemd-detect-virt.dist
+      ln -s /bin/true /target/bin/systemd-detect-virt
+    fi
 
   # ensure we have a working resolv.conf
     mv /target/etc/resolv.conf /target/etc/resolv.conf-
@@ -41,6 +45,10 @@ deinit() {
   if [ -f /target/usr/sbin/invoke-rc.d.dist ]; then
     rm -f /target/usr/sbin/invoke-rc.d
     mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
+  fi
+  if [ -f /target/bin/systemd-detect-virt.dist ]; then
+    rm -f /target/bin/systemd-detect-virt
+    mv /target/bin/systemd-detect-virt.dist /target/bin/systemd-detect-virt
   fi
   rm -f /target/etc/resolv.conf
   mv /target/etc/resolv.conf-  /target/etc/resolv.conf
