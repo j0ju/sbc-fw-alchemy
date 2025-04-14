@@ -1,10 +1,9 @@
-output/amd64-EFI-CI-%.img: .deps/amd64-EFI-CI-%.built amd64-EFI-CI-bookworm.Dockerfile.d/generate-image.sh
+output/amd64-EFI-CI-%.img: .deps/amd64-EFI-CI-%.built img-mangler/amd64-EFI-generate-image.sh
 	$(E) "IMG $@"
 	$(Q) mkdir -p output ;\
-		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) /src/amd64-EFI-CI-bookworm.Dockerfile.d/generate-image.sh $@
+		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) /src/img-mangler/amd64-EFI-generate-image.sh $@
 
-output/amd64-EFI-CI-%.EFI.iso: .deps/amd64-EFI-CI-%.built amd64-EFI-CI-bookworm.Dockerfile.d/generate-efi-bootable-iso.sh
+output/amd64-EFI-CI-%.EFI.iso: .deps/amd64-EFI-CI-%.built img-mangler/amd64-EFI-generate-efi-bootable-iso.sh
 	$(E) "IMG $@"
 	$(Q) mkdir -p output ;\
-		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.EFI.iso=)) sh $(SHOPT) /src/amd64-EFI-CI-bookworm.Dockerfile.d/generate-efi-bootable-iso.sh $@
-
+		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.EFI.iso=)) sh $(SHOPT) /src/img-mangler/amd64-EFI-generate-efi-bootable-iso.sh $@
