@@ -1,0 +1,30 @@
+#cloud-config
+
+disable_root: true
+fqdn: installer-cloud-init
+hostname: installer-cloud-init
+manage_etc_hosts: true
+package_update: false
+ssh_pwauth: false
+chpasswd:
+  expire: false
+
+users:
+- name: debian
+  home: /home/debian
+  groups: users, admin, video
+  lock_passwd: false
+  shell: /bin/bash
+  ssh_authorized_keys:
+  - ssh-rsa 0000000 manuel@example.com
+  sudo: ALL=(ALL) NOPASSWD:ALL
+
+runcmd:
+- |
+  ps faux | grep ^]$
+
+write_files:
+- path: /etc/cloud/cloud-init.disabled
+  content: |
+   installer-cloud-init
+  permissions: '0644'
