@@ -42,10 +42,7 @@ case "$MODE" in
     echo ': # eo RUN'
     ;;
   singlestep )
-    i="$SEEDDIR/lib.sh"
-    if [ -f "$i" ]; then
-      echo "COPY $i /src/$i"
-    fi
+    echo "COPY ${SEEDDIR} /src/${SEEDDIR}/"
 
     for i in "$SEEDDIR"/[0-9][0-9][0-9]_*; do
       [ -f "$i" ] || \
@@ -53,7 +50,6 @@ case "$MODE" in
 
         echo ""
         echo "#- $i"
-        echo "COPY $i /src/$i"
         [ ! -d "$i.d" ] || \
           echo "COPY $i.d/ /src/$i.d/"
         echo "RUN exec /bin/sh -eu /src/${i#/}"
