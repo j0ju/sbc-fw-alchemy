@@ -11,7 +11,7 @@ DOCKER_IMAGES :=
 
 # reset WORK_FILES and add which images we want
 WORK_FILES :=
-WORK_FILES += output/amd64-EFI-CI-base.EFI.iso
+#WORK_FILES += output/amd64-EFI-CI-base.EFI.iso
 WORK_FILES += $(shell ls -1d amd64-ND-*.Dockerfile.d | sed -e 's|^|output/|' -e 's/.Dockerfile.d/.EFI.iso/')
 
 # vim: noet ts=2 sw=2 ft=Makefile
