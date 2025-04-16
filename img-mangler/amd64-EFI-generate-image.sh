@@ -76,10 +76,10 @@ rm -f \
 #--- copy rootfs
 echo "COPY"
 
-tar cf - --numeric-owner --acls --xattrs -C /target . | tar xf - -C /mnt --numeric-owner --acls --xattrs
 rm -rf /target/sys /target/proc /target/tmp /target/run /target/var/tmp
 mkdir -p /target/sys /target/proc /target/tmp /target/run /target/var/tmp
 chmod 1777 /target/tmp /target/var/tmp
+tar cf - --numeric-owner --acls --xattrs -C /target . | tar xf - -C /mnt --numeric-owner --acls --xattrs
 
 #--- ensure needed environment for bootloader installation
 mount --bind /sys /mnt/sys

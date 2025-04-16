@@ -5,14 +5,10 @@ set -eu
 OUTPUT="$1"
 LIVE_COMMAND_LINE="boot=live toram"
 
-# get kernel and initrd from rottfs in /target
-# TODO: handle multple kernels, use latest one
+# get kernel and initrd from rootfs in /target
 get_kernel_files_names() {
     GRUB_KERNEL_CMDLINE="$( < /target/boot/grub/grub.cfg awk '$1 == "linux" && $0 !~ "single " {print $0}' | sed -re 's/^[[:space:]]+//' | sort -u )"
-    GRUB_INITRD="$( < /target/boot/grub/grub.cfg awk '$1 == "initrd" {print $0}' | sed -re 's/^[[:space:]]+//' | sort -u )"
 
-    set -- $GRUB_INITRD
-    INITRD="$2"
     set -- $GRUB_KERNEL_CMDLINE
     KERNEL="$2"
     shift
@@ -24,6 +20,9 @@ get_kernel_files_names() {
             * ) KERNEL_COMMAND_LINE="$KERNEL_COMMAND_LINE $arg" ;;
         esac
     done
+
+    KERNEL="$( cd /target/ ; ls boot/vmlinuz* | sort -nr | { read k; echo $k; } )"
+    INITRD="$( cd /target/ ; ls boot/initrd*  | sort -nr | { read k; echo $k; } )"
 }
 get_kernel_files_names
 
