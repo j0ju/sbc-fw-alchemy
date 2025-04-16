@@ -9,7 +9,11 @@ set -eu
 # this install live-boot, so we can boot this rootfs also from ISOs mounted via BMC, STICK or CDROM ;)
 # this just add support for boot=live in initrd, and does not add much footprint nor side effects
 # --> so install it always
-chroot /target apt-get install -y live-boot
+chroot /target apt-get install -y live-boot \
+    efibootmgr \
+    dosfstools xfsprogs f2fs-tools btrfs-progs efibootmgr \
+# EO
+# this also install some tools to work with filesystems and the efi loader
 
 # don't wait for network, the processe have to wait for network
 chroot /target systemctl disable systemd-networkd-wait-online.service 
