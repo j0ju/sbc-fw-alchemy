@@ -4,5 +4,5 @@ NAME="${0##/}"
 NAME="${NAME%.*}"
 
 cd $NAME.d
-xorrisofs -output ../$NAME.cidata -volid cidata -joliet -rock *
-
+rm -f ../$NAME.cidata
+xorrisofs -output ../$NAME.cidata -volid cidata -joliet -rock .
