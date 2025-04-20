@@ -1,3 +1,14 @@
+Makefile
+Makefile.Dockerfile.generic
+3rdparty/sbc-fw-alchemy
+img-mangler
+img-mangler.Dockerfile.d
+amd64-Debian-Bookworm-Cloud-Image.img.url
+amd64-EFI-CI-bookworm.Dockerfile.d
+
+bin/img-mangler
+bin/IRun
+
 *.Dockerfile
 
 *.pyc

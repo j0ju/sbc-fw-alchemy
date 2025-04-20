@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# clean sbc-fw-alchemy related stuff
+rm -rf amd64-Debian-Bookworm-Cloud-Image.img.url amd64-EFI-CI-bookworm.Dockerfile.d Makefile* 3rdparty/ img-mangler img-mangler.Dockerfile.d bin/IRun bin/img-mangler input/ output/
+
+# remove .venv
+rm -rf .env
+
+# refresh
+. ./.envrc

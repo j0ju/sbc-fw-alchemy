@@ -1,2 +1,0 @@
-[Service]
-ExecPostDown=/sbin/ip link set down dev %I

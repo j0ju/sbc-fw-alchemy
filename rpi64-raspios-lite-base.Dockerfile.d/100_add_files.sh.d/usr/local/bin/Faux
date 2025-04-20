@@ -1,2 +1,0 @@
-#!/bin/sh
-ps faux | grep -vE "$0|ps faux|grep -vE|]$"

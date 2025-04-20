@@ -1,8 +1,0 @@
-#!/bin/sh -eu
-# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
-PS4="> ${0##*/}[$$]: "
-
-if [ "$1 $2" = "-s4 http://ip-api.com/json" ]; then
-  exit 0
-fi
-exec /bin/curl.docker-build "$@"

@@ -1,3 +1,0 @@
-#!/bin/sh
-logger -t "${0##*/}[$$]" -s "we are in a container, invoke-rc.d operations mocked" >&2
-exit 0

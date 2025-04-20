@@ -1,8 +1,0 @@
-#!/bin/sh -eu
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
-
-if [ "$1 $2 $3" = "show --value --property=Timezone" ]; then
-  echo "Etc/UTC"
-  return 0
-fi
-exec /usr/bin/timedatectl.docker-build "$@"

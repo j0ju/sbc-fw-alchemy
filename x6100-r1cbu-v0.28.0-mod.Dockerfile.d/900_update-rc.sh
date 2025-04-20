@@ -1,1 +1,0 @@
-../x6100-v1.1.9-mod.Dockerfile.d/900_update-rc.sh

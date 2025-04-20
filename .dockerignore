@@ -9,6 +9,7 @@ output
 *.img
 *.img.gz
 *.img.xz
+*.so
 *.tar
 *.tar.gz
 *.tgz
