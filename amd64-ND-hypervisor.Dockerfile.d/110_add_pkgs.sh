@@ -3,10 +3,9 @@
 set -x
 
 chroot /target apt-get install -y \
-  ifupdown-ng \
-  tcpdump htop screen tmux \
-  pciutils ethtool lsof strace dmidecode \
-  mc tmux minicom vim-nox \
+  ifupdown2 \
+  htop screen tmux vim-nox mc \
+  tcpdump strace lsof \
+  pciutils \
   zstd xz-utils \
-  e2fsprogs xfsprogs btrfs-progs \
   #
