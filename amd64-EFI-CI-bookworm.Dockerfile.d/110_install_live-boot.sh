@@ -12,5 +12,12 @@ set -eu
 chroot /target apt-get install -y live-boot
 
 # don't wait for network, the processe have to wait for network
+chroot /target apt-get install -y live-boot \
+    efibootmgr \
+    dosfstools xfsprogs f2fs-tools btrfs-progs efibootmgr \
+# EO
+# this also install some tools to work with filesystems and the efi loader
+
+# don't wait for network, the individual processes have to wait for network
 chroot /target systemctl disable systemd-networkd-wait-online.service 
 chroot /target systemctl mask systemd-networkd-wait-online.service 
