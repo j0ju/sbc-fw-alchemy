@@ -1,0 +1,13 @@
+Package: linux-headers-amd64
+Source: linux-signed-amd64
+Version: 9
+Architecture: amd64
+Maintainer: ND <nd@nd>
+Installed-Size: 1
+Depends: linux-headers-6.12.12+bpo-amd64 (= 6.12.12-1~bpo12+1)
+Provides: linux-headers-generic
+Section: kernel
+Priority: optional
+Homepage: https://www.kernel.org/
+Description: Header files for Linux amd64 configuration (meta-package)
+ Header files for Linux amd64 configuration (meta-package)
