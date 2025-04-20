@@ -1,0 +1,28 @@
+#cloud-config
+---
+disable_root: true
+fqdn: installer-cloud-init
+hostname: installer-cloud-init
+manage_etc_hosts: true
+package_update: false
+ssh_pwauth: false
+
+users:
+  - default
+
+runcmd:
+  - |
+    set -eux
+    rm -rf /run/CI-inst
+    mkdir -p /run/CI-inst/
+    mount LABEL=cidata /mnt
+    cp -r /mnt/* /run/CI-inst/
+    umount /mnt
+    exec sh /run/CI-inst/installer/install-to-disk.sh 
+
+write_files:
+  - path: /etc/cloud/cloud-init.disabled
+    permissions: '0644'
+    content: installer-cloud-init
+
+# EO        

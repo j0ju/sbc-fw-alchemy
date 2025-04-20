@@ -1,6 +1,7 @@
 # SBC firmware alchemy
 
- This is a toolchain to analyse or modify existing fimrware images for single board computers.
+ This is a toolchain to analyse or modify existing fimrware images for (single board) computers.
+ Alternativly it allows fast reprodicible rebuilding of all kinds of images.
  It uses Docker to modify the images.
  It uses qemu-user-static if needed to run code for foreign architectures. It does not matter if
  you are using AMD64, i386, ARM or ARM64.
@@ -19,6 +20,7 @@
  * Raspberry Pi OS 64bit (32bit is on the TODO list) (BCM)
  * Bananapi M2 Zero with Armbian (Sunxi H2/H3)
  * Xiegu 6100 (Sunxi H3)
+ * AMD64 Cloud images
 
  More can be integrated by providing the needed `.url` files and coding the needed
  `YourSBCwithImage.Dockerfile.d` directories.
