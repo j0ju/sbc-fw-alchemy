@@ -19,8 +19,8 @@ init() {
       mv /target/usr/sbin/invoke-rc.d /target/usr/sbin/invoke-rc.d.dist
       ln -s /bin/true /target/usr/sbin/invoke-rc.d
     fi
-    if [ -f /bin/systemd-detect-virt ]; then
-      mv /target/bin/systemd-detect-virt /target//bin/systemd-detect-virt.dist
+    if [ -f /target/bin/systemd-detect-virt ]; then
+      mv /target/bin/systemd-detect-virt /target/bin/systemd-detect-virt.dist
       ln -s /bin/true /target/bin/systemd-detect-virt
     fi
 
@@ -29,7 +29,7 @@ init() {
     cp /etc/resolv.conf /target/etc/resolv.conf
     __lib_sh_init=yes
   fi
-  
+
   trap deinit EXIT
 }
 
