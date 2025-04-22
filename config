@@ -11,7 +11,12 @@ DOCKER_IMAGES :=
 
 # reset WORK_FILES and add which images we want
 WORK_FILES :=
+# cloud images
 WORK_FILES += output/amd64-EFI-CI-bookworm.EFI.iso
 WORK_FILES += $(shell ls -1d amd64-ND-*.Dockerfile.d | sed -e 's|^|output/|' -e 's/.Dockerfile.d/.EFI.iso/')
+
+# PoC installer
+WORK_FILES += output/amd-EFI-CI-PoC-installer.cidata.iso
+WORK_FILES += output/amd64-ND-hypervisor-installer-cidata.iso
 
 # vim: noet ts=2 sw=2 ft=Makefile

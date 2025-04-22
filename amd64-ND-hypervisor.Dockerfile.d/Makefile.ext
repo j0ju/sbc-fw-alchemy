@@ -1,9 +1,29 @@
+# generic rules for creating bootable cloud images
 output/amd64-ND-%.img: .deps/amd64-ND-%.built img-mangler/amd64-EFI-generate-image.sh
 	$(E) "IMG $@"
 	$(Q) mkdir -p output ;\
 		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) /src/img-mangler/amd64-EFI-generate-image.sh $@
 
+# generic rules for creating bootable cloud images as live ISO
 output/amd64-ND-%.EFI.iso: .deps/amd64-ND-%.built img-mangler/amd64-EFI-generate-efi-bootable-iso.sh
 	$(E) "IMG $@"
 	$(Q) mkdir -p output ;\
 		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.EFI.iso=)) sh $(SHOPT) /src/img-mangler/amd64-EFI-generate-efi-bootable-iso.sh $@
+
+# generate seperate PoC installer image
+output/amd-EFI-CI-PoC-installer.cidata.iso: \
+  docs/AMD64-EFI-CI/ConfigDrive.examples/CI-Installer.sh \
+  docs/AMD64-EFI-CI/ConfigDrive.examples/CI-Installer.d/user-data \
+  docs/AMD64-EFI-CI/ConfigDrive.examples/CI-Installer.d/installer/install-to-disk.sh \
+  docs/AMD64-EFI-CI/ConfigDrive.examples/CI-Installer.d/installer/rootfs-to.sh \
+
+	cd docs/AMD64-EFI-CI/ConfigDrive.examples; \
+		sh CI-Installer.sh
+	mv docs/AMD64-EFI-CI/ConfigDrive.examples/CI-Installer.cidata "$@"
+
+# generate live iso with CI data integrated
+output/amd64-ND-hypervisor-installer-cidata.iso: output/amd64-ND-hypervisor.EFI.iso output/amd-EFI-CI-PoC-installer.cidata.iso
+	./bin/img-mangler -it -p sh $(SHOPT) /src/docs/AMD64-EFI-CI/ConfigDrive.examples/merge-live-with-iso.sh \
+		$^ $@
+
+# ft=Makefile noet ts=4 sw=2
