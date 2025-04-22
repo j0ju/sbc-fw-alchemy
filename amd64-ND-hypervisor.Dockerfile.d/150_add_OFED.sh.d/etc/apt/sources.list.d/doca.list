@@ -1,0 +1,1 @@
+deb [signed-by=/etc/apt/keyrings/doca_keyring.gpg] http://mlnx.lefdal.northerndata.tech/ofed-25.01-0.5.3/debian/bookworm ./
