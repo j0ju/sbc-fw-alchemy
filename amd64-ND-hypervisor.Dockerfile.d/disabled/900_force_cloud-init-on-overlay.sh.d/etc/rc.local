@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eux
+
+# de-couple my PID from unit's cgroup, to prevent the fork 
+# below being killed by systemd
+echo $$ > /sys/fs/cgroup/cgroup.procs
+if grep "overlay / overlay" /proc/mounts; then
+
+    # ensure serial getty on ttyS0
+    stty -F /dev/ttyS0 speed 115200
+    systemctl enable serial-getty@ttyS0
+      
+    if [ -f /usr/lib/live/mount/medium/live/cidata.iso ]; then
+        # re-enable cloud-init and clean its state
+        rm -rf /run/cloud-init/* /etc/cloud/cloud-init.disabled
+        cloud-init clean
+
+        # loop mount injected ISO and restart cloud-init
+        CIDATA_LOOP="$(losetup -f --show /usr/lib/live/mount/medium/live/cidata.iso)"
+
+        systemctl restart cloud-init-local
+        systemctl restart cloud-init
+        systemctl restart cloud-final
+    fi
+fi & sleep 3
+
+rm -f "$0"

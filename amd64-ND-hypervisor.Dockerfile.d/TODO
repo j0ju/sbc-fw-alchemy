@@ -1,0 +1,7 @@
+amd64-ND-hypervisor.Dockerfile.d/900_force_cloud-init-on-overlay.sh
+
+amd64-ND-hypervisor.Dockerfile.d/200_add_OFED.sh
+amd64-ND-hypervisor.Dockerfile.d/200-install-libvirt.sh
+amd64-ND-hypervisor.Dockerfile.d/200_pin-frr.sh
+
+docs/AMD64-EFI-CI/ConfigDrive.examples/CI-installer.d/installer/rootfs-to.sh
