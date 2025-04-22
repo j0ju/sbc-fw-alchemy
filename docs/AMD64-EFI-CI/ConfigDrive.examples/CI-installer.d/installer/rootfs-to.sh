@@ -7,8 +7,8 @@ EFI_BOOT_TARGET_NAME=NDos
 SRC_DIR=/media
 ROOT_DIR=/mnt
 
-#FS=xfs
-FS=ext4
+FS=xfs
+#FS=ext4
 #FS=btrfs
 
 TARGET_DEV="$1"
@@ -90,10 +90,9 @@ vartmpfs        /var/tmp  tmpfs nosuid,nodev  0 0
 EOF
 
 #--- install EFI grub
-BOOT_DEV="${TARGET_DEV}"
 # install also fallback for removeable media
-chroot $ROOT_DIR grub-install --target x86_64-efi --efi-directory=/boot/efi --removable --boot-directory=/boot "${BOOT_DEV}"
-chroot $ROOT_DIR grub-install --target x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot "${BOOT_DEV}"
+chroot $ROOT_DIR grub-install --target x86_64-efi --efi-directory=/boot/efi --removable --boot-directory=/boot "${TARGET_DEV}"
+chroot $ROOT_DIR grub-install --target x86_64-efi --efi-directory=/boot/efi --boot-directory=/boot "${TARGET_DEV}"
 chroot $ROOT_DIR update-grub
 
 #--- remove live-boot
@@ -117,8 +116,8 @@ efibootmgr | while read -r order name; do
   efibootmgr -B -b $order
 done
 
-# instalö boot target
-chroot $ROOT_DIR efibootmgr --create --disk /dev/sda --part 4 --label "$EFI_BOOT_TARGET_NAME" --loader \\EFI\\debian\\shimx64.efi
+# install EFI boot target to grub
+chroot $ROOT_DIR efibootmgr --create --disk "$TARGET_DEV" --part 4 --label "$EFI_BOOT_TARGET_NAME" --loader \\EFI\\debian\\shimx64.efi
 EFI_BOOT_TARGET="$( chroot $ROOT_DIR efibootmgr | awk '/'"$EFI_BOOT_TARGET_NAME"'$/ && $0=$1' )"
 EFI_BOOT_TARGET="${EFI_BOOT_TARGET#Boot}"
 EFI_BOOT_TARGET="${EFI_BOOT_TARGET%[*]*}"
