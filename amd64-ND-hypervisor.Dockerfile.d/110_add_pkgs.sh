@@ -3,7 +3,7 @@
 set -x
 
 chroot /target apt-get install -y \
-  ifupdown2 \
+  ifupdown2 frr \
   htop screen tmux vim-nox mc \
   tcpdump strace lsof \
   pciutils \
