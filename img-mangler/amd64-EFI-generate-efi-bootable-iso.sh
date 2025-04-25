@@ -3,7 +3,7 @@ set -eu
 #set -x
 
 OUTPUT="$1"
-LIVE_COMMAND_LINE="boot=live toram"
+LIVE_COMMAND_LINE="boot=live toram ip=frommedia"
 
 # get kernel and initrd from rootfs in /target
 get_kernel_files_names() {
