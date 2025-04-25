@@ -8,4 +8,7 @@ chroot /target apt-get install -y \
   tcpdump strace lsof \
   pciutils \
   zstd xz-utils \
+  mtr-tiny \
+  rsync \
+  bind9-dnsutils \
   #
