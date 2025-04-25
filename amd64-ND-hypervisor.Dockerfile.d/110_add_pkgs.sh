@@ -1,6 +1,14 @@
 #!/bin/sh -eu
-. "$SRC/lib.sh"; init
-set -x
+
+#- files in $0.d will be pupolualated to rootfs in /target
+FSDIR="$0.d"
+if [ -d "$FSDIR" ]; then
+  . "/src/img-mangler.Dockerfile.d/100_add_files.sh"
+else
+  . "$SRC/lib.sh"; init
+fi
+
+chroot /target locale-gen
 
 chroot /target apt-get install -y \
   ifupdown2 frr \
@@ -11,4 +19,5 @@ chroot /target apt-get install -y \
   mtr-tiny \
   rsync \
   bind9-dnsutils \
+  lldpd ntp sntp \
   #
