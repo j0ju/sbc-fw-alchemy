@@ -72,7 +72,33 @@ menuentry 'Linux' {
 }
 EOF
 
-grub-mkstandalone -o /iso/EFI/BOOT/BOOTX64.EFI -O x86_64-efi "boot/grub/grub.cfg=/iso/boot/grub/grub.cfg"
+grub-mknetdir --net-directory=/boot --subdir=/grub -d /usr/lib/grub/x86_64-efi \
+    --modules="\
+        efi_gop efi_uga efifwsetup efinet linuxefi lsefi lsefimmap lsefisystab \
+        normal extcmd crypto gettext terminal gzio gcry_crc regexp tftp http ext2 \
+        fshelp fat part_msdos part_gpt configfile linux relocator mmap video \
+        linuxefi reboot serial terminfo test efi_gop video_fb efi_uga video_bochs \
+        video_cirrus echo loadenv disk search search_fs_uuid search_fs_file \
+        search_label zfs xfs ufs2 ufs1_be ufs1 udf tar archelp squash4 xzio lzopio \
+        sfs romfs reiserfs procfs odc ntfs nilfs2 newc minix_be minix3_be minix3 \
+        minix2_be minix2 minix jfs iso9660 hfsplus hfs f2fs exfat cpio_be cpio cbfs \
+        btrfs raid6rec diskfilter zstd bfs afs affs \
+    "
+
+grub-mkstandalone -o /iso/EFI/BOOT/BOOTX64.EFI -O x86_64-efi \
+    --modules="\
+        efi_gop efi_uga efifwsetup linuxefi lsefi lsefimmap lsefisystab \
+        normal extcmd crypto gettext terminal gzio gcry_crc regexp tftp http ext2 \
+        fshelp fat part_msdos part_gpt configfile linux relocator mmap video \
+        linuxefi reboot serial terminfo test efi_gop video_fb efi_uga video_bochs \
+        video_cirrus echo loadenv disk search search_fs_uuid search_fs_file \
+        search_label zfs xfs ufs2 ufs1_be ufs1 udf tar archelp squash4 xzio lzopio \
+        sfs romfs reiserfs procfs odc ntfs nilfs2 newc minix_be minix3_be minix3 \
+        minix2_be minix2 minix jfs iso9660 hfsplus hfs f2fs exfat cpio_be cpio cbfs \
+        btrfs raid6rec diskfilter zstd bfs afs affs \
+    " \
+    "boot/grub/grub.cfg=/iso/boot/grub/grub.cfg"
+
 GRUB_IMG_SIZE="$(stat -c %s /iso/EFI/BOOT/BOOTX64.EFI)"
 GRUB_IMG_SIZE_MB="$((GRUB_IMG_SIZE/1024/1024 + 2))"
 
