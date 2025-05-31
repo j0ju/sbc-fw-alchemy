@@ -27,8 +27,9 @@ WORK_FILES :=
 # generate specific image files
 # X6100 specifics - minfree space of rootfs in KBytes
 #X6100_MIN_FREE=512
-#WORK_FILES += $(shell ls -1d x6100-*.Dockerfile.d | sed -e 's/.Dockerfile.d/.img/' -e 's|^|output/|' )
-#WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d | sed -e 's/.Dockerfile.d/.img/' -e 's|^|output/|' )
-#WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d | sed -e 's|^|output/|' -e 's/.Dockerfile.d/.EFI.iso/')
+#WORK_FILES += $(shell ls -1d x6100-*.Dockerfile.d  | sed -e 's|.Dockerfile.d|.img|'            -e 's|^|output/|' )
+#WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d  | sed -e 's|.Dockerfile.d|.img|'            -e 's|^|output/|' )
+#WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d  | sed -e 's|.Dockerfile.d|.EFI.iso|'        -e 's|^|output/|' )
+#WORK_FILES += $(shell ls -1d bpi2m0-*.Dockerfile.d | sed -e 's|.Dockerfile.d|.rootfs.tar.zst|' -e 's|^|output/|' )
 
 # vim: noet ts=2 sw=2 ft=Makefile
