@@ -23,6 +23,7 @@ apt-get install -y --no-install-recommends \
   squashfs-tools squashfs-tools-ng \
   mtools xorriso mkisofs \
   live-build live-boot live-config \
+  xxd \
 # EO apt-get install
 
 # this ensures that an EFI grub and binaries are installed so we can build bootable images for AMD64
