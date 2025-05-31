@@ -9,10 +9,8 @@ DEPDIR              = .deps
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 
 DOCKER_DIRS := $(shell ls -1 *.Dockerfile.d/Dockerfile.seed 2>/dev/null )
-#DOCKER_FILES := $(shell ls -1 *.Dockerfile 2>/dev/null )
 
 DOCKER_IMAGES :=
-#DOCKER_IMAGES += $(DOCKER_FILES:.Dockerfile=)
 DOCKER_IMAGES += $(DOCKER_DIRS:.Dockerfile.d/Dockerfile.seed=)
 
 DOCKER_IMAGES_FLAGS := $(DOCKER_IMAGES:%=$(DEPDIR)/%.built)

@@ -85,8 +85,8 @@ clean-volumes:
 		docker volume inspect $$image > $@ 2>/dev/null || \
 		  docker volume create $$image > $@
 
-.deps/%.workspace: %.workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
+.deps/%.workspace: %.Workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
 	$(E) "WORKSPACE $(<:/workspace.d/prepare.sh=)"
-	$(Q) ./bin/img-mangler -v $(NAME_PFX)$(NAME)-$$( basename $(@:.built=) ):/workspace sh $< ; : > $@
+	$(Q) ./bin/img-mangler -w /workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.built=) ):/workspace sh /src/$< ; : > $@
 
 # vim: ts=2 sw=2 noet ft=make
