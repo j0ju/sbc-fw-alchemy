@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 #set -x
-    
+
 CRIOPTS=
 IMAGE=
 
@@ -20,9 +20,21 @@ if [ -z "$IMAGE" ]; then
 fi
 
 # user convenience, allow using, file commandline completion, strip Directory / and Dockerfile.d at the end
-if [ -d "$IMAGE" ]; then
-  IMAGE="${IMAGE%/}"
-  IMAGE="${IMAGE%.Dockerfile.d}"
-fi
+case "$IMAGE" in
+  *.Dockerfile.d/ | *.Dockerfile.d )
+    if [ -d "$IMAGE" ]; then
+      IMAGE="${IMAGE%/}"
+      IMAGE="${IMAGE%.Dockerfile.d}"
+    fi
+    ;;
+  *.Workspace.d/ | *.Workspace.d )
+    if [ -d "$IMAGE" ]; then
+      VOLUME="${IMAGE%/}"
+      VOLUME="${VOLUME%.Workspace.d}"
+      CRIOPTS="$CRIOPTS -w /workspace -v sbc-$VOLUME.workspace:/workspace"
+      IMAGE="img-mangler"
+    fi
+    ;;
+esac
 
 exec img-mangler $CRIOPTS -ti --image sbc:"$IMAGE" "$@"
