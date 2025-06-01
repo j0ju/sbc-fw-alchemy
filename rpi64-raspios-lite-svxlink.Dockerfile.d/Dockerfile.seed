@@ -1,4 +1,4 @@
 # (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
 # meta: #onestep
 
-FROM sbc:rpi64-raspios-lite-base
+FROM sbc:rpi64-raspios-lite-zfs
