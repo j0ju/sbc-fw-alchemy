@@ -1,0 +1,5 @@
+# build turing pi image to get rootfs
+output/turingpi2-buildroot/rootfs.tar: .deps/turingpi2-buildroot.workspace turingpi2-buildroot.Workspace.d/prepare.sh  turingpi2-buildroot.Workspace.d/linux_defconfig
+
+input/turingpi2-buildroot.tar: output/turingpi2-buildroot/rootfs.tar
+	cp $< $@
