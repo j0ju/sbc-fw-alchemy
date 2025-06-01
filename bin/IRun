@@ -27,6 +27,7 @@ case "$IMAGE" in
       IMAGE="${IMAGE%.Dockerfile.d}"
     fi
     ;;
+
   *.Workspace.d/ | *.Workspace.d )
     if [ -d "$IMAGE" ]; then
       VOLUME="${IMAGE%/}"
@@ -35,6 +36,8 @@ case "$IMAGE" in
       IMAGE="img-mangler"
     fi
     ;;
+
+  *.tgz.url ) IMAGE="${IMAGE%.tgz.url}" ;;
 esac
 
 exec img-mangler $CRIOPTS -ti --image sbc:"$IMAGE" "$@"
