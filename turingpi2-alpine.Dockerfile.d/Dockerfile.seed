@@ -1,14 +1,13 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
 FROM sbc:armhf-Alpine-3.21 AS alpine
-FROM sbc:turingpi2 AS turingpi2
+FROM sbc:turingpi2
 
-FROM sbc:img-mangler
+# keep imported build /vanilla rom with original bmcd and tpi
+RUN mv /target /vanilla
+
+# start /target with fresh armhf alpine
 COPY --from=alpine /target/ /target
-COPY --from=turingpi2 /target/lib/modules /target/lib/modules
 
-CMD \
-  rm -f /target/etc/resolv.conf ;\
-  cp /etc/resolv.conf /target/etc/resolv.conf ;\
-  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash -l ;\
-: # eo CMD
+# populate modules from vanilla
+RUN cp -a /vanilla/lib/modules /target/lib/modules
