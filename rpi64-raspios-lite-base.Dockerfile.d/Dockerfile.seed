@@ -9,4 +9,3 @@
 
 # set base, copy scripts & out-of-tree resources
 FROM sbc:rpi64-raspios-lite
-

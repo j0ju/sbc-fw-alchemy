@@ -6,10 +6,15 @@ FROM sbc:x6100-Xiegu-1.1.9.update
 
 # set environment - all build containers inherit this
 # - ENV - none
+
 CMD \
   rm -f /target/etc/resolv.conf ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\
-  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash -l ;\
+  busybox mount -o bind /target /target 2> /dev/null || :; \
+  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
+  [ -x /target/bin/bash ] || \
+    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
 : # eo CMD
 
 # run scripts that do the modifications steps in one layer
