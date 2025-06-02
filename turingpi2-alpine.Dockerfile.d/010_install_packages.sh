@@ -5,48 +5,38 @@
 PS4='> ${0##*/}: '
 #set -x
 
-REQ_PKGS=" \
-  sed file \
-  multipath-tools \
+PKGS=" \
+  bash \
+  openssh-server \
+  chrony \
+  e2fsprogs f2fs-tools btrfs-progs btrfs-progs-bash-completion \
+  mc vim minicom tmux screen minicom \
+  git tig \
+  curl wget \
+  jq \
+  file \
   sfdisk \
   blkid \
-  git \
-  bash \
-"
-
-# install a lot of packages that might be of interest
-PKGS=" \
-  ncurses ncurses-terminfo ncurses-terminfo-base \
-  wavemon htop procps psmisc usbutils hwids-usb \
-  e2fsprogs e2fsprogs-extra \
-  file libmagic \
-  vim vim-common lua5.4 \
-  mc \
-  curl wget \
-  git tig \
-  xxd xz zstd bzip2 pv \
-  strace lsof \
-  coreutils \
-  tmux screen minicom \
-  linuxconsoletools \
-  jq \
-  rsync \
-  wipefs \
-  bash-completion iproute2-bash-completion procs-bash-completion util-linux-bash-completion mtr-bash-completion \
-    alpine-repo-tools-bash-completion \
-  etckeeper \
   iproute2 \
   mtr tcpdump \
   sed \
   u-boot-tools \
   partx \
   rsyslog \
+  htop procps psmisc usbutils hwids-usb \
+  xxd xz zstd bzip2 pv \
+  strace lsof \
+  coreutils \
+  linuxconsoletools \
+  rsync \
+  wipefs \
+  bash-completion iproute2-bash-completion procs-bash-completion util-linux-bash-completion mtr-bash-completion \
+    alpine-repo-tools-bash-completion \
+  etckeeper \
   sntpc \
   dtc \
   make \
-  prometheus-node-exporter \
   python3 \
-    python3-dev \
     pyc python3-pyc pyc
     python3-pycache-pyc0
     py3-certifi py3-certifi-pyc py3-charset-normalizer py3-charset-normalizer-pyc py3-distlib
@@ -55,16 +45,9 @@ PKGS=" \
     py3-pip-pyc py3-platformdirs py3-platformdirs-pyc py3-requests
     py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
     py3-virtualenv-pyc py3-yaml py3-yaml-pyc
-  podman \
-    podman-bash-completion podman-compose podman-compose-bash-completion podman-compose-pyc \
-    podman-docker podman-fish-completion podman-openrc podman-remote podman-tui \
-    py3-podman py3-podman-pyc \
-  cargo \
-    cargo-bash-completions cargo-make cargo-make-bash-completion \
 "
-
-# install required packages
-  chroot /target apk add --no-cache $REQ_PKGS
+    # python3-dev \
 
 # install packages for tarballs
+  chroot /target apk add --no-cache etckeeper
   chroot /target apk add --no-cache $PKGS
