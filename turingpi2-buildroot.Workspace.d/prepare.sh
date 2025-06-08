@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 umask 022
+PS4="> ${0##*/}: "
+
 set -x
 
 #- as I am running as UID=0 in container
@@ -26,6 +28,8 @@ else :
   #- link image output to ./output
   mkdir -p /src/output/turingpi2-buildroot
   mkdir -p /workspace/bmc-firmware/buildroot/output
+  [ -z "$OWNER" ] || \
+    chown -R "$OWNER${GROUP:+:$GROUP}" /src/output/turingpi2-buildroot /workspace/bmc-firmware/buildroot/output
   rm -rf /workspace/bmc-firmware/buildroot/output/images
   ln -s /src/output/turingpi2-buildroot /workspace/bmc-firmware/buildroot/output/images
 
