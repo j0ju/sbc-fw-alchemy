@@ -16,7 +16,8 @@
 #DOCKER_IMAGES += x6100-r1cbu-v0.28.0-mod
 
 # generate specific images in docker
-#DOCKER_IMAGES += $(shell ls -1d rpi*Dockerfile.d | sed 's/.Dockerfile.d//')
+#DOCKER_IMAGES += $(shell ls -1d rpi64-*Dockerfile.d | sed 's/.Dockerfile.d//')
+#DOCKER_IMAGES += $(shell ls -1d rpi-*Dockerfile.d | sed 's/.Dockerfile.d//')
 #DOCKER_IMAGES += $(shell ls -1d *-OptAlpine*.Dockerfile.d | sed 's/.Dockerfile.d//' )
 #DOCKER_IMAGES += $(shell ls -1d x6100-*.Dockerfile.d | sed 's/.Dockerfile.d//' )
 #DOCKER_IMAGES += $(shell ls -1d bpi2m0-*.Dockerfile.d | sed 's/.Dockerfile.d//' )

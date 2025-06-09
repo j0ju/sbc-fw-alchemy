@@ -17,11 +17,10 @@ umask 022
 rm -rf /target//usr/share/svxlink
 ln -s "$PREFIX"/share/svxlink /target/usr/share/svxlink
 
-for f in /target/"$PREFIX"/share/man/man[0-9]/*; do
-  src="${f#/target}"
-  dst="/usr/local/${f#${PREFIX%/}}"
+for f in /target/"$PREFIX"/share/man/man[0-9]/* /target/"$PREFIX"/lib/*.so*; do
+  src="${f#/target/}"
+  dst="/usr/local/${src#${PREFIX%/}}"
   dstdir="${dst%/*}"
-
   rm -f /target/"$dst"
   mkdir -p /target/"$dstdir"
   ln -s "$src" "/target/$dst"

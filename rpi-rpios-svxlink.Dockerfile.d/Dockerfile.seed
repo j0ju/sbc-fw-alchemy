@@ -1,5 +1,5 @@
 # (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
-# meta: onestep
+# meta: #onestep
 
 # This image is an image which uses only
 #  * systemd-journal for logging, /dev/log, syslog, so no logrotations is needed
@@ -8,4 +8,7 @@
 #  * systemd-timesyncd
 
 # set base, copy scripts & out-of-tree resources
-FROM sbc:rpi64-raspios-lite
+FROM sbc:rpi-rpios-base
+
+# copy 64bit scripts
+COPY rpi64-rpios-svxlink.Dockerfile.d /src/rpi64-rpios-svxlink.Dockerfile.d/
