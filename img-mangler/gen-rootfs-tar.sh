@@ -41,7 +41,8 @@ case "$TAR" in
 esac
 
 #--- cleanup rootfs
-chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null
+[ ! -f /target/lib/cleanup-rootfs.sh ] || \
+  chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null
 rm -rf 1> /dev/null \
   /target/run/* /target/run/.[!.]* \
   /target/etc/*- \
