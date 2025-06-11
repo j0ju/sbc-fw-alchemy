@@ -1,0 +1,114 @@
+#!/bin/sh
+
+# mount
+#  * read-only filesystem to /rom (current root)
+#  * overlay to /overlay     LABEL=overlay if not exist create it
+
+#- config
+#- pedantic thumb-screws
+  set -eu
+
+#- debugging, if needed
+  PS4="${0}[$$]: +"
+  #set -x
+
+#- settings
+  OVERLAY=/overlay
+  ROM=/rom
+  BLKFILTER="LABEL=tpi2data"
+
+log() {
+  echo "PREINIT: $*"
+}
+
+#- is_safemode
+#
+#   Returns true IFF we were told to boot in safemode
+#   (such as if the user held KEY1 for a few seconds at power on)
+#
+is_safemode() {
+  grep -q 'safemode' /proc/cmdline
+}
+
+#- pivot_overlay OVERLAYDIR
+#
+#   Establish an overlayfs over the read-only rootfs (storing data in OVERLAYDIR)
+#   and make it the root
+#
+pivot_overlay() {
+  MOUNTS="dev proc tmp sys"
+  NEWROOT=/tmp/newroot
+  OLDROOT="$ROM"
+  UPPER=$1/upper
+  WORK=$1/work
+
+  [ -d $UPPER ] || mkdir -p $UPPER
+  [ -d $WORK ] || mkdir -p $WORK
+
+  mkdir $NEWROOT
+  mount -t overlay overlay -o lowerdir=/,upperdir=$UPPER,workdir=$WORK $NEWROOT
+
+  [ -d $NEWROOT/$OLDROOT ] || mkdir -p $NEWROOT/$OLDROOT
+
+  log Pivoting root
+  pivot_root $NEWROOT $NEWROOT/$OLDROOT
+  for mountpoint in $MOUNTS $1; do
+    if mountpoint -q $OLDROOT/$mountpoint; then
+      mount --move $OLDROOT/$mountpoint /$mountpoint
+    fi
+  done
+
+  # Clean up, now that nothing is mounted here
+  rmdir $NEWROOT
+}
+
+#- preinit
+#
+# Main function
+#
+preinit() {
+  log "Starting"
+
+  # Need /dev, /proc, and /tmp mounted, and /sys for good measure
+  # /dev is automounted by kernel
+  mount -t proc  proc  /proc
+  mount -t sysfs sysfs /sys
+  mount -t tmpfs tmpfs /tmp -o nodev,nosuid
+  chmod 1777 /tmp
+
+  if is_safemode || ! mount_overlay $OVERLAY; then
+    OVERLAY=/tmp/overlay
+    log "Entering safemode (overlay dir $OVERLAY)"
+    export IS_SAFEMODE=1
+  fi
+
+  pivot_overlay $OVERLAY
+
+  # fixes of /tmp and cleanup lefovers
+  umount $ROM/$OVERLAY 2> /dev/null || :
+  (
+    find /var -type l | \
+    while read d; do
+      l="$(readlink "$d")"
+      ( cd "${d%/*}"
+        mkdir -p "$l"
+      )
+    done
+  )
+  if [ -x /sbin/preinit ]; then
+    if ! cmp -s /sbin/preinit $ROM/sbin/preinit; then
+      log "found /sbin/preinit in overlay fs"
+      log "running /sbin/preinit"
+      exec /sbin/preinit
+    fi
+  fi
+  log "running /sbin/init"
+  exec /sbin/init
+}
+
+if [ ! $$ = 1 ]; then
+  log "$0 not running as PID 1 != $$, ABORT"
+  exit 69
+fi
+preinit
+# vim ts=2 sw=2 et ft=sh

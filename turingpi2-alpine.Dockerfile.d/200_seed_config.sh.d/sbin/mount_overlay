@@ -1,0 +1,46 @@
+#!/bin/sh
+#- config
+#- pedantic thumb-screws
+  set -eu
+
+#- debugging, if needed
+  PS4="${0}[$$]: +"
+  #set -x
+
+#- settings
+  OVERLAY=${1:-/overlay}
+  FILTER=${2:-LABEL=tpi2data}
+
+log() {
+  echo "OVERLAY: $*"
+}
+
+if mountpoint $OVERLAY > /dev/null 2>&1; then
+  log "$0: there is something mounted at $OVERLAY, ABORT"
+  exit 1
+fi
+
+log "searching for overlay and data partition..."
+DEVNAME=
+TYPE=
+eval "$(blkid -t $FILTER -o export || :)" || :
+if [ -z "${DEVNAME:-}" ]; then :
+  log "not data partition found with filter: $FILTER"
+  # TODO: create partition and filesystem
+  # for now exit hard and default network config
+  # allows connecting and initial creation of datapart manually
+  exit 69
+fi
+
+log "found $DEVNAME"
+mount -t $TYPE "$DEVNAME" "$OVERLAY"
+
+# use subdirectory to allow fresh bootstrapping by renaming or deleting
+# /overlay on data partition
+# maintainign multiple environements using symlinks and dirs does also work
+if [ ! -d "$OVERLAY/overlay" ]; then
+  mkdir -p "$OVERLAY/overlay"
+  log "$DEVMAME:$OVERLAY - create fresh overlay"
+fi
+log "using overlay $DEVNAME:$OVERLAY"
+mount -o bind "$OVERLAY/overlay/." "$OVERLAY"
