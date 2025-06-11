@@ -8,16 +8,27 @@ PS4='> ${0##*/}: '
 PKGS=" \
   bash \
   openssh-server \
-  chrony \
-  e2fsprogs f2fs-tools btrfs-progs btrfs-progs-bash-completion \
+  chrony chrony-openrc \
+  openrc \
+  iproute2 iproute2-ss iproute2-tc \
+    iproute2-bash-completion \
+  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
+  e2fsprogs f2fs-tools btrfs-progs \
+    btrfs-progs-bash-completion \
+  mdevd mdevd-openrc \
   mc vim minicom tmux screen minicom \
+  bird bird-openrc \
+  avahi avahi-tools \
+  openresolv \
   git tig \
+    git-bash-completion \
+  etckeeper \
+    etckeeper-bash-completion \
   curl wget \
   jq \
   file \
   sfdisk \
   blkid \
-  iproute2 \
   mtr tcpdump \
   sed \
   u-boot-tools \
@@ -30,9 +41,10 @@ PKGS=" \
   linuxconsoletools \
   rsync \
   wipefs \
-  bash-completion iproute2-bash-completion procs-bash-completion util-linux-bash-completion mtr-bash-completion \
+  bash-completion \
     alpine-repo-tools-bash-completion \
-  etckeeper \
+    procs-bash-completion util-linux-bash-completion mtr-bash-completion \
+    wireguard-tools-bash-completion \
   sntpc \
   dtc \
   make \
