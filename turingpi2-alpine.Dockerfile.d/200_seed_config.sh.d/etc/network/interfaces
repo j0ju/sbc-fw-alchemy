@@ -1,13 +1,56 @@
+# /etc/network/interfaces
+#
+# static config for Turing Pi 2
+#
+# * for changing trunkport VLANs see
+#   /etc/network/interfaces.d/ge[01]
+# * for changing nodeport VLANs see
+#   /etc/network/interfaces.d/node[1234]
+# * for changing mgmt port address config see
+#   /etc/network/interfaces.d/mgmt
+
+# loopback interface do not change
 auto lo
 iface lo inet loopback
 
+# control interface for DSA switch ASIC
+# do not add l3 addresses, it needs to be up
 auto eth0
-iface eth0 inet static
-  pre-up echo 1 > /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6
-  pre-up ip -4 addr flush $IFACE
-  pre-up ip -6 addr flush $IFACE
+iface eth0
+  # no IP addresses on this interface
+    force-no-l3-address yes
 
+# bridge interface
 auto sw0
-iface sw0 inet dhcp
-  address fe80::bc/64
-  bridge-ports node1 node2 node3 node4 ge0 ge1
+iface sw0
+  # MUST not add eth0 here
+    bridge-ports node1 node2 node3 node4 ge0 ge1
+  # enable VLAN awareness
+    bridge-vlan-aware yes
+  # no IP addresses on this interface
+    force-no-l3-address yes
+  # configure default VLAN
+  #  * egress traffic is untagged
+  #  * ingress untagged traffic is put to into VLAN1
+    bridge-allow-untagged no
+    bridge-default-pvid no
+  # untagged vlans - the mgmt VID needs to be added
+  # mgmt VID is 4094 at the end of the VLAN id range, to vaoid collision with 
+  # other VLANs tpycally count from lowest 1
+    bridge-vids 4094
+  # Spanning tree?
+    bridge-stp off
+
+  # allow untagged frames
+    bridge-allow-untagged yes
+    bridge-pvid 4094
+  # specify tagged VLANs on port
+    bridge-vids
+
+  # specify tagged VLANs on port
+    bridge-access 4094
+
+# include dynamic config
+source-directory /etc/network/interfaces.d
+
+# vim: ts=2 sw=2 et foldmethod=indent

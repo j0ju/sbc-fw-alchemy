@@ -66,3 +66,6 @@ PKGS=" \
 
 # install packages for tarballs
   chroot /target apk add --no-cache $PKGS
+
+# fixes
+  rm -f /target/sbin/ifstat

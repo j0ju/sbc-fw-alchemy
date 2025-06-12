@@ -1,0 +1,24 @@
+# /etc/network/interfaces
+
+# managment access to BMC
+
+auto mgmt
+iface mgmt
+  # how to do autoconfiguration
+    use dhcp
+    use ipv6-ra
+  # set VLAN parameters
+    vlan-raw-device sw0
+    vlan-id 4094
+  # address config
+    ipv6-ll no
+    address fe80::bc/64
+    address 169.254.23.14/16
+
+#    dns-search .
+#    dns-nameservers 8.8.8.8
+#    #dns-nameservers 8.8.4.4
+#    #dns-nameservers 2001:4860:4860::8888
+#    dns-nameservers 2001:4860:4860::8844
+
+# vim: ts=2 sw=2 et foldmethod=indent

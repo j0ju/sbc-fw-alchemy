@@ -1,0 +1,40 @@
+#!/bin/sh
+[ -n "$VERBOSE" ] && set -x
+
+flush_l3_address() {
+  local dev
+  for dev; do
+    [ -d /sys/class/net/$dev ] || continue
+    ip -4 addr flush $dev
+    ip -6 addr flush $dev
+    echo 1 > /proc/sys/net/ipv6/conf/$dev/disable_ipv6
+  done
+}
+
+case "$PHASE" in
+  pre-up | post-up )
+    # handle interfaces that are part of a bridge/bond or where force-no-l3-address==yes
+    if [ -d /sys/class/net/$IFACE/master/bridge ] || [ -d /sys/class/net/$IFACE/master/bonding ] || [ "${IF_FORCE_NO_L3_ADDRESS:-no}" = yes ]; then
+      flush_l3_address $IFACE
+    fi
+    if cd /sys/class/net/$IFACE/brif/ 2> /dev/null; then
+      flush_l3_address *
+    fi
+    if cd /sys/class/net/$IFACE/bonding/ 2> /dev/null; then
+      cd /sys/class/net/$IFACE
+      for f in lower_*; do
+        [ -d "$f" ] || continue
+        dev="${f#lower_}"
+        [ -d "/sys/class/net/$dev" ] || continue
+        flush_l3_address "$dev"
+      done
+    fi
+
+    if [ "$IF_IPV6_LL" = no ]; then
+      IF_IPV6_ADDR_GEN_MODE=1
+    fi
+    if [ -n "$IF_IPV6_ADDR_GEN_MODE" ]; then
+      echo "$IF_IPV6_ADDR_GEN_MODE" > /proc/sys/net/ipv6/conf/$IFACE/addr_gen_mode
+    fi
+    ;;
+esac

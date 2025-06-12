@@ -83,8 +83,15 @@ rc-update add sysfs sysinit
 rc-update add sysfsconf sysinit
 rc-update add sysctl sysinit
 rc-update add procfs sysinit
-rc-update add networking sysinit
+rc-update add hwclock sysinit
+rc-update add modules sysinit
 
+rc-update add networking default
+rc-update add sshd default
+rc-update add avahi-daemon default
+rc-update add chronyd default
+
+rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
 EOF
 
