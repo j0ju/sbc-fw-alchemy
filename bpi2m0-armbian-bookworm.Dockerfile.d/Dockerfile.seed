@@ -1,4 +1,4 @@
-# (C) 2024 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
 FROM sbc:bpi2m0-Armbian-25.02-bookworm-minimal

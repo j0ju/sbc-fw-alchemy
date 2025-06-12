@@ -1,5 +1,5 @@
 #!/bin/sh -eu
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 
 . "$SRC/100_add_files.sh"
 #set -x

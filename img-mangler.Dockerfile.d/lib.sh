@@ -1,4 +1,6 @@
 #!/bin/sh
+# (C) 2022-2025 Joerg Jungermann, GPLv2 see LICENSE
+
 #- lib for mangling
 
 set -e

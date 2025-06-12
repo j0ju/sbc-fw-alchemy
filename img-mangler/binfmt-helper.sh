@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 set -e
 
 # sets up binfmt emulation using qemu-user-static for docker environments, where it is not available per default

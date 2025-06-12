@@ -1,5 +1,5 @@
 # - makefile -
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 
 # EXAMPLE config for docker-images/Makefile.Dockerfile.generic
 # copy to ./config
@@ -32,5 +32,6 @@ WORK_FILES :=
 #WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d  | sed -e 's|.Dockerfile.d|.img|'            -e 's|^|output/|' )
 #WORK_FILES += $(shell ls -1d amd64-*.Dockerfile.d  | sed -e 's|.Dockerfile.d|.EFI.iso|'        -e 's|^|output/|' )
 #WORK_FILES += $(shell ls -1d bpi2m0-*.Dockerfile.d | sed -e 's|.Dockerfile.d|.rootfs.tar.zst|' -e 's|^|output/|' )
+WORK_FILES += $(shell ls -1d turingpi2-*.Dockerfile.d | sed -e 's|.Dockerfile.d|.img.zst|' -e 's|^|output/|' )
 
 # vim: noet ts=2 sw=2 ft=Makefile

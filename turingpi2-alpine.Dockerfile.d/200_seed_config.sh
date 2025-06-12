@@ -1,4 +1,5 @@
 #!/bin/sh
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 
 PS4='> ${0##*/}: '

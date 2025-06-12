@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2023 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 
 # This is a wrapper around shaXsum, md5sum, etc, as the syntax is different betwenn Linux, BSD and OSX
 # It wraps to the ...sum command in a Docker container
