@@ -9,6 +9,7 @@ PS4='> ${0##*/}: '
   rmdir var/* 2> /dev/null || :
   rm -rf \
     run tmp srv home media \
+    etc/machine-id \
     var/log var/spool/mail var/tmp \
     var/cache/apk var/cache/etckeeper var/cache/misc \
     var/lib/dbus var/lib/misc var/lib/rsyslog \
@@ -61,10 +62,10 @@ find . ! -type d | \
   done
 
 # pre-seed initial seed credentials
-echo 'root:turingpi2!' | chpasswd
+echo 'root:turingpi2!' | chroot /target chpasswd
 
 # change home of root to /tmp
-sed -i -re 's|:/root:|:/tmp:|' /etc/passwd
+sed -i -re 's|:/root:|:/tmp:|' /target/etc/passwd
 
 # sort /etc/passwd | /etc/group
 for f in passwd group; do
@@ -72,5 +73,19 @@ for f in passwd group; do
   cat /target/etc/$f.new > /target/etc/$f
   rm -f /target/etc/$f.new
 done
+
+# enable basic services
+chroot /target /bin/sh -ex <<EOF
+rc-update add hostname sysinit
+rc-update add mdevd-init sysinit
+rc-update add mdevd sysinit
+rc-update add sysfs sysinit
+rc-update add sysfsconf sysinit
+rc-update add sysctl sysinit
+rc-update add procfs sysinit
+rc-update add networking sysinit
+
+rc-update add mount-ro shutdown
+EOF
 
 chroot /target etckeeper commit -m "${0##*/} finish"

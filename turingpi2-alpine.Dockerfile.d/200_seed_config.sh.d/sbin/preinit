@@ -86,15 +86,16 @@ preinit() {
 
   # fixes of /tmp and cleanup lefovers
   umount $ROM/$OVERLAY 2> /dev/null || :
-  (
-    find /var -type l | \
+  # ensure symlinks targets in /var to somewhere /tmp exist
+  find /var -type l | \
     while read d; do
       l="$(readlink "$d")"
-      ( cd "${d%/*}"
-        mkdir -p "$l"
-      )
+      cd "${d%/*}"
+      mkdir -p "$l"
     done
-  )
+  mount -o remount,size=512k /dev || :
+
+  # find init, try /sbin/preinit if it exists is executable and is not the same content as the current running script
   if [ -x /sbin/preinit ]; then
     if ! cmp -s /sbin/preinit $ROM/sbin/preinit; then
       log "found /sbin/preinit in overlay fs"

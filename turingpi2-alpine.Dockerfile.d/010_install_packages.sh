@@ -8,16 +8,20 @@ PS4='> ${0##*/}: '
 PKGS=" \
   bash \
   openssh-server \
-  chrony chrony-openrc \
+  chrony \
+    chrony-openrc \
   openrc \
+    openrc-bash-completion \
   iproute2 iproute2-ss iproute2-tc \
     iproute2-bash-completion \
   ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
   e2fsprogs f2fs-tools btrfs-progs \
     btrfs-progs-bash-completion \
-  mdevd mdevd-openrc \
+  mdevd \
+    mdevd-openrc \
   mc vim minicom tmux screen minicom \
-  bird bird-openrc \
+  bird \
+    bird-openrc \
   avahi avahi-tools \
   openresolv \
   git tig \

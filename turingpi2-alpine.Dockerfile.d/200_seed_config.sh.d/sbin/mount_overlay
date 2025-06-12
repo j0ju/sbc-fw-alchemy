@@ -25,11 +25,11 @@ DEVNAME=
 TYPE=
 eval "$(blkid -t $FILTER -o export || :)" || :
 if [ -z "${DEVNAME:-}" ]; then :
-  log "not data partition found with filter: $FILTER"
+  log "no data partition found with filter: $FILTER"
   # TODO: create partition and filesystem
   # for now exit hard and default network config
   # allows connecting and initial creation of datapart manually
-  exit 69
+  exit 69 # errors.h: NOTAVAIL ;)
 fi
 
 log "found $DEVNAME"
@@ -40,7 +40,7 @@ mount -t $TYPE "$DEVNAME" "$OVERLAY"
 # maintainign multiple environements using symlinks and dirs does also work
 if [ ! -d "$OVERLAY/overlay" ]; then
   mkdir -p "$OVERLAY/overlay"
-  log "$DEVMAME:$OVERLAY - create fresh overlay"
+  log "$DEVNAME:$OVERLAY - create fresh overlay"
 fi
 log "using overlay $DEVNAME:$OVERLAY"
 mount -o bind "$OVERLAY/overlay/." "$OVERLAY"

@@ -1,4 +1,4 @@
 # /etc/fstab
-proc                  /proc     proc   noauto,rprivate                            0 0
-sysfs                 /sys      sysfs  noauto,rprivate                            0 0
-tmpfs                 /tmp      tmpfs  mode=1777,rprivate                         0 0
+proc                  /proc     proc   noauto                            0 0
+sysfs                 /sys      sysfs  noauto                            0 0
+tmpfs                 /tmp      tmpfs  nodev,nosuid,mode=1777            0 0

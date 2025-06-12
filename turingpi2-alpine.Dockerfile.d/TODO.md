@@ -1,8 +1,10 @@
 * default netconfig
-    * untagged 314 fe80::bc
+    * untagged 1 fe80::bc
     * dhcpv4
     * dhcpv6
     * slaac
+    * updated ifupdown-ng
+* ssh
 * avahi
 * logging
     * per default log to busybox ringbuffer
@@ -13,6 +15,10 @@
 * move some kernel drivers as modules, which are not needed for booting
   (needed, ubifs, erofs, ext4)
   * vfat, exfat, f2fs
+
+* initialize OTG properly
+
+* sanitize init.d services
 
 * investigate stack traces at boot
 ```
@@ -133,6 +139,3 @@
 [    0.077105]  kernel_init from ret_from_fork+0x14/0x28
 ```
 
-* initialize OTG properly
-
-* sanitize init.d services

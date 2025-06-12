@@ -1,0 +1,13 @@
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+  pre-up echo 1 > /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6
+  pre-up ip -4 addr flush $IFACE
+  pre-up ip -6 addr flush $IFACE
+
+auto sw0
+iface sw0 inet dhcp
+  address fe80::bc/64
+  bridge-ports node1 node2 node3 node4 ge0 ge1
