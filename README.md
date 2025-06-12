@@ -4,21 +4,23 @@
  Alternativly it allows fast reprodicible rebuilding of all kinds of images.
  It uses Docker to modify the images.
  It uses qemu-user-static if needed to run code for foreign architectures. It does not matter if
- you are using AMD64, i386, ARM or ARM64.
+ you are using AMD64, i386, ARM or ARM64 or Linux or OSX.
 
 ## Motivation
  * make playing around with SBCs easier
  * easy integrating modifications
- * make modifications reproducible
+ * make modifications (a little bit more) reproducible
  * ease debugging
 
 ## Features
- * can generate a runable image
+ * can generate a runable rootfs
+ * for certain architecture can generate images
  * integrates some more helper utils from Alpine into stock images
 
-## Currently supported devices
+## Currently developed devices
  * Raspberry Pi OS 64bit (32bit is on the TODO list) (BCM)
  * Bananapi M2 Zero with Armbian (Sunxi H2/H3)
+ * Turinpi 2 (2.4 only for now, 2.5.x untested)
  * Xiegu 6100 (Sunxi H3)
  * AMD64 Cloud images
 
@@ -28,10 +30,11 @@
 ## `Don't`s
  No warranty, I will not be responsible for what ever you do with these generated images.
  They might break your device,it might eletrocute you, be warned. Act safe and sane.
- Only transmit in frequency ranges you are allowed to transmit, check for a clean HF of your device.
 
  I advise not distributing images generated this way, they contain copyrighted material.
  In case of images integrating ZFS, there license clashes between GPL and CDDL. Oracle might sue you.
+
+ Only transmit in frequency ranges you are allowed to transmit, check for a clean HF of your device.
 
 # Quickstart
 
