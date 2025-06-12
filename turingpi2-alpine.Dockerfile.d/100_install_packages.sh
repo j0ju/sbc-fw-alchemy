@@ -65,5 +65,4 @@ PKGS=" \
     # python3-dev \
 
 # install packages for tarballs
-  chroot /target apk add --no-cache etckeeper
   chroot /target apk add --no-cache $PKGS
