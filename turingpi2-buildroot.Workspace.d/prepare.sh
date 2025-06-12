@@ -36,5 +36,6 @@ else :
   ./scripts/build.sh
 fi
 
+# fix permissions if container UID != host UID
 [ -z "$OWNER" ] || \
   chown -R "$OWNER${GROUP:+:$GROUP}" /workspace/bmc-firmware/buildroot/output/images/.

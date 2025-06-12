@@ -5,8 +5,9 @@ output/turingpi2-buildroot/rootfs.tar: .deps/turingpi2-buildroot.workspace turin
 input/turingpi2-buildroot.tar: output/turingpi2-buildroot/rootfs.tar output/turingpi2-buildroot/u-boot-sunxi-with-spl.bin
 	$(Q)$(E) PREPARE $@
 	$(Q) :; \
-		rm -f output/turingpi2-buildroot/boot ;\
+		rm -f output/turingpi2-buildroot/boot output/turingpi2-buildroot/uboot.img;\
 		ln -s . output/turingpi2-buildroot/boot ;\
+		ln -s u-boot-sunxi-with-spl.bin output/turingpi2-buildroot/uboot.img ;\
 		cp $< $@ ;\
-		tar --append --file $@ -C output/turingpi2-buildroot ./boot/u-boot-sunxi-with-spl.bin ;\
+		tar --append --file $@ -h -C output/turingpi2-buildroot ./boot/uboot.img ;\
 		:
