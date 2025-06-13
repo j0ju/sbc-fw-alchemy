@@ -1,24 +1,25 @@
-* default netconfig
-    * untagged 1 fe80::bc
-    * dhcpv4
-    * dhcpv6
-    * slaac
-    * updated ifupdown-ng
-* ssh
-* avahi
+* (/) default netconfig
+    * (/) dhcpv4
+    * (/) fe80::bc
+    * (/) 169.254.23.14
+    * (/) dns can be set manually via openresolv/resolvconf
+    * dhcpv6 ?
 * logging
-    * per default log to busybox ringbuffer
-    * if remote logging is wanted start rsyslogd with adapted config
-* bmc
-* chrony
+    * (/) local logging
+    * if remote logging is wanted start rsyslogd with templated config
+* bmcd
+  * (/) otg works
+  * (/) tpi works
+  * (!) fix WebIF authentication
+    * seems to have issues with alpines /etc/shadow, need to investigate further
+  * properly build bmc 
+* (/) chrony
+  * start with no ressource and add them dynamically via chronyc ?
+* add basic firewall
+* (/) moved home dir of root to /run, for less writes on MMC/SD
+    * copy on boot from /root/.[!.]* to /run
 
-* move some kernel drivers as modules, which are not needed for booting
-  (needed, ubifs, erofs, ext4)
-  * vfat, exfat, f2fs
-
-* initialize OTG properly
-
-* sanitize init.d services
+* (/) initialize OTG properly
 
 * investigate stack traces at boot
 ```
