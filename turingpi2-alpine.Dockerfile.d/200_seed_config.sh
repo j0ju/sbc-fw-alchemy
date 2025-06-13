@@ -63,7 +63,7 @@ find . ! -type d | \
   done
 
 # pre-seed initial seed credentials
-echo 'root:turingpi2!' | chroot /target chpasswd
+echo 'root:turing' | chroot /target chpasswd
 
 # change home of root to /run - less writes to MMC/flash
 sed -i -re 's|:/root:|:/run:|' /target/etc/passwd
@@ -94,6 +94,7 @@ rc-update add sysctl sysinit
 rc-update add procfs sysinit
 rc-update add hwclock sysinit
 rc-update add modules sysinit
+rc-update add otg sysinit
 
 rc-update add networking default
 rc-update add syslog default
@@ -101,6 +102,7 @@ rc-update add klogd default
 rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
+rc-update add bmcd default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown

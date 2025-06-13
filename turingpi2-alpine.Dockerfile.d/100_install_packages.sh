@@ -39,7 +39,7 @@ PKGS=" \
   partx \
   rsyslog \
   htop procps psmisc usbutils hwids-usb \
-  xxd xz zstd bzip2 pv \
+  xxd xz zstd bzip2 pv tar \
   strace lsof \
   coreutils \
   linuxconsoletools \
@@ -52,6 +52,7 @@ PKGS=" \
   sntpc \
   dtc \
   make \
+  openssl \
   python3 \
     pyc python3-pyc pyc
     python3-pycache-pyc0
