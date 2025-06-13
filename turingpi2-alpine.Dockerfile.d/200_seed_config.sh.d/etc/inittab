@@ -10,4 +10,5 @@
 # allow password less logins on serial console
 # as direct access to HW is already a security breach
 ttyS0::respawn:/sbin/getty -L -w -n -l /lib/serial-login.sh ttyS0 115200 vt100
-#ttyGS0::respawn:/sbin/getty -L ttyGS0 115200 vt100 # BMC-USB-OTG# /etc/inittab
+# USB-OTG
+ttyGS0::respawn:/sbin/getty -L ttyGS0 115200 vt100
