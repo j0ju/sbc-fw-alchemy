@@ -1,0 +1,10 @@
+#!/sbin/openrc-run
+
+command="/bin/busybox"
+command_args="klogd"
+
+depend() {
+        need hostname syslog
+        use clock
+        before net
+}

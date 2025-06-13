@@ -9,7 +9,7 @@ PS4='> ${0##*/}: '
 ( cd /target/
   rmdir var/* 2> /dev/null || :
   rm -rf \
-    run tmp srv home media \
+    run tmp home media \
     etc/machine-id \
     var/log var/spool/mail var/tmp \
     var/cache/apk var/cache/etckeeper var/cache/misc \
@@ -65,8 +65,10 @@ find . ! -type d | \
 # pre-seed initial seed credentials
 echo 'root:turingpi2!' | chroot /target chpasswd
 
-# change home of root to /tmp
-sed -i -re 's|:/root:|:/tmp:|' /target/etc/passwd
+# change home of root to /run - less writes to MMC/flash
+sed -i -re 's|:/root:|:/run:|' /target/etc/passwd
+# change shell to bash
+sed -i -re '/^root/ s|/sh|/bash|' /target/etc/passwd
 
 # sort /etc/passwd | /etc/group
 for f in passwd group; do
@@ -75,8 +77,14 @@ for f in passwd group; do
   rm -f /target/etc/$f.new
 done
 
+# ensure *bin below /usr/local
+mkdir -p /target/usr/local/sbin /target/usr/local/bin
+
+# tune avahi anounced services
+rm -f /target/etc/avahi/services/sftp-ssh.service
+
 # enable basic services
-chroot /target /bin/sh -ex <<EOF
+chroot /target /bin/sh -e <<EOF
 rc-update add hostname sysinit
 rc-update add mdevd-init sysinit
 rc-update add mdevd sysinit
@@ -88,12 +96,16 @@ rc-update add hwclock sysinit
 rc-update add modules sysinit
 
 rc-update add networking default
+rc-update add syslog default
+rc-update add klogd default
 rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
+
+/usr/local/sbin/update-rc
 EOF
 
 chroot /target etckeeper commit -m "${0##*/} finish"
