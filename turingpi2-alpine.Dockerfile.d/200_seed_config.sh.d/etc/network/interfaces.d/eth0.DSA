@@ -1,0 +1,8 @@
+# control interface for DSA switch ASIC
+# do not add l3 addresses, it needs to be up, for switch offloading to work
+auto eth0
+iface eth0
+  # no IP addresses on this interface
+    force-no-l3-address yes
+
+# vim: ts=2 sw=2 et foldmethod=indent

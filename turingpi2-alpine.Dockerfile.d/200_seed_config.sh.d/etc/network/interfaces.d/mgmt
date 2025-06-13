@@ -5,8 +5,8 @@
 auto mgmt
 iface mgmt
   # how to do autoconfiguration
-    use dhcp
-    use ipv6-ra
+    use dhcp # for DHCPv4
+    #use ipv6-ra # for router advertisments
   # set VLAN parameters
     vlan-raw-device sw0
     vlan-id 4094

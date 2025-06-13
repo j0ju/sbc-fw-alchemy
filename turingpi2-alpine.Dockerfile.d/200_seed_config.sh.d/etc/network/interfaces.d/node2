@@ -1,5 +1,7 @@
 iface node2
   # untagged 4094
+  # NOTE: this needs adoption by bmc to configure an untagged VLAN
   bridge-pvid 4094
   # tagged VLANS
-  bridge-vids # 2 3 5 8 13 21
+  # NOTE: this needs adoption by bmc to configure tagged VLANs
+  bridge-vids # 2 3 5 8 13 21 - currently empty

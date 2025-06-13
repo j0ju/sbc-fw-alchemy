@@ -1,54 +1,28 @@
 # /etc/network/interfaces
 #
-# static config for Turing Pi 2
+# Basic network config for turinppi2 using ifupdown-ng
+# The config is split into serveral snippets below
+# /etc/network/interfaces.d/
+#
+# * for enabling DSA (distributed switching architecture) to have VLAN and 
+#   Bonding/LACP offloading see
+#     * sw0 - here you can change the MGMT VLAN config
+#       * MGMT VLAN is currently unttaged on ge0/ge1 and mapped to VID 4094
+#         at the end of the VID range
+#     * eth0.DSA - only modify if you know what you are doing
+
+# * for changing mgmt port address and VID see
+#   * mgmt
 #
 # * for changing trunkport VLANs see
-#   /etc/network/interfaces.d/ge[01]
+#   * ge0
+#   * ge1
 # * for changing nodeport VLANs see
-#   /etc/network/interfaces.d/node[1234]
-# * for changing mgmt port address config see
-#   /etc/network/interfaces.d/mgmt
+#   * node[1..4]
 
 # loopback interface do not change
 auto lo
 iface lo inet loopback
-
-# control interface for DSA switch ASIC
-# do not add l3 addresses, it needs to be up
-auto eth0
-iface eth0
-  # no IP addresses on this interface
-    force-no-l3-address yes
-
-# bridge interface
-auto sw0
-iface sw0
-  # MUST not add eth0 here
-    bridge-ports node1 node2 node3 node4 ge0 ge1
-  # enable VLAN awareness
-    bridge-vlan-aware yes
-  # no IP addresses on this interface
-    force-no-l3-address yes
-  # configure default VLAN
-  #  * egress traffic is untagged
-  #  * ingress untagged traffic is put to into VLAN1
-    bridge-allow-untagged no
-    bridge-default-pvid no
-  # untagged vlans - the mgmt VID needs to be added
-  # mgmt VID is 4094 at the end of the VLAN id range, to vaoid collision with 
-  # other VLANs tpycally count from lowest 1
-    bridge-vids 4094
-  # Spanning tree?
-    bridge-stp off
-
-  # allow untagged frames
-    bridge-allow-untagged yes
-    bridge-pvid 4094
-  # specify tagged VLANs on port
-    bridge-vids
-
-  # specify tagged VLANs on port
-    bridge-access 4094
 
 # include dynamic config
 source-directory /etc/network/interfaces.d

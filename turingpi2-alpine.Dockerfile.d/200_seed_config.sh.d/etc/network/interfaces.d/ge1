@@ -3,4 +3,5 @@ iface ge1
     bridge-allow-untagged yes
     bridge-pvid 4094
   # specify tagged VLANs on port
-    bridge-vids # 2 3 5 7 11 13
+  # NOTE: this line need to be adpoted by bmcd for VLAN config
+    bridge-vids # 2 3 5 7 11 13 - currently empty
