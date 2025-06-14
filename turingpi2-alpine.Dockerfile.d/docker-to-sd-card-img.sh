@@ -3,14 +3,23 @@
 set -eu
 
 #---
-MIN_FREE_MB=${MIN_FREE_MB:-64}
-
-#--- calculate image size
-USAGE_KB="$(du -sk /target | { read kb _; echo $kb; })"
-IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
+MIN_FREE_MB=${MIN_FREE_MB:-32}
 
 IMAGE="$2"
 SRC="$1"
+
+#--- calculate image size
+DECOMPRESSOR=cat
+case "$SRC" in
+  *.zst ) DECOMPRESSOR="zstd -cd" ;;
+  * )
+    echo "${0}: unknown archive format '$SRC'" >&2
+    exit 1
+    ;;
+esac
+
+USAGE_KB="$( $DECOMPRESSOR < "$SRC" | wc -c | awk '{print $1/1024}' )"
+IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
 
 #--- safe cleanup
 cleanup() {
