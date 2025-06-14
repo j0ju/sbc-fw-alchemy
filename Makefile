@@ -67,15 +67,17 @@ output/%.rootfs.tar.zst: .deps/%.built
 	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) /src/"img-mangler/gen-rootfs-tar.sh" "$@"
 
 #--- extend clean-local target
+# FIXME
 clean-local: clean-volumes
 	$(Q) rm -f *.zst *.img *.rar *.zip *.tar *.img.xz
 
 clean-volumes:
-	$(Q) docker volume ls -q | grep ^"$(NAME_PFX)$(NAME)-" | while read v; do \
-		docker volume inspect "$$v" > /dev/null 2>&1 && \
-		  docker volume rm "$$v" > /dev/null; \
-		echo "DELETE VOLUME $$v" ;\
-		rm -f "$$i";\
+	$(Q) cd "$(DEPDIR)"; ( ls *.volume 2> /dev/null | sed 's/.volume$$//'; docker volume ls -q | sed 's/^sbc-//') | sort -u | while read i; do \
+    i="$${i%.volume}" ;\
+		docker volume inspect sbc-"$$i" > /dev/null 2>&1 && \
+		  docker volume rm sbc-"$$i" > /dev/null; \
+	  rm -f "$$i".volume "$$i".workspace ;\
+    echo "DELETE VOLUME $$i" ;\
 	done
 
 .deps/%.volume:
@@ -87,6 +89,6 @@ clean-volumes:
 
 .deps/%.workspace: %.Workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
 	$(E) "WORKSPACE $(<:/workspace.d/prepare.sh=)"
-	$(Q) ./bin/img-mangler -w /workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.built=) ):/workspace sh /src/$< ; : > $@
+	$(Q) ./bin/img-mangler -w /workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
 
 # vim: ts=2 sw=2 noet ft=make
