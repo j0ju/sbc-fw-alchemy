@@ -104,11 +104,12 @@ rc-update add avahi-daemon default
 rc-update add chronyd default
 rc-update add bmcd default
 rc-update add dot default
+rc-update add mmc default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
 
-/usr/local/sbin/update-rc
+/usr/local/sbin/update-rc 1> /dev/null
 EOF
 
 chroot /target etckeeper commit -m "${0##*/} finish"
