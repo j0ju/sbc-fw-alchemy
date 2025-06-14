@@ -24,6 +24,7 @@ PS4='> ${0##*/}: '
   ln -s ../tmp var/tmp
   ln -s ../tmp/log var/log
   ln -s ../../tmp/cache/apk var/cache/apk
+  ln -s ../../tmp/cache/vim var/cache/vim
   ln -s ../../tmp/cache/etckeeper var/cache/etckeeper
   ln -s ../../tmp/lib/dbus var/lib/dbus
   ln -s ../../tmp/lib/rsyslog var/lib/rsyslog
@@ -102,6 +103,7 @@ rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
 rc-update add bmcd default
+rc-update add dot default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown

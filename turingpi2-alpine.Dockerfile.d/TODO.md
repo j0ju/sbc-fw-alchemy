@@ -1,4 +1,5 @@
 * (/) default netconfig
+    * (/) split config for easier modification by tools eg. bmcd
     * (/) dhcpv4
     * (/) fe80::bc
     * (/) 169.254.23.14
@@ -12,12 +13,13 @@
   * (/) tpi works
   * (!) fix WebIF authentication
     * seems to have issues with alpines /etc/shadow, need to investigate further
-  * properly build bmc 
+  * properly build bmc
 * (/) chrony
   * start with no ressource and add them dynamically via chronyc ?
 * add basic firewall
+
 * (/) moved home dir of root to /run, for less writes on MMC/SD
-    * copy on boot from /root/.[!.]* to /run
+  * (/) copy on boot from /root/.[!.]* to /run
 
 * (/) initialize OTG properly
 
