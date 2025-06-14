@@ -5,11 +5,15 @@
 #  * into local ring buffer and
 #    This can be read via `busybox logger`
 #  * to a syslog server on localhost for forwarding
-#    TODO: for remote logging only enbale and configure rsyslog
-#          rsyslog does also a bit syslog message format sanitisation
+#
+# Reemote logging:
+#   see rsyslog
+#    rsyslog does also a bit syslog message format sanitisation
 
 command="/bin/busybox syslogd"
-command_args="-L -R 127.0.0.1:514 -C128 -S -t"
+command_args="-L -R 127.0.0.1:514 -C128 -S -t -n"
+command_background="yes"
+pidfile="/run/syslog.pid"
 
 depend() {
         need hostname

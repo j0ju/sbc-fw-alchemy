@@ -15,49 +15,48 @@ PKGS=" \
   iproute2 iproute2-ss iproute2-tc \
     iproute2-bash-completion \
   ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
-  e2fsprogs f2fs-tools btrfs-progs \
-    btrfs-progs-bash-completion \
-  mdevd \
-    mdevd-openrc \
+  e2fsprogs f2fs-tools \
+  wipefs \
   mount \
   util-linux util-linux-misc \
     util-linux-bash-completion \
   mc vim minicom tmux screen minicom \
-  bird \
-    bird-openrc \
   avahi avahi-tools \
   openresolv \
-  git tig \
+  kmod \
+  git \
     git-bash-completion \
   etckeeper \
     etckeeper-bash-completion \
   curl wget \
-  jq \
-  file \
   sfdisk \
   blkid \
   mtr tcpdump \
     mtr-bash-completion \
-  ppp ppp-chat \
+  ppp-chat \
   sed \
   u-boot-tools \
   partx \
   rsyslog \
   htop procps psmisc usbutils hwids-usb \
-  xxd xz zstd bzip2 pv tar \
-  strace lsof \
+  xxd xz zstd pv tar \
   coreutils \
-  linuxconsoletools \
-  rsync \
-  wipefs \
   bash-completion \
     alpine-repo-tools-bash-completion \
     procs-bash-completion \
     wireguard-tools-bash-completion \
-  sntpc \
-  dtc \
-  make \
   openssl \
+"
+
+# extras
+PKGS="$PKGS \
+  btrfs-progs \
+    btrfs-progs-bash-completion \
+  tig \
+  file \
+  dtc \
+  rsync \
+  make \
   python3 \
     pyc python3-pyc pyc
     python3-pycache-pyc0
@@ -67,11 +66,25 @@ PKGS=" \
     py3-pip-pyc py3-platformdirs py3-platformdirs-pyc py3-requests
     py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
     py3-virtualenv-pyc py3-yaml py3-yaml-pyc
+  ppp \
+  sntpc \
+  jq \
+  bird \
+    bird-openrc \
+  strace lsof \
 "
-    # python3-dev \
+
+## dev
+#PKGS="$PKGS \
+#  python3-dev \
+#"
+
+# we install these pkgs in advance so -openrc and -bash-completion are installed i
+# as recomends automatically for user convinience
+  chroot /target apk add bash-completion openrc
 
 # install packages for tarballs
-  chroot /target apk add --no-cache $PKGS
+  chroot /target apk add $PKGS
 
 # fixes
   rm -f /target/sbin/ifstat

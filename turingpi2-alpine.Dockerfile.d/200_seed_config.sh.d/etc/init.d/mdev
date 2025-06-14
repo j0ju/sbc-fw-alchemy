@@ -1,0 +1,23 @@
+#!/sbin/openrc-run
+
+description="busybox mdev"
+
+command="/bin/busybox"
+command_args="mdev -Sdf"
+#command="/sbin/mdev"
+#command_args="-f"
+
+command_background="yes"
+pidfile="/run/mdev.pid"
+
+depend() {
+  provide dev
+  need sysfs dev-mount
+  before checkfs fsck
+  keyword -containers -lxc -vserver
+}
+
+start_pre() {
+  /bin/busybox mdev -S -s
+  #NEEDED? echo "$command" > /proc/sys/kernel/hotplug
+}

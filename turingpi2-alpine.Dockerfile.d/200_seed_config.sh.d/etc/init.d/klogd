@@ -1,7 +1,9 @@
 #!/sbin/openrc-run
 
 command="/bin/busybox"
-command_args="klogd"
+command_args="klogd -n"
+command_background="yes"
+pidfile="/run/klogd.pid"
 
 depend() {
         need hostname syslog

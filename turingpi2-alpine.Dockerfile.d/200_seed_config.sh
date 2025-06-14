@@ -86,8 +86,6 @@ rm -f /target/etc/avahi/services/sftp-ssh.service
 # enable basic services
 chroot /target /bin/sh -e <<EOF
 rc-update add hostname sysinit
-rc-update add mdevd-init sysinit
-rc-update add mdevd sysinit
 rc-update add sysfs sysinit
 rc-update add sysfsconf sysinit
 rc-update add sysctl sysinit
@@ -95,10 +93,11 @@ rc-update add procfs sysinit
 rc-update add hwclock sysinit
 rc-update add modules sysinit
 rc-update add otg sysinit
+rc-update add mdev sysinit
+rc-update add syslog sysinit
+rc-update add klogd sysinit
 
 rc-update add networking default
-rc-update add syslog default
-rc-update add klogd default
 rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
