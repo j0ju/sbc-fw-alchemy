@@ -19,6 +19,9 @@ PKGS=" \
     btrfs-progs-bash-completion \
   mdevd \
     mdevd-openrc \
+  mount \
+  util-linux util-linux-misc \
+    util-linux-bash-completion \
   mc vim minicom tmux screen minicom \
   bird \
     bird-openrc \
@@ -34,6 +37,7 @@ PKGS=" \
   sfdisk \
   blkid \
   mtr tcpdump \
+    mtr-bash-completion \
   sed \
   u-boot-tools \
   partx \
@@ -47,7 +51,7 @@ PKGS=" \
   wipefs \
   bash-completion \
     alpine-repo-tools-bash-completion \
-    procs-bash-completion util-linux-bash-completion mtr-bash-completion \
+    procs-bash-completion \
     wireguard-tools-bash-completion \
   sntpc \
   dtc \

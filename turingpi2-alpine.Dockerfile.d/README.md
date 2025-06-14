@@ -5,7 +5,7 @@ This is a Alpine based BMC linux for the Turing Machine Turing Pi2.
  * bmcd
    * tpi works locally
    * is with a dirty hack ported to alpine (not nativly compiled, yet)
-   * !!! bmcd webinterface has issues with authentication !!!
+   * !!! bmcd webinterface has issues with authentication, probaly because /etc/shadow of alpine has different hash format, needs further investigation !!!
  * Network
    * VLANs and Bonding are supported, VLANs tested
    * supports VLANs with proper isolation
@@ -16,4 +16,5 @@ This is a Alpine based BMC linux for the Turing Machine Turing Pi2.
    * is now done via busybox sysklogd and klogd for local logging
    * a rsyslog config for remote logging is prepared
      * this logging cascade is useful for having properly formatted syslog with hostname fields
+ * config in etc is maintained via etckeeper
 

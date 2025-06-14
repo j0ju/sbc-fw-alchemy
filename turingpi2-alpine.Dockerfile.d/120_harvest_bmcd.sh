@@ -4,7 +4,7 @@ set -eu
 umask 022
 
 PS4='> ${0##*/}: '
-set -x
+#set -x
 
 PREFIX=/srv/bmcd
 BINARIES="bmcd tpi"
