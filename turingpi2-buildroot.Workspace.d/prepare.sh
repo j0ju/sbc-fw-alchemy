@@ -6,9 +6,12 @@ PS4="> ${0##*/}: "
 
 set -x
 
-#- as I am running as UID=0 in container
+#- as I am running as UID=0 in container, but with thumb screws (seccomp, no capabilities)
+# TODO: maybe move add "-u $(id -u):$(id -g)" to bin/img-mangler and bin/IRun
 export FORCE_UNSAFE_CONFIGURE=1
 
+# FIXME: move compiler cache from /root/ to /workspace
+# /root is volatile
 cd /workspace
 
 if [ -d bmc-firmware ]; then
@@ -27,12 +30,12 @@ else :
   ./scripts/configure.sh
 
   #- link image output to ./output
-  mkdir -p /src/output/turingpi2-buildroot
+  mkdir -p /src/input/turingpi2-buildroot
   mkdir -p /workspace/bmc-firmware/buildroot/output
   [ -z "$OWNER" ] || \
-    chown -R "$OWNER${GROUP:+:$GROUP}" /src/output/turingpi2-buildroot /workspace/bmc-firmware/buildroot/output
+    chown -R "$OWNER${GROUP:+:$GROUP}" /src/input/turingpi2-buildroot /workspace/bmc-firmware/buildroot/output
   rm -rf /workspace/bmc-firmware/buildroot/output/images
-  ln -s /src/output/turingpi2-buildroot /workspace/bmc-firmware/buildroot/output/images
+  ln -s /src/input/turingpi2-buildroot /workspace/bmc-firmware/buildroot/output/images
 
   ./scripts/build.sh
 fi

@@ -3,6 +3,7 @@
 # build turing pi image to get rootfs
 output/turingpi2-alpine.img: output/turingpi2-alpine.rootfs.tar.zst turingpi2-alpine.Dockerfile.d/docker-to-sd-card-img.sh
 	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
+	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) turingpi2-alpine.Dockerfile.d/docker-to-sd-card-img.sh $< $@
 
 output/%.zst: output/%

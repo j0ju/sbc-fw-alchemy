@@ -25,10 +25,7 @@ IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
 cleanup() {
   local rs=$?
   local d
-  if [ $rs = 0 ]; then
-    [ -z "$OWNER" ] || \
-      chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
-  else
+  if [ ! $rs = 0 ]; then
     rm -f "$IMAGE"
   fi
   cd /
@@ -65,6 +62,9 @@ sfdisk $IMAGE > /dev/null <<EOF
   1: type=83 start=2048 bootable
 EOF
 
+[ -z "$OWNER" ] || \
+  chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
+
 DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
 
 P1="$(echo $DEVS | grep -E -o "[^ ]+p1")"
@@ -86,5 +86,10 @@ rm /mnt/boot/uboot.img
 # TODO: find a better place for this
 rm -f /mnt/etc/resolv.conf
 ln -s ../tmp/resolv.conf /mnt/etc/resolv.conf
+
+cd /mnt/etc
+git add .
+git commit -m "${0} finish"
+
 
 # vim: ts=2 sw=2 ft=sh et
