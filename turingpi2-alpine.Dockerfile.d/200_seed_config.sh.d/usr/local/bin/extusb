@@ -1,0 +1,4 @@
+#!/bin/sh
+
+set -ex
+tpi usb -n $1 device

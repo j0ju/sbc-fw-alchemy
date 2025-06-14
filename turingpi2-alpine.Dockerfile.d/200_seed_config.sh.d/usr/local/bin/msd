@@ -1,0 +1,4 @@
+#!/bin/sh
+
+set -ex
+tpi advanced -n $1 msd

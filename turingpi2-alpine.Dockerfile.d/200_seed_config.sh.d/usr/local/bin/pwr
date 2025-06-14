@@ -1,0 +1,50 @@
+#!/bin/sh
+
+switch() {
+  local mode="$1"
+  case "$mode" in
+    on | 1 | ON ) mode=on ;;
+    off | 0 | OFF ) mode=off ;;
+    status | stat | st | "" ) 
+      status
+      return $?
+      ;;
+    * )
+      echo "E: unknown mode '$mode', ABORT (on, 1, ON, off, 0, off)." >&2
+      exit 2
+      ;;
+  esac
+  shift
+  for node; do
+    case "$node" in
+      [1234] )
+        ( set -ex
+          tpi power -n "$node" "$mode"
+        )
+        #if [ "$mode" = off ]; then
+        #  ( set -ex
+        #    tpi advanced -n "$node" normal
+        #  )
+        #fi
+        ;;
+      all )
+        switch $mode 1 2 3 4
+        return $?
+        ;;
+      * )
+        echo "E: unknown node specifier '$node', ABORT (1,2,3,4,all)." >&2
+        exit 2
+    esac
+  done
+  status
+}
+
+status() {
+  tpi power status
+}
+
+case "$0" in
+  */on | on ) switch on "$@" ;;
+  */off | off ) switch off "$@" ;;
+  */pwr | pwr ) switch "$@"
+esac

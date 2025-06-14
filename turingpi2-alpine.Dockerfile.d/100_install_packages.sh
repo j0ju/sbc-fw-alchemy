@@ -38,6 +38,7 @@ PKGS=" \
   blkid \
   mtr tcpdump \
     mtr-bash-completion \
+  ppp ppp-chat \
   sed \
   u-boot-tools \
   partx \

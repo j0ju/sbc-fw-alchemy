@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+set -x
+
+case "${1:-}" in
+  [1234] ) NODE="$1" ;;
+  * )
+    echo "$0 [NODE]" >&2
+    exit 1
+esac
+
+DEV="/dev/ttyS$NODE"
+
+stty -F $DEV speed 115200
+
+on "$NODE" &
+
+chat -V < $DEV > $DEV \
+  "autoboot:" BREAK \
+  "=>" 'set boot_targets mmc0' \
+  "=>" boot \
+  "Enter choice:" 1 \
+  # EO chat
+
+echo > $DEV
+
+exec minicom $NODE
