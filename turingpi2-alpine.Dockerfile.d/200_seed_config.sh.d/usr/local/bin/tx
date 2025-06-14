@@ -1,0 +1,29 @@
+#!/bin/sh
+
+[ -z "$UID" ] && UID=$(id -u)
+SOCKET_PATH="/tmp/tmux-$UID"
+SOCKET_NAME=default
+
+if ! [ -d "${SOCKET_PATH}" ]; then
+  mkdir -p "$SOCKET_PATH"
+  chmod 700 $SOCKET_PATH
+fi
+
+S="$SOCKET_PATH/$SOCKET_NAME"
+
+if [ -z "$TMUX" ]; then
+  tmux_sid="$(tmux -S "$S" ls 2> /dev/null | head -n 1 | cut -f1 -d:)"
+  case "$tmux_sid" in
+    "" )
+      exec tmux -S "$S" -l
+      ;;
+    [0-9]* )
+      exec tmux -S "$S" a -d -t "$tmux_sid"
+      ;;
+  esac
+else
+  case "$1" in
+    "" ) tmux new-window -n sh ;;
+    * )  tmux "$@" ;;
+  esac
+fi
