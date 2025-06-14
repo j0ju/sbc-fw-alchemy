@@ -26,6 +26,7 @@ case "$IMAGE" in
     if [ -d "$IMAGE" ]; then
       IMAGE="${IMAGE%/}"
       IMAGE="${IMAGE%.Dockerfile.d}"
+      CRIOPTS="$CRIOPTS --name $IMAGE"
     fi
     ;;
 
@@ -33,7 +34,7 @@ case "$IMAGE" in
     if [ -d "$IMAGE" ]; then
       VOLUME="${IMAGE%/}"
       VOLUME="${VOLUME%.Workspace.d}"
-      CRIOPTS="$CRIOPTS -w /workspace -v sbc-$VOLUME.workspace:/workspace"
+      CRIOPTS="$CRIOPTS --name $VOLUME -w /workspace -v sbc-$VOLUME:/workspace -e HOME=/workspace"
       IMAGE="img-mangler"
     fi
     ;;

@@ -23,13 +23,8 @@ while [ -n "$1" ]; do # eval until the first unknown argument
       OPTS="$OPTS $1"
       shift
       ;;
-    -p )
+    -p | --privileged )
       OPTS="$OPTS --privileged"
-      shift
-      ;;
-    -e )
-      OPTS="$OPTS -e '$2'"
-      shift
       shift
       ;;
     --pid-host | -ph )
@@ -47,8 +42,8 @@ while [ -n "$1" ]; do # eval until the first unknown argument
       shift
       shift
       ;;
-    -v )
-      OPTS="$OPTS -v $2"
+    -u | -v | -e | --name )
+      OPTS="$OPTS $1 '$2'"
       shift
       shift
       ;;

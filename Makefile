@@ -64,12 +64,21 @@ build: $(WORK_FILES)
 #--- export mangled rootfs to tar
 output/%.rootfs.tar.zst: .deps/%.built
 	$(E) "ROOTFS $@"
+	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) /src/"img-mangler/gen-rootfs-tar.sh" "$@"
 
 #--- extend clean-local target
 # FIXME
-clean-local: clean-volumes
-	$(Q) rm -f *.zst *.img *.rar *.zip *.tar *.img.xz
+clean-local: clean-volumes clean-input clean-output
+
+mrproper-local: clean-volumes
+	$(Q) rm -rf input
+
+clean-input:
+	$(Q) rm -rf input/*.Dockerfile
+
+clean-output:
+	$(Q) rm -rf output
 
 clean-volumes:
 	$(Q) cd "$(DEPDIR)"; ( ls *.volume 2> /dev/null | sed 's/.volume$$//'; docker volume ls -q | sed 's/^sbc-//') | sort -u | while read i; do \
@@ -89,6 +98,6 @@ clean-volumes:
 
 .deps/%.workspace: %.Workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
 	$(E) "WORKSPACE $(<:/workspace.d/prepare.sh=)"
-	$(Q) ./bin/img-mangler -w /workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
+	$(Q) ./bin/img-mangler -w /workspace --name "make-$$( basename $(@:.workspace=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
 
 # vim: ts=2 sw=2 noet ft=make
