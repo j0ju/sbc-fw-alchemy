@@ -21,6 +21,8 @@
 
 * (/) initialize OTG properly
 
+* mount SD card to /mmc, leave mount open for accessing eMMC of nodes via MSD or similar
+
 * investigate stack traces at boot
 ```
 [    0.072901] ------------[ cut here ]------------
