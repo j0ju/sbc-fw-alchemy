@@ -20,11 +20,11 @@ done
 exec unshare -m -- sh -eu << EOF
   #set -x
 
-  # prepare /dev
-  mount -o move,rprivate /dev /rom/dev
-  mount -o rprivate -t tmpfs bmcd-dev /dev
-  cp -a /rom/dev/* /dev
   if [ "$MOCK_SERIAL" = yes ]; then
+  # prepare /dev
+    mount -o move,rprivate /dev /rom/dev
+    mount -o rprivate -t tmpfs bmcd-dev /dev
+    cp -a /rom/dev/* /dev
     rm -f /dev/ttyS[1234]
     ln -s tty7 /dev/ttyS1
     ln -s tty7 /dev/ttyS2
@@ -33,9 +33,7 @@ exec unshare -m -- sh -eu << EOF
   fi
 
   # prepare /lib
-  mount -o bind,rprivate /lib /rom/lib
-  mount bmcd-lib /lib -t overlay -o rprivate,lowerdir=/rom/lib:/srv/bmcd/lib
+  mount -o bind,ro,rprivate /srv/bmcd/lib /lib
 
   exec /srv/bmcd/bin/bmcd $BMCD_CMDLINE
 EOF
-

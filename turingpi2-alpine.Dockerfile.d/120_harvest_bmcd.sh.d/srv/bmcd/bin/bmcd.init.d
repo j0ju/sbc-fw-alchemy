@@ -22,3 +22,9 @@ start_pre() {
     sh /etc/bmcd/generate_self_signedx509.sh
   fi
 }
+
+start() {
+  exec < /dev/null > /dev/kmsg 2>&1
+  "$command" $command_args &
+  echo $! > "$pidfile"
+}
