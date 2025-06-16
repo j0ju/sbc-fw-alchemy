@@ -36,5 +36,8 @@ case "$PHASE" in
     if [ -n "$IF_IPV6_ADDR_GEN_MODE" ]; then
       echo "$IF_IPV6_ADDR_GEN_MODE" > /proc/sys/net/ipv6/conf/$IFACE/addr_gen_mode
     fi
+    if [ "$IF_IPV6_AUTOCONF" = no ]; then
+      echo "0" > /proc/sys/net/ipv6/conf/$IFACE/autoconf
+    fi
     ;;
 esac
