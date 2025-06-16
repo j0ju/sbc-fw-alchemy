@@ -13,7 +13,7 @@
 command="/bin/busybox syslogd"
 command_args="-L -R 127.0.0.1:514 -C128 -S -t -n"
 command_background="yes"
-pidfile="/run/syslog.pid"
+pidfile="/run/syslogd.pid"
 
 depend() {
         need hostname
