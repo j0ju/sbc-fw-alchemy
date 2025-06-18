@@ -24,7 +24,10 @@ start_pre() {
 }
 
 start() {
-  exec < /dev/null > /dev/kmsg 2>&1
-  "$command" $command_args &
-  echo $! > "$pidfile"
+  rm -f /run/bmcd.pipe
+  mknod /run/bmcd.pipe p
+  "$command" $command_args < /dev/null > /run/bmcd.pipe 2>&1 &
+  pid=$!
+  echo $pid > "$pidfile"
+  /usr/bin/logger -t "bmcd[$pid]" < /run/bmcd.pipe &
 }
