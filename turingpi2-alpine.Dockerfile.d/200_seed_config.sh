@@ -17,7 +17,7 @@ PS4='> ${0##*/}: '
   # EO rm -rf
 
   # recreate some toplevel directories
-  mkdir -p tmp overlay run
+  mkdir -p tmp overlay run sys proc
   chmod 1777 tmp
 
   # var/tmp
@@ -61,6 +61,7 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
+    echo " * /$f"
   done
 
 # pre-seed initial seed credentials

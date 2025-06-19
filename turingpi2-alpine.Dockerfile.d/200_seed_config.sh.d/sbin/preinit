@@ -30,11 +30,18 @@ is_safemode() {
   grep -q 'safemode' /proc/cmdline
 }
 
-#- pivot_overlay OVERLAYDIR
-#
-#   Establish an overlayfs over the read-only rootfs (storing data in OVERLAYDIR)
-#   and make it the root
-#
+emergency_console() {
+  echo ""
+  log "--- emergency fall through console --- $0[$$]"
+  env | sort
+  log "---"
+  mount
+  log "--- emergency fall through console --- $0[$$]"
+  echo ""
+  set -x
+  exec /bin/bash --login
+}
+
 pivot_overlay() {
   MOUNTS="dev proc tmp sys"
   NEWROOT=/tmp/newroot
@@ -62,11 +69,9 @@ pivot_overlay() {
   rmdir $NEWROOT
 }
 
-#- preinit
-#
-# Main function
-#
-preinit() {
+to_overlay() {
+  trap emergency_console EXIT
+
   log "Starting"
 
   # Need /dev, /proc, and /tmp mounted, and /sys for good measure
@@ -76,6 +81,9 @@ preinit() {
   mount -t tmpfs tmpfs /tmp -o nodev,nosuid
   chmod 1777 /tmp
 
+  #ROOTDEV="$(findmnt -nr -oSOURCE /)"
+  #mount "$ROOTDEV" /rom
+
   if is_safemode || ! mount_overlay $OVERLAY; then
     OVERLAY=/tmp/overlay
     log "Entering safemode (overlay dir $OVERLAY)"
@@ -84,16 +92,32 @@ preinit() {
 
   pivot_overlay $OVERLAY
 
+  exec /rom/sbin/preinit
+}
+
+ensure_volatile_dir() {
+  local link="$1"
+  local dest="$(readlink "$link")"
+  cd "${link%/*}"
+  if ! mkdir -p "$dest"; then
+    ensure_volatile_dir "${dest%/*}"
+    mkdir -p "$dest"
+  fi
+}
+
+exec_init() {
+  set -x
+  trap emergency_console EXIT
+
   # fixes of /tmp and cleanup lefovers
   umount $ROM/$OVERLAY 2> /dev/null || :
+  umount $ROM/$ROM 2> /dev/null || :
   # ensure symlinks targets in /var to somewhere /tmp exist
   find /var -type l | \
     while read d; do
-      l="$(readlink "$d")"
-      cd "${d%/*}"
-      mkdir -p "$l"
+      ensure_volatile_dir "$d"
     done
-  mount -o remount,size=512k /dev || :
+  mount -o remount,size=256k /dev || :
 
   # find init, try /sbin/preinit if it exists is executable and is not the same content as the current running script
   if [ -x /sbin/preinit ]; then
@@ -101,15 +125,20 @@ preinit() {
       log "found /sbin/preinit in overlay fs"
       log "running /sbin/preinit"
       exec /sbin/preinit
+    else # if /sbin/preinit in overlay equals stock version, assume freshly initialized system
+      rm -f /sbin/preinit /sbin/mount_overlay
     fi
   fi
   log "running /sbin/init"
   exec /sbin/init
 }
 
-if [ ! $$ = 1 ]; then
-  log "$0 not running as PID 1 != $$, ABORT"
-  exit 69
-fi
-preinit
+case "$$:$0" in
+  1:/sbin/preinit ) to_overlay ;;
+  1:/rom/sbin/preinit ) exec_init ;;
+  * )
+    log "$0 not running as PID 1 != $$, ABORT"
+    exit 69
+esac
+
 # vim ts=2 sw=2 et ft=sh

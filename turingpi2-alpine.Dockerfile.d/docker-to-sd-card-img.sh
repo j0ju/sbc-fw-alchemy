@@ -18,8 +18,15 @@ case "$SRC" in
     ;;
 esac
 
-USAGE_KB="$( $DECOMPRESSOR < "$SRC" | wc -c | awk '{print $1/1024}' )"
-IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
+# auto adjust image size
+#USAGE_KB="$( $DECOMPRESSOR < "$SRC" | wc -c | awk '{print $1/1024}' )"
+#IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
+
+# 1G
+#IMAGE_SIZE_KB=$(( 1024 * 1024 ))
+
+# 640M
+IMAGE_SIZE_KB=$(( 640 * 1024 ))
 
 #--- safe cleanup
 cleanup() {
