@@ -1,6 +1,9 @@
 # - /etc/profile -
 export PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
+[ "$__ETC_PROFILE_READ" = yes ] && return 0
+__ETC_PROFILE_READ=yes
+
 case "$-" in
   *i* )
     if [ "`id -u`" -eq 0 ]; then
