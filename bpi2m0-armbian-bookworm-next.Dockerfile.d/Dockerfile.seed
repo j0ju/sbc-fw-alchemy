@@ -1,4 +1,5 @@
 # (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
 
 # set base, copy scripts & out-of-tree resources
 FROM sbc:bpi2m0-armbian-bookworm-base
