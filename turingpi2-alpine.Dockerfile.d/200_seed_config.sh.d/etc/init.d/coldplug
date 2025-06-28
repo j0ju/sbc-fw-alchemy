@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+
+description="Cold plug service"
+
+depend()
+{
+  need dev
+  keyword -docker -podman -lxc -openvz -prefix -systemd-nspawn -vserver
+}
+
+start()
+{
+  ebegin "Cold plug"
+  for i in `find /sys -name "uevent"`; do
+    ( 
+      echo add > $i 
+    ) 2> /dev/null
+  done
+  eend $?
+  return 0
+}
