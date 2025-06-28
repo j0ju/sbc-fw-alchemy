@@ -100,4 +100,8 @@ clean-volumes:
 	$(E) "WORKSPACE $(<:/workspace.d/prepare.sh=)"
 	$(Q) ./bin/img-mangler -w /workspace --name "make-$$( basename $(@:.workspace=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
 
+output/%.zst: output/%
+	$(E) "ZSTD $@"
+	$(Q) zstd < $< > $@
+
 # vim: ts=2 sw=2 noet ft=make
