@@ -3,7 +3,9 @@
 set -eu
 
 #---
-MIN_FREE_MB=${MIN_FREE_MB:-32}
+MIN_FREE_MB=${MIN_FREE_MB:-64}
+IMAGE_SIZE_KB_MIN=$(( 640 * 1024 )) # 640M
+#IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 
 IMAGE="$2"
 SRC="$1"
@@ -19,14 +21,12 @@ case "$SRC" in
 esac
 
 # auto adjust image size
-#USAGE_KB="$( $DECOMPRESSOR < "$SRC" | wc -c | awk '{print $1/1024}' )"
-#IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
+USAGE_KB="$( $DECOMPRESSOR < "$SRC" | wc -c | awk '{print $1/1024}' )"
 
-# 1G
-#IMAGE_SIZE_KB=$(( 1024 * 1024 ))
-
-# 640M
-IMAGE_SIZE_KB=$(( 640 * 1024 ))
+IMAGE_SIZE_KB="$(( IMAGE_SIZE_KB_MIN ))"
+if [ "$USAGE_KB" -gt "$(( IMAGE_SIZE_KB_MIN - MIN_FREE_MB*1024 ))" ]; then
+  IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
+fi
 
 #--- safe cleanup
 cleanup() {
