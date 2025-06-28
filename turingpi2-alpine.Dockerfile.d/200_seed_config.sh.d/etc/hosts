@@ -1,8 +1,10 @@
 # /etc/hosts
 
+127.0.0.1 tpi2bmc
+::1 tpi2bmc
+
 127.0.0.1 localhost.localdomain localhost
 ::1 ip6-localhost ip6-loopback localhost
-127.0.0.1 tpi2bmc
 
 fe00::0 ip6-localnet
 ff00::0 ip6-mcastprefix
