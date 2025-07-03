@@ -1,6 +1,6 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
-FROM sbc:armhf-Alpine-3.21 AS alpine
+FROM sbc:armhf-alpine-3.21 AS alpine
 FROM sbc:bpi2m0-armbian-bookworm
 
 # keep imported build /vanilla rom with original bmcd and tpi
@@ -10,11 +10,9 @@ RUN mv /target /vanilla
 COPY --from=alpine /target/ /target
 
 # populate modules and boot from vanilla
-RUN \
-  rm -rf /target/boot /target/lib/modules ;\
-  cp -a /vanilla/lib/modules /target/lib/modules ;\
-  cp -a /vanilla/boot /target/boot ;\
-  chown 0.0 /target/boot/* ;\
+RUN set -eu ;\
+  umask 022 ;\
+  rm -rf /target/boot /target/lib/modules /target/lib/firmware ;\
 : EO RUN
 
 CMD \
