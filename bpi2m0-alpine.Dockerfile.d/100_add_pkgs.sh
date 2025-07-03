@@ -11,5 +11,6 @@ chroot /target \
     wpa_supplicant wpa_supplicant-openrc \
     hostapd hostapd-openrc \
     wavemon \
+    sudo doas \
     cloud-init \
 # EO chroot /target apk add

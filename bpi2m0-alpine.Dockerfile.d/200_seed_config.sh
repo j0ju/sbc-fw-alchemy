@@ -17,7 +17,7 @@ PS4='> ${0##*/}: '
   # EO rm -rf
 
   # recreate some toplevel directories
-  mkdir -p tmp overlay run sys proc
+  mkdir -p tmp overlay run sys proc var/lib/misc
   chmod 1777 tmp
 
   # var/tmp
@@ -37,10 +37,21 @@ PS4='> ${0##*/}: '
     done
 ) # EO ( cd /target/var
 
+# ensure ./bin and ./sbin below /usr/local
+mkdir -p /target/usr/local/sbin /target/usr/local/bin
+
+# tune avahi anounced services
+rm -f /target/etc/avahi/services/sftp-ssh.service
+
+# store current time for swclock
+touch /target/var/lib/misc/openrc-shutdowntime
+
+# ensure ifupdown directories
+mkdir -p /target/etc/network/interfaces.d
+
 # copy over config seed
 DST="${DST:-/target}"
 FSDIR="$0.d"
-
 cd "$FSDIR"
 find . ! -type d | \
   while read f; do
@@ -61,36 +72,8 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
-    echo " * /$f"
+    #echo " * /$f"
   done
-
-# pre-seed initial seed credentials
-echo 'root:banana' | chroot /target chpasswd
-
-# change home of root to /run - less writes to MMC/flash
-sed -i -re 's|:/root:|:/run:|' /target/etc/passwd
-# change shell to bash
-sed -i -re '/^root/ s|/sh|/bash|' /target/etc/passwd
-
-# sort /etc/passwd | /etc/group
-for f in passwd group; do
-  sort -t: -k3 -n < /target/etc/$f > /target/etc/$f.new
-  cat /target/etc/$f.new > /target/etc/$f
-  rm -f /target/etc/$f.new
-done
-
-# ensure ./bin and ./sbin below /usr/local
-mkdir -p /target/usr/local/sbin /target/usr/local/bin
-
-# tune avahi anounced services
-rm -f /target/etc/avahi/services/sftp-ssh.service
-
-# store current time for swclock
-mkdir -p /target/var/lib/misc/
-touch /target/var/lib/misc/openrc-shutdowntime
-
-# ensure ifupdown directories
-mkdir -p /target/etc/network/interfaces.d
 
 # enable basic services
 chroot /target /bin/sh -e > /dev/null <<EOF
@@ -110,7 +93,6 @@ rc-update add networking default
 rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
-rc-update add dot default
 rc-update add mmc default
 
 rc-update add killprocs shutdown
