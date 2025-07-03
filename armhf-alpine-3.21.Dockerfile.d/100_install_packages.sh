@@ -46,6 +46,8 @@ PKGS=" \
     procs-bash-completion \
     wireguard-tools-bash-completion \
   openssl \
+  busybox-static \
+    busybox-openrc busybox-mdev-openrc \
 "
 
 # extras
