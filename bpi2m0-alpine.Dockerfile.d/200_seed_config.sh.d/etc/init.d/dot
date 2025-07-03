@@ -1,0 +1,19 @@
+#!/sbin/openrc-run
+
+description="Update dot files for root home in /run from /root/.[!.]*"
+
+depend() {
+  after clock
+  after localmount
+  need root
+}
+
+start() {
+  ebegin "Updating volatile dot files for root from /root/.[!.]* to /run"
+  cp -a /root/.[!.]* /run
+  rc=$?
+  eend $rc "~root in /run prepared"
+  return $rc
+}
+
+# vim: ts=2 et sw=2 ft=sh
