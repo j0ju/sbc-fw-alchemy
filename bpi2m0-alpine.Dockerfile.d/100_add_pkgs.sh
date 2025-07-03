@@ -8,6 +8,8 @@ set -x
 
 chroot /target \
   apk add \
-    wpa_supplicant wpa_supplicant-openrc hostapd hostapd-openrc \
+    wpa_supplicant wpa_supplicant-openrc \
+    hostapd hostapd-openrc \
+    wavemon \
     cloud-init \
 # EO chroot /target apk add
