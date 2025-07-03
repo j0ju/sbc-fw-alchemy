@@ -34,5 +34,6 @@ log:
   # customize the logging filter by changing this directive variable. for info
   # about the syntax see:
   # https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives
-  directive: "debug,actix_server=off"
+  directive: "info,actix_server=off"
+  #directive: "debug,actix_server=off"
   coloring: false

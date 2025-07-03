@@ -4,6 +4,8 @@
 *.sw*
 .env
 
+.DS_Store
+
 .deps
 
 *.img
