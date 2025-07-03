@@ -92,21 +92,20 @@ to_overlay() {
 
   pivot_overlay $OVERLAY
 
-  exec /rom/sbin/preinit
+  exec /rom$SCRIPT
 }
 
 ensure_volatile_dir() {
   local link="$1"
   local dest="$(readlink "$link")"
   cd "${link%/*}"
-  if ! mkdir -p "$dest"; then
+  if ! mkdir -p "$dest" 2> /dev/null; then
     ensure_volatile_dir "${dest%/*}"
     mkdir -p "$dest"
   fi
 }
 
 exec_init() {
-  set -x
   trap emergency_console EXIT
 
   # fixes of /tmp and cleanup lefovers
@@ -133,12 +132,30 @@ exec_init() {
   exec /sbin/init
 }
 
+wrap_init() {
+  trap emergency_console EXIT
+  if ! [ -x "$OVERLAY/upper/sbin/init" ]; then
+    rm -f /sbin/init
+    ln -s /bin/busybox /sbin/init
+  fi
+  "$1"
+}
+
+SCRIPT="$0"
+
 case "$$:$0" in
   1:/sbin/preinit ) to_overlay ;;
+  1:/sbin/init ) to_overlay ;;
+  1:/rom/sbin/init ) wrap_init exec_init ;;
   1:/rom/sbin/preinit ) exec_init ;;
+  1:* )
+    log "$0[$$]: unhandled multicall invocation as PID 1, dropping to emergency shell"
+    trap emergency_console EXIT
+    ;;
   * )
     log "$0 not running as PID 1 != $$, ABORT"
     exit 69
+    ;;
 esac
 
 # vim ts=2 sw=2 et ft=sh
