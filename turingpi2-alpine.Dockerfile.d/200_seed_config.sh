@@ -94,8 +94,9 @@ rc-update add sysctl sysinit
 rc-update add procfs sysinit
 rc-update add hwclock sysinit
 rc-update add modules sysinit
-rc-update add otg sysinit
 rc-update add mdev sysinit
+rc-update add hwdrivers sysinit
+rc-update add otg sysinit
 rc-update add syslog sysinit
 rc-update add klogd sysinit
 

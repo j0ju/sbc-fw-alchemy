@@ -16,7 +16,8 @@ start() {
   eend $rc
 
   ebegin "mount $DEVNAME to /mmc"
-  mkdir -p /mmc
+  [ -d /mmc ] || \
+    mkdir -p /mmc
   mount -t $TYPE "$DEVNAME" /mmc
   rc=$?
   eend $rc
