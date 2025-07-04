@@ -59,15 +59,6 @@ PKGS="$PKGS \
   dtc \
   rsync \
   make \
-  python3 \
-    pyc python3-pyc pyc
-    python3-pycache-pyc0
-    py3-certifi py3-certifi-pyc py3-charset-normalizer py3-charset-normalizer-pyc py3-distlib
-    py3-distlib-pyc py3-dotenv py3-dotenv-pyc py3-filelock py3-filelock-pyc py3-idna py3-idna-pyc
-    py3-packaging py3-packaging-pyc py3-parsing py3-parsing-pyc py3-pip py3-pip-bash-completion
-    py3-pip-pyc py3-platformdirs py3-platformdirs-pyc py3-requests
-    py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
-    py3-virtualenv-pyc py3-yaml py3-yaml-pyc
   ppp \
   sntpc \
   jq \
@@ -75,6 +66,19 @@ PKGS="$PKGS \
     bird-openrc \
   strace lsof \
 "
+
+# DISABLED:
+#PKGS="$PKGS \
+#  python3 \
+#    pyc python3-pyc pyc
+#    python3-pycache-pyc0
+#    py3-certifi py3-certifi-pyc py3-charset-normalizer py3-charset-normalizer-pyc py3-distlib
+#    py3-distlib-pyc py3-dotenv py3-dotenv-pyc py3-filelock py3-filelock-pyc py3-idna py3-idna-pyc
+#    py3-packaging py3-packaging-pyc py3-parsing py3-parsing-pyc py3-pip py3-pip-bash-completion
+#    py3-pip-pyc py3-platformdirs py3-platformdirs-pyc py3-requests
+#    py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
+#    py3-virtualenv-pyc py3-yaml py3-yaml-pyc
+#"
 
 ## dev
 #PKGS="$PKGS \
