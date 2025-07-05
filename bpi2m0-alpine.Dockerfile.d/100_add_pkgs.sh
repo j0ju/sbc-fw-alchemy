@@ -8,6 +8,7 @@ set -x
 
 chroot /target \
   apk add \
+    iw wireless-tools \
     wpa_supplicant wpa_supplicant-openrc \
     hostapd hostapd-openrc \
     wavemon \
