@@ -19,9 +19,18 @@ cp -a /vanilla/lib/firmware /target/lib/firmware
     cirrus cypress hinlink-h88k-240x135-lcd.bin novatek qcom qca xc* \
     xr* s5p-mfc-v8.fw v4l-coda* sdma aic8800 imx video \
     vpu wcnmodem.bin wifi_2355b001_1ant.ini \
-  #
+    \
+    regulatory.db regulatory.db.p7s \
+    updates \
+  # EO rm -f
+
+  cp regulatory.db-debian regulatory.db
+  cp regulatory.db.p7s-debian regulatory.db.p7s
 )
+
+rm -f /target/boot/uboot.egn
 
 cp -a /vanilla/boot /target/boot
 cp -a /vanilla//usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
+
 chown 0.0 /target/boot/*
