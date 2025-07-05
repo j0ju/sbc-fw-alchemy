@@ -1,0 +1,8 @@
+#cloud-config
+{}
+
+#runcmd:
+#  - |
+#    PS4="runcmd: "; set -e; trap `exit $?` EXIT
+#    set -x
+

@@ -15,7 +15,7 @@
 #- settings
   OVERLAY=/overlay
   ROM=/rom
-  BLKFILTER="LABEL=tpi2data"
+  BLKFILTER="LABEL=mmc-data"
 
 log() {
   echo "PREINIT: $*"

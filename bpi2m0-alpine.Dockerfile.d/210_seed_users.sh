@@ -3,7 +3,8 @@
 set -eu
 
 # settings
-DEFAULT_USER=alpine
+DEFAULT_USER=pi
+DEFAULT_PW=banana
 
 PS4='> ${0##*/}: '
 set -x
@@ -15,10 +16,13 @@ sed -i -re '/^root/ s|/sh|/bash|' /target/etc/passwd
 sed -i -re "/^$DEFAULT_USER/"' s|/sh|/bash|' /target/etc/passwd
 
 # pre-seed initial seed credentials
-# randomize/disable root
-echo "root:$(tr -dc '[0-9a-zA-Z:!-_$]' < /dev/urandom  | head -c 32)" | chroot /target chpasswd
-# default login for pi user
-echo "$DEFAULT_USER:banana" | chroot /target chpasswd
+# explicitly lock the root account
+echo 'root:*' | chroot /target chpasswd -e
+chroot /target /usr/bin/passwd -l root
+
+# default login for $DEFAULT_USER user
+echo "$DEFAULT_USER:$DEFAULT_PW" | chroot /target chpasswd
+chroot /target addgroup $DEFAULT_USER wheel
 
 # copy over config seed
 DST="${DST:-/target}"
@@ -53,7 +57,7 @@ for f in passwd group; do
   rm -f /target/etc/$f.new
 done
 
-# seed user config
+# seed user for $DEFAULT_USER config from root
 chroot /target sh -eu <<EOchroot
   PS4='> ${0##*/}:chroot: '
   set -x

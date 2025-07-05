@@ -43,11 +43,14 @@ mkdir -p /target/usr/local/sbin /target/usr/local/bin
 # tune avahi anounced services
 rm -f /target/etc/avahi/services/sftp-ssh.service
 
-# store current time for swclock
+# store build time for swclock
 touch /target/var/lib/misc/openrc-shutdowntime
 
 # ensure ifupdown directories
 mkdir -p /target/etc/network/interfaces.d
+
+# disable busybox su, SUID bit issues
+rm -f /target/bin/su
 
 # copy over config seed
 DST="${DST:-/target}"
