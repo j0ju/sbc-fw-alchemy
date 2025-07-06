@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export TPI_HOSTNAME="${TPI_HOSTNAME:-[::1]}"
+export TPI_PORT="${TPI_PORT:-443}"
+
+exec /opt/bmcd/bin/tpi.bin "$@"

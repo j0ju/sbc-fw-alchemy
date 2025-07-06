@@ -1,18 +1,22 @@
 ---
 # The TCP port which the daemon listens on.
-host: "::"
 port: 443
+host: "::"
+
 # Directory to www pages. Can be changed in order to host a custom website.
-www: /srv/bmcd/www/
+www: /opt/bmcd/www/
+
 # if true, users trying to access the daemon over HTTP, will be redirected to
 # HTTPS.
 redirect_http: false
+
 store:
   # The bmcd contains a write mechanism that writes its internal key/value store
   # back to the file-system. This happens on a timeout started from the last
   # write. Commenting out `write_timeout` disables the timeout mechanism. In
   # this case changes are written to the file-system directly. Value is in seconds.
   write_timeout: 7
+
 authentication:
   # The amount of attempts a user can make before it get's an access denied
   # penalty. Any subsequent attempts will exponentially worsen the period before
@@ -25,15 +29,18 @@ authentication:
   # token. The expiry date is counted from the last successful usage of the
   # token. Value is in seconds.
   token_expires: 10800
+
 tls:
   certificate: /etc/ssl/certs/bmcd_cert.pem
   private_key: /etc/ssl/certs/bmcd_key.pem
+
 log:
   # send logging to std out
   stdout: true
+  coloring: false
+
   # customize the logging filter by changing this directive variable. for info
   # about the syntax see:
   # https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives
   directive: "info,actix_server=off"
   #directive: "debug,actix_server=off"
-  coloring: false

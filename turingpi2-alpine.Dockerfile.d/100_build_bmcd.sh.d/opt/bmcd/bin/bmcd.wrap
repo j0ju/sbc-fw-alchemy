@@ -2,6 +2,9 @@
 set -eu
 
 PS4="> ${0##*/}[$$] > "
+
+export CARGO_PKG_VERSION=2.3.7
+
 set -x
 # this prevents bmcd from binding to /dev/ttyS[1234]
 # this allow ungarbled access with minicom, screen, ...
@@ -42,17 +45,13 @@ exec unshare -m -- sh -eu << EOF
   if [ "$STDOUT_TO_SYSLOG" = yes ]; then
     rm -f /run/bmcd.pipe
     mknod /run/bmcd.pipe p
-    if [ "$MOCK_SERIAL" = yes ]; then
-      mount -o bind -r /rom/dev/log /dev/log
-    fi
+    mount -o bind -r /rom/dev/log /dev/log
     /usr/bin/logger -s -t "bmcd[$$]" < /run/bmcd.pipe &
     exec > /run/bmcd.pipe
     rm -f /run/bmcd.pipe
   fi
-
-  # prepare /lib
-  mount -o bind,ro,rprivate /srv/bmcd/bin/bmcd "$0"
-  mount -o bind,ro,rprivate /srv/bmcd/lib /lib
+  
+  mount -o bind,ro,rprivate /opt/bmcd/bin/bmcd.bin "$0"
 
   exec "$0" $BMCD_CMDLINE 2>&1
 EOF
