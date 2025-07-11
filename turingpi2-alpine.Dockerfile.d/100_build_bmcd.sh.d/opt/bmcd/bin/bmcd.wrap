@@ -24,34 +24,25 @@ while [ $# != 0 ]; do
 done
 
 # "tinker" environment to run bmcd
-exec unshare -m -- sh -eu << EOF
-  PS4="> ${0##*/}[\$$] > mountns > "
+exec unshare -m -- sh -eu -c "
+  PS4='> ${0##*/}[\$$] > mountns > '
   set -x
 
-  if [ "$MOCK_SERIAL" = yes ]; then
+  if [ '$MOCK_SERIAL' = yes ]; then
   # prepare /dev
-    mount -o move,rprivate /dev /rom/dev
-    mount -t tmpfs tmpfs /rom/tmp -o size=256k
-
-    mkdir -p /rom/tmp/upper /rom/tmp/work
-    mount -t overlay -o lowerdir=/rom/dev,upperdir=/rom/tmp/upper,workdir=/rom/tmp/work bmcd-dev-overlay /dev
-
-    rm -f /dev/ttyS[1234]
-    ln -s tty7 /dev/ttyS1
-    ln -s tty7 /dev/ttyS2
-    ln -s tty7 /dev/ttyS3
-    ln -s tty7 /dev/ttyS4
+    mount -o bind,rprivate /dev/tty7 /dev/ttyS1
+    mount -o bind,rprivate /dev/tty7 /dev/ttyS2
+    mount -o bind,rprivate /dev/tty7 /dev/ttyS3
+    mount -o bind,rprivate /dev/tty7 /dev/ttyS4
   fi
-  if [ "$STDOUT_TO_SYSLOG" = yes ]; then
+  if [ '$STDOUT_TO_SYSLOG' = yes ]; then
     rm -f /run/bmcd.pipe
     mknod /run/bmcd.pipe p
-    mount -o bind -r /rom/dev/log /dev/log
-    /usr/bin/logger -s -t "bmcd[$$]" < /run/bmcd.pipe &
+    /usr/bin/logger -s -t 'bmcd[\$$]' < /run/bmcd.pipe &
     exec > /run/bmcd.pipe
     rm -f /run/bmcd.pipe
   fi
-  
-  mount -o bind,ro,rprivate /opt/bmcd/bin/bmcd.bin "$0"
 
-  exec "$0" $BMCD_CMDLINE 2>&1
-EOF
+  mount -o bind,rprivate /opt/bmcd/bin/bmcd.bin '$0'
+  exec '$0' $BMCD_CMDLINE 2>&1
+"

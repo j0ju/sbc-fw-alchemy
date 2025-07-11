@@ -14,5 +14,5 @@ RUN \
   rm -rf /target/boot /target/lib/modules ;\
   cp -a /vanilla/lib/modules /target/lib/modules ;\
   cp -a /vanilla/boot /target/boot ;\
-  chown 0.0 /target/boot/* ;\
+  chown -R 0:0 /target/boot/* ;\
 : EO RUN
