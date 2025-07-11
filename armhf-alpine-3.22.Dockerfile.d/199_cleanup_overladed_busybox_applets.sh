@@ -5,6 +5,7 @@
 PS4='> ${0##*/}: '
 #set -x
 
+# remove applet links to busybox if we have a real binary
 chroot /target /bin/sh -eu << 'EOF'
   applet=busybox
   srch="$(echo "$PATH" | sed -r -e 's#/?(:|$)#/'"$applet"' #g')"
@@ -33,5 +34,10 @@ chroot /target /bin/sh -eu << 'EOF'
     done
   done
 EOF
+
+# in Alpine 3.22 klogd user seems to be missing
+chroot /target grep ^klogd: /etc/passwd || \
+  chroot /target \
+    adduser -h /dev/null -g klogd -s /sbin/nologin -S -u 103 -G nobody klogd
 
 # vim: set ts=2 sw=2 et

@@ -54,16 +54,11 @@ PKGS=" \
 PKGS="$PKGS \
   btrfs-progs \
     btrfs-progs-bash-completion \
-  tig \
   file \
   dtc \
   rsync \
   make \
-  ppp \
   sntpc \
-  jq \
-  bird \
-    bird-openrc \
   strace lsof \
 "
 
@@ -80,9 +75,13 @@ PKGS="$PKGS \
 #    py3-virtualenv-pyc py3-yaml py3-yaml-pyc
 #"
 
-## dev
 #PKGS="$PKGS \
+#  tig \
+#  bird \
+#    bird-openrc \
 #  python3-dev \
+#  ppp \
+#  jq \
 #"
 
 # we install these pkgs in advance so -openrc and -bash-completion are installed i
