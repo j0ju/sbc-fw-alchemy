@@ -6,7 +6,7 @@ set -eu
 DEFAULT_USER=alpine
 
 PS4='> ${0##*/}: '
-set -x
+#set -x
 
 # copy over config seed
 DST="${DST:-/target}"

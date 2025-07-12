@@ -4,7 +4,9 @@ set -eu
 umask 022
 
 PS4='> ${0##*/}: '
-set -x
+#set -x
+
+mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper /target/tmp/cache/vim
 
 chroot /target \
   apk add \

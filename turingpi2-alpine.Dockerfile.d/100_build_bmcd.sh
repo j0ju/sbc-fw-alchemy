@@ -14,6 +14,7 @@ umask 022
   PS4='> ${0##*/}: '
   set -x
 
+
 #- settings
   BMCD_VERSION=v2.3.7
   BMCUI_VERSION=v3.3.6
@@ -31,8 +32,9 @@ umask 022
 #- prepare build env in seperate directory /build
   umask 022
   cp -a /target /build
-  chroot /build apk add cargo pkgconf openssl-dev linux-headers
+  mkdir -p /build/tmp/cache/etckeeper /build/tmp/cache/apk /build/tmp/cache/vim
   mkdir -p "/build/$PREFIX"
+  chroot /build apk add cargo pkgconf openssl-dev linux-headers
 
 ##- download and install BMC UI
 chroot /build /bin/sh -eu <<EOchroot

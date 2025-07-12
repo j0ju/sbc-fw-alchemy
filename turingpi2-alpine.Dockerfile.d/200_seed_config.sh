@@ -21,13 +21,13 @@ PS4='> ${0##*/}: '
   chmod 1777 tmp
 
   # var/tmp
-  ln -s ../tmp var/tmp
-  ln -s ../tmp/log var/log
-  ln -s ../../tmp/cache/apk var/cache/apk
-  ln -s ../../tmp/cache/vim var/cache/vim
-  ln -s ../../tmp/cache/etckeeper var/cache/etckeeper
-  ln -s ../../tmp/lib/dbus var/lib/dbus
-  ln -s ../../tmp/lib/rsyslog var/lib/rsyslog
+  ln -sf ../tmp var/tmp
+  ln -sf ../tmp/log var/log
+  ln -sf ../../tmp/cache/apk var/cache/apk
+  ln -sf ../../tmp/cache/vim var/cache/vim
+  ln -sf ../../tmp/cache/etckeeper var/cache/etckeeper
+  ln -sf ../../tmp/lib/dbus var/lib/dbus
+  ln -sf ../../tmp/lib/rsyslog var/lib/rsyslog
   # keep this image during build functioning
 ) # EO ( cd /target/
 ( cd /target/var

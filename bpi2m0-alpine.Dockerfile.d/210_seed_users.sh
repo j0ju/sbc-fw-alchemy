@@ -7,7 +7,7 @@ DEFAULT_USER=pi
 DEFAULT_PW=banana
 
 PS4='> ${0##*/}: '
-set -x
+#set -x
 
 chroot /target useradd $DEFAULT_USER
 
@@ -60,7 +60,7 @@ done
 # seed user for $DEFAULT_USER config from root
 chroot /target sh -eu <<EOchroot
   PS4='> ${0##*/}:chroot: '
-  set -x
+  #set -x
 
   mkdir -p ~$DEFAULT_USER/.ssh
   for glob in "/root/[!.]*" "/root/.[!.]*"; do

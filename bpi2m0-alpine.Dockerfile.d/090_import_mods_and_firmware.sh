@@ -4,7 +4,7 @@ set -eu
 umask 022
 
 PS4='> ${0##*/}: '
-set -x
+#set -x
 
 # TODO filter only needed modules, that makes sense on a BPI0
 cp -a /vanilla/lib/modules /target/lib/modules
@@ -29,8 +29,9 @@ cp -a /vanilla/lib/firmware /target/lib/firmware
 )
 
 rm -f /target/boot/uboot.egn
+rm -f /target/boot/*.bmp
 
 cp -a /vanilla/boot /target/boot
 cp -a /vanilla//usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
 
-chown 0.0 /target/boot/*
+chown -R 0:0 /target/boot/*

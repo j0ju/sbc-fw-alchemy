@@ -39,14 +39,13 @@ update_rc() {
 }
 
 rc_call() {
-  set -x
   svc="${1##*/rc}"
   if [ "$1" = "$svc" ]; then
     echo "${1##*/}: could not resolve service, ABORT"
     exit 1
   fi
-  shift
   if [ -x "/etc/init.d/$svc" ]; then
+     shift
      exec "/etc/init.d/$svc" "$@"
   else
     echo "${0##*/}: /etc/init.d/$svc is not an executable, ABORT"
@@ -56,11 +55,11 @@ rc_call() {
 
 case "$0" in
   */update-rc ) update_rc ;;
-   */sbin/rc* ) rc_call "${0}" "$@" ;;
-   * )
-      echo "${0##*/}: unknown call '$0'"
-      exit 1
-   ;;
+  */sbin/rc* ) rc_call "${0}" "$@" ;;
+  * )
+    echo "${0##*/}: unknown call '$0'"
+    exit 1
+    ;;
 esac
 
 # vim: ts=2 sw=2 et ft=sh

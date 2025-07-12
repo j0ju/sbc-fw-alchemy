@@ -4,8 +4,8 @@
 set -eu
 
 PS4='> ${0##*/}: '
-set -x
-#
+#set -x
+
 umask 022
 
 # chdir to current kernel modules dir / assume we have only one kernel installed

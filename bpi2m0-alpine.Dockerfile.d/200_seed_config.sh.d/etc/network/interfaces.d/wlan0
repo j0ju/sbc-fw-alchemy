@@ -1,4 +1,0 @@
-#auto wlan0
-#iface wlan0
-#  use dhcp
-#  wifi-config-path /etc/wpa_supplicant/wlan0.conf
