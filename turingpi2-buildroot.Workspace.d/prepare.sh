@@ -22,6 +22,7 @@ else :
 
   #- patch kernel config
   cp "${0%/*}"/linux_defconfig  tp2bmc/board/tp2bmc/linux_defconfig
+  cp "${0%/*}"/uboot_defconfig  tp2bmc/board/tp2bmc/uboot_defconfig
   cp "${0%/*}"/tp2bmc_defconfig tp2bmc/configs/tp2bmc_defconfig
 
   #- prepare /workspace/bmc-firmware/buildroot
