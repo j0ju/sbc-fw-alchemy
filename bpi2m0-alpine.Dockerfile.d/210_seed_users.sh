@@ -72,3 +72,5 @@ EOchroot
 
 rm -f /target/etc/.git/HEAD.lock
 chroot /target etckeeper commit -m "${0##*/} finish"
+# FIXME: why? the commit is successful 
+rm -f /target/etc/.git/HEAD.lock

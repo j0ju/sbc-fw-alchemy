@@ -17,6 +17,4 @@ chroot /target \
     sudo doas \
     cloud-init \
 # EO chroot /target apk add
-
-# FIXME: why? the commit after apk add was successful?
 rm -f /target/etc/.git/HEAD.lock

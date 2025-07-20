@@ -74,3 +74,5 @@ mkdir -p /target/usr/local/sbin /target/usr/local/bin
 chroot /target /usr/local/sbin/update-rc 1> /dev/null
 
 chroot /target etckeeper commit -m "${0##*/} finish"
+# FIXME: why? the commit is successful 
+rm -f /target/etc/.git/HEAD.lock

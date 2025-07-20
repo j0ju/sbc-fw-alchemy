@@ -39,3 +39,5 @@ chroot /target setup-cloud-init
 chroot /target cloud-init clean
 
 chroot /target etckeeper commit -m "${0##*/} finish"
+# FIXME: why? the commit is successful 
+rm -f /target/etc/.git/HEAD.lock

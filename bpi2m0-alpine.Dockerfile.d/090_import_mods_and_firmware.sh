@@ -28,10 +28,10 @@ cp -a /vanilla/lib/firmware /target/lib/firmware
   cp regulatory.db.p7s-debian regulatory.db.p7s
 )
 
-rm -f /target/boot/uboot.egn
+#rm -f /target/boot/uboot.egn
 rm -f /target/boot/*.bmp
 
 cp -a /vanilla/boot /target/boot
-cp -a /vanilla//usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
+cp -a /vanilla/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
 
 chown -R 0:0 /target/boot/*
