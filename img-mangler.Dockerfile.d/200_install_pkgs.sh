@@ -25,6 +25,7 @@ apt-get install -y --no-install-recommends \
   live-build live-boot live-config \
   xxd \
   device-tree-compiler dt-utils \
+  sqlite3 sqlite3-tools sqlite-utils \
 # EO apt-get install
 
 # this ensures that an EFI grub and binaries are installed so we can build bootable images for AMD64

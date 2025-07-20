@@ -3,7 +3,7 @@
 
 . "$SRC/lib.sh"; init
 . "$SRC/100_add_files.sh"
-set -x
+#set -x
 
 DST="${DST:-/}"
 SHOPTS="$(echo $- | tr -cd 'eux')"
