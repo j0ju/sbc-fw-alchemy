@@ -70,4 +70,5 @@ chroot /target sh -eu <<EOchroot
   chown -R $DEFAULT_USER:$DEFAULT_USER ~$DEFAULT_USER
 EOchroot
 
+rm -f /target/etc/.git/HEAD.lock
 chroot /target etckeeper commit -m "${0##*/} finish"
