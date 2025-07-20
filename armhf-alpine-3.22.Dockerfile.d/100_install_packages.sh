@@ -10,7 +10,7 @@ PKGS=" \
   openssh-server \
   chrony \
     chrony-openrc \
-  openrc \
+  openrc openrc-init \
     openrc-bash-completion \
   iproute2 iproute2-ss iproute2-tc \
     iproute2-bash-completion \
@@ -20,7 +20,7 @@ PKGS=" \
   mount \
   util-linux util-linux-misc \
     util-linux-bash-completion \
-  mc vim minicom tmux screen minicom \
+  mc vim minicom tmux minicom \
   avahi avahi-tools \
   openresolv \
   kmod \
@@ -51,16 +51,13 @@ PKGS=" \
 "
 
 # extras
-PKGS="$PKGS \
-  btrfs-progs \
-    btrfs-progs-bash-completion \
-  file \
-  dtc \
-  rsync \
-  make \
-  sntpc \
-  strace lsof \
-"
+#PKGS="$PKGS \
+#  file \
+#  rsync \
+#  make \
+#  sntpc \
+#  strace lsof \
+#"
 
 # DISABLED:
 #PKGS="$PKGS \
@@ -76,15 +73,18 @@ PKGS="$PKGS \
 #"
 
 #PKGS="$PKGS \
+#  btrfs-progs \
+#    btrfs-progs-bash-completion \
 #  tig \
 #  bird \
 #    bird-openrc \
 #  python3-dev \
 #  ppp \
 #  jq \
+#  dtc \
 #"
 
-# we install these pkgs in advance so -openrc and -bash-completion are installed i
+# we install these pkgs in advance so -openrc and -bash-completion are installed
 # as recomends automatically for user convinience
   chroot /target apk add bash-completion openrc
 
