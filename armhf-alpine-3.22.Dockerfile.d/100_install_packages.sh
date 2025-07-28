@@ -46,12 +46,12 @@ PKGS=" \
     procs-bash-completion \
     wireguard-tools-bash-completion \
   openssl \
-  busybox-static \
-    busybox-openrc busybox-mdev-openrc \
+  busybox-openrc busybox-mdev-openrc \
 "
 
 # extras
 #PKGS="$PKGS \
+#  busybox-static \
 #  file \
 #  rsync \
 #  make \

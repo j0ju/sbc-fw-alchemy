@@ -1,13 +1,20 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+FROM sbc:armhf-Alpine-3.22 AS busybox-static
+RUN set -eu ;\
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  chroot /target apk add busybox-static
 
 FROM sbc:armhf-Alpine-3.22 AS alpine
-FROM sbc:bpi2m0-armbian-bookworm
 
+FROM sbc:bpi2m0-armbian-bookworm
 # keep imported build /vanilla rom with original bmcd and tpi
 RUN mv /target /vanilla
-
 # start /target with fresh armhf alpine
 COPY --from=alpine /target/ /target
+COPY --from=busybox-static /target/bin/busybox.static /target.busybox.static
 
 CMD \
   rm -f /target/etc/resolv.conf ;\
