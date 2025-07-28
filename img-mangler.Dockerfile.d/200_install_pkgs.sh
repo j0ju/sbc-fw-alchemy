@@ -26,6 +26,7 @@ apt-get install -y --no-install-recommends \
   xxd \
   device-tree-compiler dt-utils \
   sqlite3 sqlite3-tools sqlite-utils \
+  inetutils-ping traceroute mtr-tiny bind9-dnsutils \
 # EO apt-get install
 
 # this ensures that an EFI grub and binaries are installed so we can build bootable images for AMD64

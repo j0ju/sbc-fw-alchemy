@@ -5,6 +5,7 @@
 FROM debian:bookworm-slim
 
 COPY img-mangler.Dockerfile.d/ /src/img-mangler.Dockerfile.d
+COPY requirements.txt /src/requirements.txt
 
 # set environment - all build containers inherit this
 ENV \

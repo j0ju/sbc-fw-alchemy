@@ -1,0 +1,16 @@
+ansible==8.7.0
+
+ansible-ssh
+hvac
+netaddr
+jmespath
+jinja2
+passlib
+pbr
+toml
+
+# debuggin aid
+ipython
+
+# commit checks
+pre-commit
