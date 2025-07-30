@@ -1,19 +1,25 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
-FROM sbc:armhf-alpine-3.22 AS alpine
-FROM sbc:bpi2m0-armbian-bookworm
+FROM sbc:bpi2m0-armbian-bookworm AS armbian
 
-# keep imported build /vanilla rom with original bmcd and tpi
-RUN mv /target /vanilla
+FROM sbc:armhf-alpine-3.22
 
-# start /target with fresh armhf alpine
-COPY --from=alpine /target/ /target
-
-# populate modules and boot from vanilla
 RUN set -eu ;\
-  umask 022 ;\
-  rm -rf /target/boot /target/lib/modules /target/lib/firmware ;\
-: EO RUN
+  rm -rf /vanilla /target/boot /target/lib/modules /target/lib/firmware
+
+# populate modules and boot from armbian
+COPY --from=armbian /target/boot /target/boot
+
+COPY --from=armbian /target/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
+COPY --from=armbian /target/lib/modules /target/lib/modules
+COPY --from=armbian /target/lib/firmware /target/lib/firmware
+
+RUN set -eux ;\
+  ls -l /target ;\
+  ls -l /target/boot ;\
+  ls -l /target/lib/modules ;\
+  ls -l /target/lib/firmware ;\
+  :
 
 CMD \
   rm -f /target/etc/resolv.conf ;\

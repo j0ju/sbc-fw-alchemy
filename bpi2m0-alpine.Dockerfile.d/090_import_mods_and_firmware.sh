@@ -7,10 +7,7 @@ PS4='> ${0##*/}: '
 #set -x
 
 # TODO filter only needed modules, that makes sense on a BPI0
-cp -a /vanilla/lib/modules /target/lib/modules
-
 # TODO filter only needed firmware, that makes sense on a BPI0
-cp -a /vanilla/lib/firmware /target/lib/firmware
 ( cd /target/lib/firmware
   rm -rf \
     intel iwlwifi-* \
@@ -30,8 +27,5 @@ cp -a /vanilla/lib/firmware /target/lib/firmware
 
 #rm -f /target/boot/uboot.egn
 rm -f /target/boot/*.bmp
-
-cp -a /vanilla/boot /target/boot
-cp -a /vanilla/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
 
 chown -R 0:0 /target/boot/*
