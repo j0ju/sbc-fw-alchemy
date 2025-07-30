@@ -4,14 +4,20 @@ set -eu
 PS4_BASE="${0##*/}[\$$]:"
 PS4="$PS4_BASE "
 
-SQFS=/overlay/rom.sqfs
+SQFS="/rom/mnt/CURRENT/root.sqfs /overlay/rom.sqfs"
 
 WORKDIR=/run/live
 
 stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as init
   PS4="$PS4_BASE:stage0: "
   set -x
-  
+
+  for SQFS in $SQFS; do
+    if [ -r "$SQFS" ]; then
+      break
+    fi
+  done
+
   #- pre-flight checks
   if [ -f "$SQFS" ] && [ -s "$SQFS" ]; then :
   else
@@ -27,14 +33,19 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   mkdir -p "$WORKDIR/overlay" "$WORKDIR/rom" "$WORKDIR/rootfs"
   mount -t tmpfs tmpfs "$WORKDIR/overlay"
   mkdir -p "$WORKDIR/overlay/upper" "$WORKDIR"/overlay/work
-  
-  #- prepare inittab
-  ( echo "::restart:$WORKDIR/overlay/pid1stage1"
-    #grep -v "::restart:" /etc/inittab
-  ) > "$WORKDIR/overlay/inittab"
-  mount -o bind "$WORKDIR/overlay/inittab" /etc/inittab
-  kill -HUP 1
-  rm -f "$WORKDIR/overlay/inittab"
+
+  #- prepare for re-exec of init process
+  INIT="$(readlink -f /proc/1/exe)"
+  case "$INIT" in
+    */openrc-init ) ;;
+    * ) # assume busybox init
+      #- prepare inittab
+      echo "::restart:$WORKDIR/overlay/pid1stage1" > "$WORKDIR/overlay/inittab"
+      mount -o bind "$WORKDIR/overlay/inittab" /etc/inittab
+      kill -HUP 1
+      rm -f "$WORKDIR/overlay/inittab"
+      ;;
+  esac
 
   #- prepare multicall script
   cp "$0" "$WORKDIR/overlay/pid1stage1"
@@ -51,7 +62,7 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   fi
   modprobe loop 2> /dev/null || :
   modprobe squashfs 2> /dev/null || :
-  
+
   # copy over base config and authorized_keys if any
   ( cd /overlay/upper
     find $(ls -d etc root home 2> /dev/null) ! -type d | grep -v /.git/ | xargs tar cf - --acls --xattrs
@@ -65,7 +76,16 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   )
 
   #- restart init --> calling $WORKDIR/pid1stage1
-  kill -QUIT 1
+  case "$INIT" in
+    */openrc-init )
+      mount -o bind "$WORKDIR/overlay/pid1stage1" "$INIT"
+      openrc-shutdown -R
+      ;;
+    * ) # assume busybox init
+      kill -QUIT 1
+      ;;
+  esac
+
   sleep 7
   echo "E: this should never happen, investigate"
 }
@@ -98,16 +118,18 @@ pid1stage1() { # running as PID 1 after re-exec from init
   #set -x
 
   #- shutdown all processes except init/PID1
-  for ps in /proc/[1-9]*/exe; do
-    head -c 1 "$ps" 2> /dev/null 1>&2 || continue
-    pid="${ps#/proc/}"
-    pid="${pid%/exe}"
-    case "$pid" in
-      1 ) continue ;;
-      * ) kill $pid || : ;;
-    esac
-  done 2>/dev/null
-  
+  for sig in 15 15 15 9; do
+    for ps in /proc/[1-9]*/exe; do
+      head -c 1 "$ps" 2> /dev/null 1>&2 || continue
+      pid="${ps#/proc/}"
+      pid="${pid%/exe}"
+      case "$pid" in
+        1 ) continue ;;
+        * ) kill $pid || : ;;
+      esac
+    done 2>/dev/null
+  done
+
   #- kill network
   rm -f /run/ifstate* /var/run/udhcpc.*.pid
   ifdown -af || :
@@ -118,7 +140,7 @@ pid1stage1() { # running as PID 1 after re-exec from init
       ip link del dev $dev 2> /dev/null || :
     done
   )
-  
+
   #- pivot root
   cd "$WORKDIR"
   mkdir -p rootfs/rom rootfs/overlay rootfs/tmp
@@ -142,15 +164,15 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
   PS4="$PS4_BASE: "
   set -x
   cd /
-  
+
   for _ in 1 2 3; do
     grep -Eo " /rom[^ ]*" /proc/mounts | \
     sort | \
-      while read m; do 
+      while read m; do
         while umount $m; do :; done
     done 2> /dev/null
   done
-  
+
   mount -o move "$WORKDIR/rom" /rom
   mount -o move "$WORKDIR/overlay" /overlay
   rmdir "$WORKDIR"/* 2> /dev/null || :
@@ -174,6 +196,7 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
 mksqfs() { # creates for the current overlay a rom.sqfs from /rom
   PS4="$PS4_BASE:mksqfs: "
   set -x
+  SQFS="${SQFS##* }"
   if [ -f "$SQFS" ] && [ -s "$SQFS" ]; then :
   else
     mksquashfs /rom "$SQFS" -comp xz -b 512k
@@ -182,7 +205,10 @@ mksqfs() { # creates for the current overlay a rom.sqfs from /rom
 
 case "$$:${0##*/}" in # multicall shell script selection
   1:pid1stage1) pid1stage1 ;;
+  1:openrc-init) pid1stage1 ;;
+  #
   1:preinit) preinit ;;
+  #
   *:mk-sqfs.sh ) mksqfs ;;
   *:to-ram.sh | *:BootToRam ) stage0 "$@" ;;
 esac
