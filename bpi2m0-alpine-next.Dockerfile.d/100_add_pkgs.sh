@@ -9,16 +9,17 @@ PS4='> ${0##*/}: '
 PKGS=
 
 # extras
-PKGS="$PKGS \
-  file \
-  rsync \
-  make \
-  sntpc \
-  strace lsof \
+PKGS="$PKGS
+  file
+  rsync
+  make
+  sntpc
+  strace lsof
+  squashfs-tools
 "
 
-PKGS="$PKGS \
-  python3 \
+PKGS="$PKGS
+  python3
     pyc python3-pyc pyc
     python3-pycache-pyc0
     py3-certifi py3-certifi-pyc py3-charset-normalizer py3-charset-normalizer-pyc py3-distlib

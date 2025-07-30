@@ -75,33 +75,17 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
-    #echo " * /$f"
+    echo " * /$f"
   done
 
-## enable basic services
-#chroot /target /bin/sh -e > /dev/null <<EOF
-#rc-update add hostname sysinit
-#rc-update add sysfs sysinit
-#rc-update add sysfsconf sysinit
-#rc-update add sysctl sysinit
-#rc-update add procfs sysinit
-#rc-update add modules sysinit
-#rc-update add mdev sysinit
-#rc-update add hwdrivers sysinit
-#rc-update add syslog sysinit
-#rc-update add klogd sysinit
-#rc-update add swclock sysinit
-#
-#rc-update add networking default
-#rc-update add sshd default
-#rc-update add avahi-daemon default
-#rc-update add chronyd default
-#rc-update add mmc default
-#
-#rc-update add killprocs shutdown
-#rc-update add mount-ro shutdown
-#
-#/usr/local/sbin/update-rc
+# enable basic services
+chroot /target /bin/sh -e > /dev/null <<EOF
+ln -s getty /etc/init.d/getty.ttyS0
+ln -s getty /etc/init.d/getty.ttyGS0
+rc-update add getty.ttyS0 sysinit
+rc-update add getty.ttyGS0 default
+
+/usr/local/sbin/update-rc
 #EOF
 
 # fixme
