@@ -34,7 +34,6 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   mount -t tmpfs tmpfs "$WORKDIR/overlay"
   mkdir -p "$WORKDIR/overlay/upper" "$WORKDIR"/overlay/work
 
-  #- prepare for re-exec of init process
   INIT="$(readlink -f /proc/1/exe)"
   case "$INIT" in
     */openrc-init ) ;;
@@ -104,7 +103,7 @@ cleanup_stage0() { # cleanup handler for stage0
 
 emergency_console() {
   PS4="$PS4_BASE:emergency_console: "
-  set -x
+  #set -x
   env | sort
   mount
   exec /bin/bash --login
@@ -115,7 +114,7 @@ emergency_console() {
 pid1stage1() { # running as PID 1 after re-exec from init
   trap emergency_console EXIT
   PS4="$PS4_BASE "
-  #set -x
+  set -x
 
   #- shutdown all processes except init/PID1
   for sig in 15 15 15 9; do
@@ -125,9 +124,9 @@ pid1stage1() { # running as PID 1 after re-exec from init
       pid="${pid%/exe}"
       case "$pid" in
         1 ) continue ;;
-        * ) kill $pid || : ;;
+        * ) kill -$sig $pid || : ;;
       esac
-    done 2>/dev/null
+    done 2> /dev/null
   done
 
   #- kill network
