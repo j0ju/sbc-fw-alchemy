@@ -10,7 +10,7 @@
 
 #- debugging, if needed
   PS4="${0}[$$]: +"
-  set -x
+  #set -x
 
 #- settings
   OVERLAY=/overlay

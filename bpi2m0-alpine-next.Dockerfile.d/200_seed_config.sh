@@ -52,6 +52,10 @@ mkdir -p /target/etc/network/interfaces.d
 # disable busybox su, SUID bit issues
 rm -f /target/bin/su
 
+( cd /target/boot/overlay-user
+  make
+)
+
 # copy over config seed
 DST="${DST:-/target}"
 FSDIR="$0.d"

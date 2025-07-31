@@ -13,6 +13,7 @@ PKGS="$PKGS
   file
   rsync
   make
+    dtc
   sntpc
   strace lsof
   squashfs-tools
