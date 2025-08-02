@@ -123,4 +123,14 @@ ln -s "$ROOTDIR" /mnt/CURRENT
 
 tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs
 
+# seed time for initial boot
+touch /mnt/CURRENT/var/lib/misc/openrc-shutdowntime
+
+rm -f /mnt/CURRENT/etc/resolv.conf
+ln -s ../run/resolv.conf /mnt/CURRENT/etc/resolv.conf
+
+cd /mnt/CURRENT/etc
+git add .
+git commit -m "${0} finish"
+
 # vim: ts=2 sw=2 ft=sh et

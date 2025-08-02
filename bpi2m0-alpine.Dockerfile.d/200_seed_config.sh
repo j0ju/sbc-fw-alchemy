@@ -104,6 +104,9 @@ rc-update add mount-ro shutdown
 /usr/local/sbin/update-rc
 EOF
 
-chroot /target etckeeper commit -m "${0##*/} finish"
-# FIXME: why? the commit is successful 
+( cd /target/boot/overlay-user
+  make
+)
+
+chroot /target etckeeper commit "${0##*/} finish"
 rm -f /target/etc/.git/HEAD.lock

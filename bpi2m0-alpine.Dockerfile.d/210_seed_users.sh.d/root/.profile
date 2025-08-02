@@ -1,7 +1,5 @@
-case "$USER" in
-  node[1234] ) exec minicom $USER ;;
-esac
+PS1='\u @ \h$(__PS1_ExitCode)$(__PS1_GitStat) > \w > '
 
-case "$(tty)" in
-  /dev/ttyS0 ) log ;;  
-esac
+#case "$(tty)" in
+#  /dev/ttyS0 ) log ;;
+#esac

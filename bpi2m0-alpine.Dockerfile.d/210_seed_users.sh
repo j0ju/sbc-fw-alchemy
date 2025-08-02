@@ -70,7 +70,12 @@ chroot /target sh -eu <<EOchroot
   chown -R $DEFAULT_USER:$DEFAULT_USER ~$DEFAULT_USER
 EOchroot
 
-rm -f /target/etc/.git/HEAD.lock
-chroot /target etckeeper commit -m "${0##*/} finish"
-# FIXME: why? the commit is successful 
+chroot /target sh -eu <<EOchroot
+  mkdir -p /home/$DEFAULT_USER/.ssh
+  cp -a /root/.[!.]* /home/$DEFAULT_USER
+  chown $DEFAULT_USER: /home/$DEFAULT_USER/.ssh
+EOchroot
+
+chroot /target etckeeper commit "${0##*/} finish"
+# FIXME: why? the commit is successful
 rm -f /target/etc/.git/HEAD.lock

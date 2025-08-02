@@ -14,13 +14,6 @@ COPY --from=armbian /target/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-s
 COPY --from=armbian /target/lib/modules /target/lib/modules
 COPY --from=armbian /target/lib/firmware /target/lib/firmware
 
-RUN set -eux ;\
-  ls -l /target ;\
-  ls -l /target/boot ;\
-  ls -l /target/lib/modules ;\
-  ls -l /target/lib/firmware ;\
-  :
-
 CMD \
   rm -f /target/etc/resolv.conf ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\

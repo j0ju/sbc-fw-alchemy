@@ -14,7 +14,10 @@ telinit() { # mimics telinit
 }
 
 case "$$:${0##*/}" in
-  1:* ) exec /sbin/openrc-init "$@" ;;
+  1:* )
+    umount /rom/mnt 2> /dev/null || :
+    exec /sbin/openrc-init "$@"
+    ;;
   *:halt | *:reboot | *:shutdown ) exec /sbin/openrc-shutdown --${0##*/} now ;;
   *:init | *:initctl | *:telinit ) telinit "$@" ;;
   * )
