@@ -92,11 +92,10 @@ rm /mnt/boot/uboot.img
 # minor fixes to rootfs
 # TODO: find a better place for this
 rm -f /mnt/etc/resolv.conf
-ln -s ../tmp/resolv.conf /mnt/etc/resolv.conf
+ln -s ../run/resolv.conf /mnt/etc/resolv.conf
 
 cd /mnt/etc
 git add .
 git commit -m "${0} finish"
-
 
 # vim: ts=2 sw=2 ft=sh et
