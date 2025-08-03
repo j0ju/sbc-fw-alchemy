@@ -1,4 +1,5 @@
 # /etc/inittab
+# NOTE: openrc-init does not use this file
 
 ::sysinit:/sbin/openrc sysinit
 ::sysinit:/sbin/openrc boot
@@ -6,7 +7,3 @@
 
 ::ctrlaltdel:/sbin/reboot
 ::shutdown:/sbin/openrc shutdown
-
-# allow password less logins on serial console
-# as direct access to HW is already a security breach
-ttyS0::respawn:/sbin/getty -L -w -n -l /lib/serial-login.sh ttyS0 115200 vt100

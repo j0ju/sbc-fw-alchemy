@@ -101,6 +101,11 @@ rc-update add mmc default
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
 
+ln -s getty /etc/init.d/getty.ttyS0
+ln -s getty /etc/init.d/getty.ttyGS0
+rc-update add getty.ttyS0 sysinit
+rc-update add getty.ttyGS0 default
+
 /usr/local/sbin/update-rc
 EOF
 

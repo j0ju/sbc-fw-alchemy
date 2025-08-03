@@ -9,7 +9,7 @@
 
 #- settings
   OVERLAY=${1:-/overlay}
-  FILTER=${2:-LABEL=tpi2data}
+  FILTER=${2:-LABEL=mmc-data}
   LABEL="${FILTER#LABEL=}"
 
 log() {

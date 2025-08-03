@@ -2,7 +2,7 @@
 
 # mount
 #  * read-only filesystem to /rom (current root)
-#  * overlay to /overlay     LABEL=overlay if not exist create it
+#  * overlay to /overlay     LABEL=mmc-data if not exist create it
 
 #- config
 #- pedantic thumb-screws
