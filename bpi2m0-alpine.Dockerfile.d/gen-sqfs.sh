@@ -11,6 +11,7 @@ rm -f /target/etc/resolv.conf
 rm -rf /target/etc/.git
 ln -s ../run/resolv.conf /target/etc/resolv.conf
 
+rm -f "$IMAGE"
 mksquashfs /target "$IMAGE" -b "$BLOCKSIZE" -comp "$COMPRESSOR"
 
 [ -z "$OWNER" ] || \

@@ -11,10 +11,10 @@ FSDIR="$0.d"
 ! cd "$FSDIR" ||
 find . ! -type d | \
   while read f; do
-    f="${f#./}"
     mkdir -p "${DST}/${f%/*}"
-    case "$f" in
-      */.placeholder ) continue ;;
+    f="${f#./}"
+    case "${f##*/}" in
+      .placeholder ) continue ;;
     esac
 
     rm -f "${DST}/$f"
@@ -39,4 +39,6 @@ chroot /target /bin/sh -e > /dev/null <<EOF
 EOF
 
 # fixme
-chroot /target etckeeper commit "${0##*/} finish"
+if ( cd /target/etc; git status -s | grep ^.); then
+  chroot /target etckeeper commit "${0##*/} finish"
+fi

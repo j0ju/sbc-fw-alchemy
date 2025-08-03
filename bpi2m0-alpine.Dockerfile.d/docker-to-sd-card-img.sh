@@ -78,7 +78,7 @@ P1="$(echo $DEVS | grep -E -o "[^ ]+p1")"
 mkdir -p /mnt/
 
 echo "MKFS $IMAGE"
-mkfs.ext4 -q -L tpi2-alpine /dev/mapper/$P1
+mkfs.ext4 -q -L alpine /dev/mapper/$P1
 mount -t ext4 /dev/mapper/$P1 /mnt
 
 echo "COPY $IMAGE <- $SRC"
