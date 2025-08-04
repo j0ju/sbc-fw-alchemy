@@ -32,9 +32,6 @@ fi
 cleanup() {
   local rs=$?
   local d
-  if [ ! $rs = 0 ]; then
-    rm -f "$IMAGE"
-  fi
   cd /
   for m in /mnt/part* /mnt; do
     umount "$m" 2> /dev/null || :
@@ -51,6 +48,9 @@ cleanup() {
       losetup -d "/dev/loop/${d#*loop}" 2> /dev/null || :
     fi
   done
+  if [ ! $rs = 0 ]; then
+    rm -f "$IMAGE"
+  fi
   trap '' EXIT
   exit $rs
 }
@@ -66,7 +66,7 @@ echo "FDISK $IMAGE"
 # 1st part will only be as large as the current image size
 sfdisk $IMAGE > /dev/null <<EOF
   label: dos
-  1: type=83 start=2048 size=128M bootable
+  1: type=0c start=2048 size=128M bootable
   2: type=83
 EOF
 
@@ -85,7 +85,7 @@ mount -t ext4 /dev/mapper/$P_ROOT /mnt
 
 mkdir -p /mnt/boot/firmware
 mkfs.vfat -n BOOT /dev/mapper/$P_FW
-mount -t ext4 /dev/mapper/$P_ROOT /mnt/boot/firmware
+mount /dev/mapper/$P_FW /mnt/boot/firmware
 
 echo "COPY $IMAGE <- $SRC"
 tar xf "$SRC" -C /mnt --atime-preserve
@@ -94,6 +94,16 @@ tar xf "$SRC" -C /mnt --atime-preserve
 # TODO: find a better place for this
 rm -f /mnt/etc/resolv.conf
 ln -s ../run/resolv.conf /mnt/etc/resolv.conf
+
+PARTUUID=
+eval "$(blkid -o export  "/dev/mapper/$P_ROOT")"
+if [ -z "$PARTUUID" ]; then
+  echo "E: could not detect PARTUUID of root fs" >&2
+  exit 1
+fi
+
+sed -i -r -e 's!root=[^ ]+!root='"PARTUUID=$PARTUUID"'!' \
+  "/mnt/boot/firmware/cmdline.txt"
 
 cd /mnt/etc
 git add .

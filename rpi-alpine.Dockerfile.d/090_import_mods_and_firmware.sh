@@ -11,7 +11,7 @@ PS4='> ${0##*/}: '
     intel iwlwifi-* \
     ap6210 ap6275p ath* dvb* RTL* rt* mediatek meson mt* nvram_ap6* rkwifi \
     rockchip* ssv* ti-connectivity uwe562* eagle_fw_* \
-    cirrus cypress hinlink-h88k-240x135-lcd.bin novatek qcom qca xc* \
+    cirrus hinlink-h88k-240x135-lcd.bin novatek qcom qca xc* \
     xr* s5p-mfc-v8.fw v4l-coda* sdma aic8800 imx video \
     vpu wcnmodem.bin wifi_2355b001_1ant.ini \
     \
@@ -24,7 +24,9 @@ PS4='> ${0##*/}: '
 )
 
 # compatibility glue
+rm -f /target/boot/System.map-* /target/boot/config-* /target/boot/initrd.img-* /target/boot/vmlinuz-*
 ln -sf firmware/config.txt firmware/cmdline.txt /target/boot
+ln -sf firmware/overlays /target/boot
 
 # cloud-init on fat partition
 ln -sf firmware/cloud-init /target/boot
