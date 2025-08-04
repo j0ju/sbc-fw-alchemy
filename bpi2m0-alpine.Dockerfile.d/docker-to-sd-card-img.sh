@@ -32,9 +32,6 @@ fi
 cleanup() {
   local rs=$?
   local d
-  if [ ! $rs = 0 ]; then
-    rm -f "$IMAGE"
-  fi
   cd /
   for m in /mnt/part* /mnt; do
     umount "$m" 2> /dev/null || :
@@ -51,6 +48,9 @@ cleanup() {
       losetup -d "/dev/loop/${d#*loop}" 2> /dev/null || :
     fi
   done
+  if [ ! $rs = 0 ]; then
+    rm -f "$IMAGE"
+  fi
   trap '' EXIT
   exit $rs
 }
