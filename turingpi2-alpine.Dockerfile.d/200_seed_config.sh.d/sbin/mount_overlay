@@ -9,7 +9,7 @@
 
 #- settings
   OVERLAY=${1:-/overlay}
-  FILTER=${2:-LABEL=tpi2data}
+  FILTER=${2:-LABEL=mmc-data}
   LABEL="${FILTER#LABEL=}"
 
 log() {
@@ -39,13 +39,17 @@ for try in : "die 69 error creating data/overlay partition"; do
     log "no data partition found with filter: $FILTER"
     # assumptions:
     #  * freshly burned image
-    #  * ==> booted from mmcblk0
-    #  * ==> RO partition is mmcblk0p1
+    #  * ==> booted from ...
+    #  * ==> RO partition is
+    P_ROOT="$(findmnt -o SOURCE -n /)"
+    BLK="${P_ROOT%[0-9]}"
+    N="${P_ROOT#$BLK}"
+    N=$(( N + 1 ))
+    P_DATA="$BLK$N"
     #  * ==> new partition will be created at the end of SD card named
-    #    mmcblk0p2
-    echo ",,," | sfdisk -a /dev/mmcblk0 --force
-    partx -u /dev/mmcblk0
-    mkfs.f2fs -l $LABEL /dev/mmcblk0p2 -f
+    echo ",,," | sfdisk -a ${BLK%p} --force
+    partx -u ${BLK%p}
+    mkfs.f2fs -l $LABEL $P_DATA -f
   fi
   $try
 done

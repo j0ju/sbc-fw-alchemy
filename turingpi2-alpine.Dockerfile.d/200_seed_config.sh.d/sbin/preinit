@@ -2,7 +2,7 @@
 
 # mount
 #  * read-only filesystem to /rom (current root)
-#  * overlay to /overlay     LABEL=overlay if not exist create it
+#  * overlay to /overlay     LABEL=mmc-data if not exist create it
 
 #- config
 #- pedantic thumb-screws
@@ -15,7 +15,6 @@
 #- settings
   OVERLAY=/overlay
   ROM=/rom
-  BLKFILTER="LABEL=tpi2data"
 
 log() {
   echo "PREINIT: $*"
@@ -81,9 +80,6 @@ to_overlay() {
   mount -t tmpfs tmpfs /tmp -o nodev,nosuid
   chmod 1777 /tmp
 
-  #ROOTDEV="$(findmnt -nr -oSOURCE /)"
-  #mount "$ROOTDEV" /rom
-
   if is_safemode || ! mount_overlay $OVERLAY; then
     OVERLAY=/tmp/overlay
     log "Entering safemode (overlay dir $OVERLAY)"
@@ -136,7 +132,11 @@ wrap_init() {
   trap emergency_console EXIT
   if ! [ -x "$OVERLAY/upper/sbin/init" ]; then
     rm -f /sbin/init
-    ln -s /bin/busybox /sbin/init
+    if [ -x /rom/lib/init.wrap ]; then
+      ln -s /lib/init.wrap /sbin/init
+    else
+      ln -s /bin/busybox /sbin/init
+    fi
   fi
   "$1"
 }

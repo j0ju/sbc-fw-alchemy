@@ -15,7 +15,6 @@
 #- settings
   OVERLAY=/overlay
   ROM=/rom
-  BLKFILTER="LABEL=mmc-data"
 
 log() {
   echo "PREINIT: $*"
@@ -80,9 +79,6 @@ to_overlay() {
   mount -t sysfs sysfs /sys
   mount -t tmpfs tmpfs /tmp -o nodev,nosuid
   chmod 1777 /tmp
-
-  #ROOTDEV="$(findmnt -nr -oSOURCE /)"
-  #mount "$ROOTDEV" /rom
 
   if is_safemode || ! mount_overlay $OVERLAY; then
     OVERLAY=/tmp/overlay
