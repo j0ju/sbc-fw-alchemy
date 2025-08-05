@@ -14,6 +14,10 @@ CHKSUM="${CHKSUM##*:}"
 
 case "$TYPE" in
   md5 | sha1 | sha256 ) ;; # OK
+  "" )
+    echo "W: no checksum for $FILE, ignoring" >&2
+    exit 0
+    ;;
   * )
     echo "E: unknown checksum $CHKSUM for $FILE" >&2
     exit 1
@@ -31,3 +35,5 @@ if ! ./bin/img-mangler "$TYPE"sum -c "$CHKSUMFILE"; then
   echo "E: Expected $CHKSUM $TYPE."
   echo "E: It was   $chksum"
 fi >&2
+
+# vim: ts=2 sw=2 et
