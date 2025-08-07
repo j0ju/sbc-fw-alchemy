@@ -35,6 +35,8 @@ find . ! -type d | \
 chroot /target /bin/sh -e > /dev/null <<EOF
 # add code placeholder
 
+touch /etc/containers/nodocker
+
 /usr/local/sbin/update-rc
 EOF
 

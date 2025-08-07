@@ -1,0 +1,28 @@
+# zram settings...
+
+# load zram kernel module on start?
+load_on_start=yes
+
+# unload zram kernel module on stop?
+unload_on_stop=yes
+
+# Number of devices.
+num_devices=1
+
+# swap - 500M (or a fourth of available memory if uncommenting)
+type0=swap
+flag0=
+size0=`LC_ALL=C free -m | awk '/^Mem:/{print int($2/8)}'`
+mlim0= # no hard memory limit
+back0= # no backup device
+icmp0= # no incompressible page writing to backup device
+idle0= # no idle page writing to backup device
+wlim0= # no writeback_limit for idle page writing for backup device
+notr0= # keep the default on linux-3.15 or newer
+maxs0=1 # maximum number of parallel processes for this device
+algo0=zstd # zstd (since linux-4.18), lz4 (since linux-3.15), or lzo.
+           # Size: zstd (best) > lzo > lz4. Speed: lz4 (best) > zstd > lzo
+labl0=zram_swap # the label name
+uuid0= # Do not force UUID
+args0= # we could e.g. have set args0="-L 'zram_swap'" instead of using labl0
+

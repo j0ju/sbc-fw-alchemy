@@ -17,6 +17,7 @@ PKGS="$PKGS
   sntpc
   strace lsof
   squashfs-tools
+  zram-init
 "
 
 PKGS="$PKGS
@@ -33,6 +34,37 @@ PKGS="$PKGS
     py3-pip-pyc py3-platformdirs py3-platformdirs-pyc py3-requests
     py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
     py3-virtualenv-pyc py3-yaml py3-yaml-pyc
+"
+
+PKGS="$PKGS
+  podman
+    podman-bash-completion podman-openrc podman-tui
+    podman-compose podman-compose-bash-completion podman-compose-pyc
+  nftables iptables
+   nftables-openrc iptables-openrc nftables-vim
+"
+
+PKGS="$PKGS
+  sox
+  groff doxygen graphviz
+  alsa-tools alsa-utils bluez-alsa
+  gsm-tools
+  linux-tools-gpio
+  lame
+"
+
+PKGS="$PKGS
+  gcc g++ binutils make
+  cmake autoconf autoconf-archive automake
+
+  linux-headers
+    libmd-dev libsamplerate-dev i2c-tools-dev
+    libsigc++-dev alsa-lib-dev alsa-tools-dev
+    gsm-dev curl-dev tcl-dev
+    speexdsp-dev speex-dev popt-dev
+    opus-dev opusfile-dev libogg-dev
+    libgpiod-dev jsoncpp-dev lame-dev ladspa-dev libgcrypt-dev librtlsdr-dev
+    ladspa-dev
 "
 
 # install packages for tarballs
