@@ -5,7 +5,7 @@ set -eu
 IMAGE="$1"
 
 COMPRESSOR="xz"
-BLOCKSIZE=256k
+BLOCKSIZE=128k
 
 rm -f /target/etc/resolv.conf
 rm -rf /target/etc/.git

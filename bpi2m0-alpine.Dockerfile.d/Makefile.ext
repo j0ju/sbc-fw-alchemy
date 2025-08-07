@@ -5,7 +5,7 @@ output/bpi2m0-alpin%.img: output/bpi2m0-alpin%.rootfs.tar.zst bpi2m0-alpine.Dock
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh $< $@
 
-output/bpi2m0-alpin%.multi.img: output/bpi2m0-alpin%.rootfs.tar.zst bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init
+output/bpi2m0-alpin%.multi.img: output/bpi2m0-alpin%.rootfs.tar.zst bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init  output/bpi2m0-alpin%.sqfs
 	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=))" MULTIBOOT
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@

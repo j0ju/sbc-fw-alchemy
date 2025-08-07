@@ -3,7 +3,7 @@
 set -eu
 
 #---
-MIN_FREE_MB=${MIN_FREE_MB:-64}
+MIN_FREE_MB=${MIN_FREE_MB:-128}
 IMAGE_SIZE_KB_MIN=$(( 640 * 1024 )) # 640M
 #IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 

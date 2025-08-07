@@ -3,7 +3,7 @@
 set -eu
 
 #---
-MIN_FREE_MB=${MIN_FREE_MB:-64}
+MIN_FREE_MB=${MIN_FREE_MB:-128}
 IMAGE_SIZE_KB_MIN=$(( 640 * 1024 )) # 640M
 #IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 
@@ -99,11 +99,6 @@ ln -s init /mnt/sbin/preinit
 chmod 755 /mnt/sbin/init /mnt/sbin/busybox
 ln -s CURRENT/boot /mnt/boot
 
-# extract rootfs do /mnt/rootfs.init
-echo "COPY $IMAGE <- $SRC"
-
-# TODO: add date and git rev
-
 GITREV="$( cd /src ; git log HEAD^..HEAD --oneline | awk '$0=$1' )"
 DATE="$( date +%Y-%m-%d-%H:%M )"
 VERSION=$DATE-$GITREV+dirty
@@ -119,18 +114,25 @@ ln -s "$ROOTDIR" /mnt/CURRENT
 #   * handle ROOTFS/root.sqfs
 #     * extract /boot to ROOTFS/boot
 #     * do we need /lib/modules, too?
-#   * erofs?
 
-tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs
+#- use plain FS
+  #echo "COPY $IMAGE <- $SRC"
+  #tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs
+  #
+  ## seed time for initial boot
+  #touch /mnt/CURRENT/var/lib/misc/openrc-shutdowntime
+  #
+  #rm -f /mnt/CURRENT/etc/resolv.conf
+  #ln -s ../run/resolv.conf /mnt/CURRENT/etc/resolv.conf
+  #
+  #cd /mnt/CURRENT/etc
+  #git add .
+  #git commit -m "${0} finish"
 
-# seed time for initial boot
-touch /mnt/CURRENT/var/lib/misc/openrc-shutdowntime
-
-rm -f /mnt/CURRENT/etc/resolv.conf
-ln -s ../run/resolv.conf /mnt/CURRENT/etc/resolv.conf
-
-cd /mnt/CURRENT/etc
-git add .
-git commit -m "${0} finish"
+# use sqfs and extract /boot
+  echo "COPY $IMAGE <- $SRC::/boot"
+  tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs ./boot
+  echo "COPY $IMAGE <- ${SRC%.rootfs.tar.zst}.sqfs"
+  cp "${SRC%.rootfs.tar.zst}".sqfs /mnt/CURRENT/root.sqfs
 
 # vim: ts=2 sw=2 ft=sh et
