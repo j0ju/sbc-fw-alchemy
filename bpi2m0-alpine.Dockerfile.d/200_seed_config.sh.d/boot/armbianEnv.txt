@@ -2,8 +2,12 @@ verbosity=4
 earlycon=on
 bootlogo=false
 console=serial
-overlay_prefix=sun8i-h3
+
 rootdev=/dev/mmcblk0p1
 rootfstype=ext4
 docker_optimizations=off
+
+overlay_prefix=sun8i-h3
+extraargs= mitigations=off
+overlays= uart3
 user_overlays= bpi2m0-no-gpu bpi2m0-no-hdmi
