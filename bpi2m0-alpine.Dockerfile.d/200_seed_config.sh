@@ -91,12 +91,12 @@ rc-update add hwdrivers sysinit
 rc-update add syslog sysinit
 rc-update add klogd sysinit
 rc-update add swclock sysinit
+rc-update add mmc sysinit
 
 rc-update add networking default
 rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
-rc-update add mmc default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
