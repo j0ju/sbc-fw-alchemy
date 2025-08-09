@@ -1,0 +1,144 @@
+#!/bin/sh
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+set -eu
+
+#---
+MIN_FREE_MB=${MIN_FREE_MB:-128}
+BOOT_SIZE_KB=$(( 128 * 1024 )) # 128M
+IMAGE_SIZE_KB_MIN=$(( 640 * 1024 )) # 640M
+#IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
+
+IMAGE="$2"
+SRC="$1"
+SQFS="${SRC%.rootfs.tar.zst}.sqfs"
+MODULES=
+MODULES="$MODULES squashfs"
+
+#--- calculate image size
+DECOMPRESSOR=cat
+case "$SRC" in
+  *.zst ) DECOMPRESSOR="zstd -cd" ;;
+  * )
+    echo "${0}: unknown archive format '$SRC'" >&2
+    exit 1
+    ;;
+esac
+
+# auto adjust image size if needed, for upgrade reasons use twice as much as sqfs image size
+USAGE_KB="$( wc -c < $SQFS | awk '{print $1/1024*2}' )"
+IMAGE_SIZE_KB="$(( IMAGE_SIZE_KB_MIN ))"
+if [ "$USAGE_KB" -gt "$(( IMAGE_SIZE_KB_MIN - BOOT_SIZE_KB - MIN_FREE_MB*1024 ))" ]; then
+  IMAGE_SIZE_KB=$(( USAGE_KB + BOOT_SIZE_KB + MIN_FREE_MB*1024 ))
+fi
+
+#--- safe cleanup
+cleanup() {
+  local rs=$?
+  local d
+
+  cd /src
+  for m in /mnt/part* /mnt; do
+    umount "$m" 2> /dev/null || :
+  done
+  for d in ${DEVS:-}; do
+    if [ -b "/dev/mapper/$d" ]; then
+      dmsetup remove "/dev/mapper/$d" 2> /dev/null || :
+    fi
+    if [ -b /dev/"${d%p*}" ]; then
+      losetup -d "/dev/${d%p*}" 2> /dev/null || :
+    fi
+    d="${d%p*}"
+    if [ -b "/dev/loop/${d#*loop}" ]; then
+      losetup -d "/dev/loop/${d#*loop}" 2> /dev/null || :
+    fi
+  done
+  if [ $rs = 0 ]; then
+    [ -z "$OWNER" ] || \
+      chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
+  else
+    rm -f "$IMAGE"
+  fi
+  trap '' EXIT
+  exit $rs
+}
+trap cleanup EXIT TERM HUP INT USR1 USR2
+
+echo "EMPTY $IMAGE"
+#--- generate sparse image
+: > $IMAGE
+dd if=/dev/zero bs=1024 count=0 seek=$IMAGE_SIZE_KB of=$IMAGE status=none
+[ -z "$OWNER" ] || \
+  chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
+
+#--- partition it
+echo "FDISK $IMAGE"
+# 2nd part will only be as large as the current image size
+sfdisk $IMAGE > /dev/null <<EOF
+  label: dos
+  1: type=0c start=2048 size=${BOOT_SIZE_KB}K bootable
+  2: type=83
+EOF
+
+DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
+
+P_FW="$(echo $DEVS | grep -E -o "[^ ]+[^o]p1")"
+P_ROOT="$(echo $DEVS | grep -E -o "[^ ]+[^o]p2")"
+mkdir -p /mnt/
+
+echo "MKFS $IMAGE"
+mkfs.ext4 -q -L alpine /dev/mapper/$P_ROOT
+mount -t ext4 /dev/mapper/$P_ROOT /mnt
+
+#--- prepare rootfs with subdirs
+mkdir -p /mnt/sbin /mnt/proc /mnt/dev
+cp /target.busybox.static /mnt/sbin/busybox
+cp "$0".init /mnt/sbin/init
+ln -s init /mnt/sbin/preinit
+chmod 755 /mnt/sbin/init /mnt/sbin/busybox
+ln -s CURRENT/boot /mnt/boot
+mkdir -p /mnt/CURRENT/boot/firmware
+
+mkfs.vfat -n rpi-boot /dev/mapper/$P_FW
+mount /dev/mapper/$P_FW /mnt/boot/firmware
+
+GITREV="$( cd /src ; git log HEAD^..HEAD --oneline | awk '$0=$1' )"
+DATE="$( date +%Y-%m-%d-%H:%M )"
+VERSION=$DATE-$GITREV+dirty
+git status --short | grep -q ^ || \
+  VERSION="${VERSION%+dirty}"
+
+ROOTDIR="ROOTFS.$VERSION"
+mkdir -p "/mnt/$ROOTDIR"
+ln -s "$ROOTDIR" /mnt/CURRENT
+
+# use SQFS
+  echo "COPY $IMAGE <- ${SQFS}"
+  cp "${SQFS}" /mnt/CURRENT/root.sqfs
+# extract /boot and needed modules
+  echo "COPY $IMAGE <- $SRC::/boot"
+  cp -a /target/boot /mnt/CURRENT
+
+  # FIXME: do module depenency resolve via $moddir/modules.dep and load modules in order
+  for moddir in /target/lib/modules/*; do
+    MODS=
+    for mod in $MODULES; do
+      find $moddir -name "$mod.ko.*" | while read f; do
+        mod="${f#$moddir/}"
+        bootmoddir="${moddir#/target}"
+        mkdir -p "/mnt/CURRENT/$bootmoddir"
+        cp "$f" "/mnt/CURRENT/$bootmoddir"
+      done
+    done
+  done
+
+  PARTUUID=
+  eval "$(blkid -o export  "/dev/mapper/$P_ROOT")"
+  if [ -z "$PARTUUID" ]; then
+    echo "E: could not detect PARTUUID of root fs" >&2
+    exit 1
+  fi
+
+  sed -i -r -e 's!root=[^ ]+!root='"PARTUUID=$PARTUUID"'!' \
+    "/mnt/boot/firmware/cmdline.txt"
+
+# vim: ts=2 sw=2 ft=sh et

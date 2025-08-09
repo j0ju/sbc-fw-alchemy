@@ -1,0 +1,78 @@
+#!/sbin/busybox sh
+set -eu
+
+PS4="${0##*/}[$$]: "
+#set -x
+
+# this does
+#   * handle plain rootfs in a subdir CURRENT
+#   * handle CURRENT/root.sqfs CURRENT/rootfs.erofs
+#     * extract /boot to ROOTFS/boot
+#
+#   * Symlinks
+#     * CURRENT is the known bootable rootfs
+
+# TODO: for upgrades
+#   * Symlinks
+#     * CURRENT is the known bootable rootfs
+#     * NEXT is the next bootable rootfs
+#     * PREV is the old rootfs
+#
+#   * States:
+#      * normal:
+#        * CURRENT and eventually PREV excsts
+#      * upgraded but not yet fully booted:
+#         * NEXT has next fs
+#         * CURRENT has prev OS
+#         * in Uboot
+#           * rename CURRENT to PREV
+#         * after successful boot
+#           * NEXT is rename to CURRENT
+#      * broken: boot PREV via Uboot/init (this init-script)
+#         * no CURRENT
+#         * NEXT is non booting
+#         * PREV is knonw good
+#
+cd /
+BB=/sbin/busybox
+
+# emergency shell
+trap "exec $BB sh -" EXIT
+
+$BB mountpoint -q /proc || \
+  $BB mount -t proc proc /proc
+
+KVER="$($BB uname -r)"
+for i in /CURRENT/lib/modules/$KVER/*.ko*; do
+  [ -r "$i" ] || continue
+  $BB insmod "$i"
+done
+
+if [ -f /CURRENT/root.sqfs ]; then :             # SQUASHFS image, with extracted /boot
+  $BB mount -o loop -t squashfs /CURRENT/root.sqfs /CURRENT
+elif [ -f /CURRENT/root.erofs ]; then :          # EROFS image with extracted /boot
+  $BB mount -o loop -t erofs /CURRENT/root.sqfs /CURRENT
+else :                                           # plain rootfs
+  $BB mount -o bind /CURRENT/. /CURRENT
+fi
+
+if $BB pivot_root /CURRENT/. /CURRENT/mnt; then
+  BB=/mnt/sbin/busybox
+
+  $BB mount -o move /mnt/dev /dev
+  for m in proc dev run sys; do
+    if $BB mountpoint -q /mnt/$m; then
+      $BB umount /mnt/$m
+    fi
+  done
+
+  cd /
+  #FIXME: this will fail if booted from USB/SATA/NVMe
+  $BB mount -r /dev/mmcblk0p1 /boot/firmware || :
+
+  exec "$0" "$@"
+fi
+
+# fall through
+exec $BB sh -
+exec /bin/busybox sh -
