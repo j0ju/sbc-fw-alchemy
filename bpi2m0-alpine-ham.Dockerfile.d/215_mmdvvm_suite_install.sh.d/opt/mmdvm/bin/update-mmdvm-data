@@ -1,0 +1,50 @@
+#!/bin/sh
+set -eu
+
+#- defaults
+  TMPDIR=
+  BACKUPS=0
+  URLS=
+  CONFIG="/opt/mmdvm/etc/${0##*/}.conf"
+  INSTALL_DIR="/opt/mmdvm/etc"
+  DATE="$(date +%Y%m%d)"
+
+#- read config
+  [ ! -r "$CONFIG" ] || \
+    . "$CONFIG"
+
+#- temp dir and cleanup
+  cleanup() {
+    local rs=$?
+    [ -n "$TMPDIR" ] || \
+      return $rs
+    [ -d "$TMPDIR" ] || \
+      return $rs
+    rm -rf "$TMPDIR"
+    return $rs
+  }
+  TMPDIR="$(mktemp -d)"
+  trap cleanup EXIT TERM INT QUIT
+
+#- fetch & compare & backup
+  for u in $URLS; do
+    t="$TMPDIR/${u##*/}"
+    f="$INSTALL_DIR/${u##*/}"
+    if curl --fail -o "$t" -s "$u"; then
+      if ! cmp -b "$t" "$f"; then
+        if [ -f "$f" ]; then
+          mv -vf "$f" "$f.$DATE"
+        fi
+        mv -vf "$t" "$f"
+      fi
+    fi
+
+    backup_count=$(ls "$f".* 2> /dev/null | wc -l)
+    if [ $backup_count -gt $BACKUPS ]; then
+      backups_to_delete=$(( backup_count - BACKUPS ))
+      ls -tr "$f".* 2> /dev/null | head -${backups_to_delete} | while read f; do
+        rm -f $f
+      done
+    fi
+
+  done
