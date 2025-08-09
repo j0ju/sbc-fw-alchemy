@@ -42,11 +42,17 @@ for try in : "die 69 error creating data/overlay partition"; do
     #  * ==> booted from ...
     #  * ==> RO partition is
     P_ROOT="$(findmnt -o SOURCE -n /)"
+    case "$P_ROOT" in
+      # in case we are started from a squashfs/erofs image on a loop device
+      /dev/loop[0-9]* ) P_ROOT="$(findmnt -o SOURCE -n /mnt)" ;;
+    esac
     BLK="${P_ROOT%[0-9]}"
     N="${P_ROOT#$BLK}"
     N=$(( N + 1 ))
     P_DATA="$BLK$N"
     #  * ==> new partition will be created at the end of SD card named
+    #  NOTE: ${BLK%p} will break if we live on sdp/sd[a-z]p/vdp, etc...
+    #        we can assume that during boot on an SBC we will not have such devices
     echo ",,," | sfdisk -a ${BLK%p} --force
     partx -u ${BLK%p}
     mkfs.f2fs -l $LABEL $P_DATA -f
