@@ -1,9 +1,0 @@
-# /etc/inittab
-# NOTE: openrc-init does not use this file
-
-::sysinit:/sbin/openrc sysinit
-::sysinit:/sbin/openrc boot
-::wait:/sbin/openrc default
-
-::ctrlaltdel:/sbin/reboot
-::shutdown:/sbin/openrc shutdown

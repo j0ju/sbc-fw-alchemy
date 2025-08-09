@@ -2,8 +2,14 @@
 # meta: #onestep
 
 FROM sbc:rpi-rpios-lite as rpios
+FROM sbc:bpi2m0-alpine-ham as rootfs
 #FROM sbc:armhf-alpine-3.22
-FROM sbc:bpi2m0-alpine-ham
+FROM sbc:rpi-alpine
+
+RUN set -eu; \
+  rm -rf /target
+
+COPY --from=rootfs /target /target
 
 RUN set -eu ;\
   rm -rf /vanilla /target/boot /target/lib/modules /target/lib/firmware

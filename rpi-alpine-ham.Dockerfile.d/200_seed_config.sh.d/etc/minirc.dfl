@@ -1,4 +1,0 @@
-# Machine-generated file - use "minicom -s" to change parameters.
-pu port             /dev/ttyUSB0
-pu rtscts           No 
-pu escape-key       ^X           
