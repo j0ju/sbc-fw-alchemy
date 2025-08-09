@@ -4,6 +4,7 @@ set -eu
 
 #---
 MIN_FREE_MB=${MIN_FREE_MB:-64}
+BOOT_SIZE_KB=$(( 128 * 1024 )) # 128M
 IMAGE_SIZE_KB_MIN=$(( 640 * 1024 )) # 640M
 #IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 
@@ -24,15 +25,15 @@ esac
 USAGE_KB="$( $DECOMPRESSOR < "$SRC" | wc -c | awk '{print $1/1024}' )"
 
 IMAGE_SIZE_KB="$(( IMAGE_SIZE_KB_MIN ))"
-if [ "$USAGE_KB" -gt "$(( IMAGE_SIZE_KB_MIN - MIN_FREE_MB*1024 ))" ]; then
-  IMAGE_SIZE_KB=$(( USAGE_KB + MIN_FREE_MB*1024 ))
+if [ "$USAGE_KB" -gt "$(( IMAGE_SIZE_KB_MIN - BOOT_SIZE_KB - MIN_FREE_MB*1024 ))" ]; then
+  IMAGE_SIZE_KB=$(( USAGE_KB + BOOT_SIZE_KB + MIN_FREE_MB*1024 ))
 fi
 
 #--- safe cleanup
 cleanup() {
   local rs=$?
   local d
-  cd /
+  cd /src
   for m in /mnt/part* /mnt; do
     umount "$m" 2> /dev/null || :
   done
@@ -48,7 +49,10 @@ cleanup() {
       losetup -d "/dev/loop/${d#*loop}" 2> /dev/null || :
     fi
   done
-  if [ ! $rs = 0 ]; then
+  if [ $rs = 0 ]; then
+    [ -z "$OWNER" ] || \
+      chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
+  else
     rm -f "$IMAGE"
   fi
   trap '' EXIT
@@ -66,7 +70,7 @@ echo "FDISK $IMAGE"
 # 1st part will only be as large as the current image size
 sfdisk $IMAGE > /dev/null <<EOF
   label: dos
-  1: type=0c start=2048 size=128M bootable
+  1: type=0c start=2048 size=${BOOT_SIZE_KB}K bootable
   2: type=83
 EOF
 
