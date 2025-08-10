@@ -28,7 +28,7 @@ runcmd:
     done
 
     #- fix permission of  ~pi
-    echo pi:raspberry | chpasswd
+    echo pi:banana | chpasswd
     chown -R pi: ~pi
 
     #- disable OTG getty for now

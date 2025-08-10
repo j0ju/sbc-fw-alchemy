@@ -44,6 +44,7 @@ PKGS="$PKGS
     nftables-openrc iptables-openrc nftables-vim
   bird2
   ppp
+  dnsmasq dnsmasq-openrc dnsmasq-utils
 "
 
 PKGS="$PKGS
