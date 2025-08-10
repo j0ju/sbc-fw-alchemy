@@ -21,7 +21,7 @@ update_rc() {
     for rcfile in $TARGET/rc*; do
       link="$(readlink "$rcfile")"
       case "$link" in
-        "$SRC"* ) : ;;
+        "$0"* ) : ;;
         * ) continue ;;
       esac
       file="$(basename "$rcfile")"
