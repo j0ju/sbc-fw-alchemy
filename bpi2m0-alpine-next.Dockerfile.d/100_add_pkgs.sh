@@ -41,7 +41,9 @@ PKGS="$PKGS
     podman-bash-completion podman-openrc podman-tui
     podman-compose podman-compose-bash-completion podman-compose-pyc
   nftables iptables
-   nftables-openrc iptables-openrc nftables-vim
+    nftables-openrc iptables-openrc nftables-vim
+  bird2
+  ppp
 "
 
 PKGS="$PKGS
