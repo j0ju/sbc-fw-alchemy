@@ -12,7 +12,7 @@ chroot /target \
   apk add \
     iw wireless-tools \
     wpa_supplicant wpa_supplicant-openrc \
-    hostapd hostapd-openrc \
+    dnsmasq hostapd hostapd-openrc \
     wavemon \
     sudo doas \
     cloud-init \
