@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+[ $# != 0 ] || set -- bash -
+
+set -x
+docker run -ti --privileged --pid host alpine nsenter -m -u -i -n -p -t 1 -- "$@"
