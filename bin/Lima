@@ -3,5 +3,14 @@ set -eu
 
 [ $# != 0 ] || set -- bash -
 
+CRI_OPTS=
+
+! tty || CRI_OPTS="$CRI_OPTS -ti"
+for opt; do
+  case "$opt" in
+    -i | -t | -ti | -it ) CRI_OPTS="$CRI_OPTS $opt" ; shift ;;
+  esac
+done
+
 set -x
-docker run -ti --privileged --pid host alpine nsenter -m -u -i -n -p -t 1 -- "$@"
+docker run $CRI_OPTS --privileged --pid host alpine nsenter -m -u -i -n -p -t 1 -- "$@"

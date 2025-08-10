@@ -1,14 +1,14 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
-FROM sbc:armhf-Alpine-3.22 AS busybox-static
+FROM sbc:aarch64-Alpine-3.22 AS busybox-static
 RUN set -eu ;\
   rm -f /target/etc/resolv.conf ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\
   chroot /target apk add busybox-static
 
 # start /target with fresh armhf alpine
-FROM sbc:armhf-Alpine-3.22
+FROM sbc:aarch64-Alpine-3.22
 COPY --from=busybox-static /target/bin/busybox.static /target.busybox.static
 
 CMD \

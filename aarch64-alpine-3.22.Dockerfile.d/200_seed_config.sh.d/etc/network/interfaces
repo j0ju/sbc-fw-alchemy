@@ -1,0 +1,13 @@
+# /etc/network/interfaces
+
+# The config is split into serveral snippets below
+# /etc/network/interfaces.d/
+
+# loopback interface do not change
+auto lo
+iface lo inet loopback
+
+# include dynamic config
+source-directory /etc/network/interfaces.d
+
+# vim: ts=2 sw=2 et foldmethod=indent
