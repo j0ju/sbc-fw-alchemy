@@ -67,7 +67,8 @@ mount -t $TYPE "$DEVNAME" "$OVERLAY"
 # /overlay on data partition
 # maintainign multiple environements using symlinks and dirs does also work
 if [ ! -d "$OVERLAY/overlay" ]; then
-  mkdir -p "$OVERLAY/overlay"
+  mkdir -p "$OVERLAY/overlay.1stboot"
+  ln -s "overlay.1stboot" "$OVERLAY/overlay"
   log "$DEVNAME:$OVERLAY - create fresh overlay"
 fi
 log "using overlay $DEVNAME:$OVERLAY"
