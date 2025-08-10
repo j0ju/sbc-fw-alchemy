@@ -10,4 +10,3 @@ mkdir -p /target/run/systemd/resolve/
 ln -s ../run/systemd/resolve/resolv.conf /target/etc/resolv.conf
 
 cat /etc/resolv.conf > /target/etc/resolv.conf
-chroot /target apt-get update
