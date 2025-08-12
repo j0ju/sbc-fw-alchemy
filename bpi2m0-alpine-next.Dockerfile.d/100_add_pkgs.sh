@@ -59,6 +59,7 @@ PKGS="$PKGS
 PKGS="$PKGS
   gcc g++ binutils make
   cmake autoconf autoconf-archive automake
+  diffutils
 
   linux-headers
     libmd-dev libsamplerate-dev i2c-tools-dev

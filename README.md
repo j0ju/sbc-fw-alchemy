@@ -115,10 +115,11 @@
 ## You have a fresh unknown image and wants to inspect its contents?
 
  * copy it to ./input/unknown-beauty.img into this directory
- * type `make unknown-beauty.tar`
+ * type `make input/unknown-beauty.tar`
 
- This depacks the image to the tar file `unknown-beauty.tar` for easier use.
- You can even create a docker image from it via `make unknown-beauty`.
+ This depacks the image to the tar file `input/unknown-beauty.tar` for easier use.
+ To create a docker image from this tar use `make .deps/unknown-beauty.built` and use `IRun unknown-beauty bash -`.
+ The contents of the image can be found in /target inside of the running docker container.
 
 # Ideas & Plans
 
