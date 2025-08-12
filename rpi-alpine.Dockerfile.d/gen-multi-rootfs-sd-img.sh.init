@@ -45,7 +45,7 @@ $BB mountpoint -q /proc || \
 KVER="$($BB uname -r)"
 for i in /CURRENT/lib/modules/$KVER/*.ko*; do
   [ -r "$i" ] || continue
-  $BB insmod "$i"
+  $BB insmod "$i" || echo "E: insmod $i failed, CONTINUEing anyways." 1>&2
 done
 
 if [ -f /CURRENT/root.sqfs ]; then :             # SQUASHFS image, with extracted /boot
@@ -59,6 +59,9 @@ fi
 if $BB pivot_root /CURRENT/. /CURRENT/mnt; then
   BB=/mnt/sbin/busybox
 
+  #FIXME: this will fail if booted from USB/SATA/NVMe
+  $BB mount -r /dev/mmcblk0p1 /boot/firmware || :
+
   $BB mount -o move /mnt/dev /dev
   for m in proc dev run sys; do
     if $BB mountpoint -q /mnt/$m; then
@@ -67,9 +70,6 @@ if $BB pivot_root /CURRENT/. /CURRENT/mnt; then
   done
 
   cd /
-  #FIXME: this will fail if booted from USB/SATA/NVMe
-  $BB mount -r /dev/mmcblk0p1 /boot/firmware || :
-
   exec "$0" "$@"
 fi
 

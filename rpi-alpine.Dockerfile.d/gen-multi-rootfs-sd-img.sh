@@ -96,10 +96,6 @@ cp "$0".init /mnt/sbin/init
 ln -s init /mnt/sbin/preinit
 chmod 755 /mnt/sbin/init /mnt/sbin/busybox
 ln -s CURRENT/boot /mnt/boot
-mkdir -p /mnt/CURRENT/boot/firmware
-
-mkfs.vfat -n rpi-boot /dev/mapper/$P_FW
-mount /dev/mapper/$P_FW /mnt/boot/firmware
 
 GITREV="$( cd /src ; git log HEAD^..HEAD --oneline | awk '$0=$1' )"
 DATE="$( date +%Y-%m-%d-%H:%M )"
@@ -110,6 +106,10 @@ git status --short | grep -q ^ || \
 ROOTDIR="ROOTFS.$VERSION"
 mkdir -p "/mnt/$ROOTDIR"
 ln -s "$ROOTDIR" /mnt/CURRENT
+mkdir -p /mnt/CURRENT/boot/firmware
+
+mkfs.vfat -n rpi-boot /dev/mapper/$P_FW
+mount /dev/mapper/$P_FW /mnt/boot/firmware
 
 # use SQFS
   echo "COPY $IMAGE <- ${SQFS}"
@@ -140,5 +140,7 @@ ln -s "$ROOTDIR" /mnt/CURRENT
 
   sed -i -r -e 's!root=[^ ]+!root='"PARTUUID=$PARTUUID"'!' \
     "/mnt/boot/firmware/cmdline.txt"
+
+ls -l /mnt
 
 # vim: ts=2 sw=2 ft=sh et
