@@ -141,6 +141,4 @@ mount /dev/mapper/$P_FW /mnt/boot/firmware
   sed -i -r -e 's!root=[^ ]+!root='"PARTUUID=$PARTUUID"'!' \
     "/mnt/boot/firmware/cmdline.txt"
 
-ls -l /mnt
-
 # vim: ts=2 sw=2 ft=sh et
