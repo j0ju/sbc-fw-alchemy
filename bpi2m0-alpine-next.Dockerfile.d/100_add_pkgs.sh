@@ -34,6 +34,7 @@ PKGS="$PKGS
     py3-pip-pyc py3-platformdirs py3-platformdirs-pyc py3-requests
     py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
     py3-virtualenv-pyc py3-yaml py3-yaml-pyc
+    py3-pyserial py3-pyserial-pyc
 "
 
 PKGS="$PKGS
@@ -67,9 +68,10 @@ PKGS="$PKGS
     gsm-dev curl-dev tcl-dev
     speexdsp-dev speex-dev popt-dev
     opus-dev opusfile-dev libogg-dev
-    libgpiod-dev jsoncpp-dev lame-dev ladspa-dev libgcrypt-dev librtlsdr-dev
+    jsoncpp-dev lame-dev ladspa-dev libgcrypt-dev librtlsdr-dev
     ladspa-dev
 "
+# libgpiod-dev - SVXlink needs version 1.6 with 25.05.1
 
 # install packages for tarballs
   mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper /target/tmp/cache/vim
