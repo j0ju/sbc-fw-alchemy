@@ -7,6 +7,8 @@
 
 . ${0%/*}/000_svxlink_config.sh
 
+PREFIX=/usr
+
 chroot /target /bin/sh -eu << EOF
   PS4="${PS4%: }::chroot: "
   set -x

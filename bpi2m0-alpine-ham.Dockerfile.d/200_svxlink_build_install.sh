@@ -26,7 +26,6 @@ chroot /target /bin/sh -eu << EOF
   mkdir -p ../svxlink-build
   cd  ../svxlink-build
   cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DSYSCONF_INSTALL_DIR=/etc -DLOCAL_STATE_DIR=/var -DUSE_QT=NO -DWITH_SYSTEMD=no \
-    -DGPIOD_INCLUDE_DIR=$PREFIX/include -DGPIOD_LIBRARY=$PREFIX/lib/libgpiod.a \
     ../svxlink-git/src \
     #
   # build
