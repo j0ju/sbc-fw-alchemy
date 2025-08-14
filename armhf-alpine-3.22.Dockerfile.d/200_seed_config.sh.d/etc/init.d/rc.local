@@ -1,0 +1,26 @@
+#!/sbin/openrc-run
+
+description="run /etc/rc.local"
+
+depend() {
+  need localmount dev
+}
+
+start() {
+  ebegin "start /etc/rc.local"
+  rc=0
+  if [ -x /etc/rc.local ]; then
+    /etc/rc.local
+    rc=$?
+  elif [ -s /etc/rc.local ]; then
+    sh -eu /etc/rc.local
+    rc=$?
+  fi
+  eend $rc
+  return $rc
+}
+
+stop() { :
+}
+
+# vim: ts=2 et sw=2 ft=sh
