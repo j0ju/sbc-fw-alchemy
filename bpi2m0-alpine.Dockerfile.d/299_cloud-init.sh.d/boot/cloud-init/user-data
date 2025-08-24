@@ -1,8 +1,8 @@
 #cloud-config
 ---
 disable_root: true
-fqdn: rpi.local
-hostname: rpi
+fqdn: bpi0m2.local
+hostname: bpi0m2
 manage_etc_hosts: true
 package_update: false
 ssh_pwauth: true
@@ -41,9 +41,21 @@ runcmd:
     mkdir -p /overlay/containers
     ln -sf /overlay/containers /var/lib/containers
 
+    #- do fstrim on /rom/mnt if avail to release a bit pressure from the FTL
+    if mount -o remount -w /rom/mnt; then
+      fstrim /rom/mnt || :
+      mount -o remount -r /rom/mnt || :
+    fi
+
+    #- enable rc.local
+    rc-update add rc.local
+
     #- ensure network config
     [ -d /sys/class/net/eth0 ] || rm -f /etc/network/interfaces.d/eth0
     ifup -a || reboot
+
+    #- start rc.local
+    /etc/init.d/rc.local start
 
 write_files:
   - path: /etc/network/interfaces
@@ -125,8 +137,8 @@ write_files:
       driver=nl80211
       ieee80211n=1
 
-      ssid=rpi-alpine
-      wpa_passphrase=rpi-alpine!
+      ssid=alpine
+      wpa_passphrase=!alP1ne!
 
       macaddr_acl=0
       auth_algs=1
@@ -181,6 +193,16 @@ write_files:
       driftfile /var/lib/chrony/chrony.drift
       rtcsync
       cmdport 0
+
+  - path: /etc/rc.local
+    permissions: '0744'
+    owner: root:root
+    content: |
+      #!/bin/sh
+      set -eu
+
+      # BPI0 M2 - mmc0 == SD Card R/W activity - mmc1 == WiFi activity
+      echo mmc0 > /sys/class/leds/bananapi-m2-zero\:red\:pwr/trigger || :
 
   #- path: /home/pi/.ssh/authorized_keys
   #  permissions: '0644'

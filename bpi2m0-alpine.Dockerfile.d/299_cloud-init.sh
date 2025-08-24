@@ -31,7 +31,7 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
-    echo " * /$f"
+    #echo " * /$f"
   done
 
 # Setup cloud-init defaults
