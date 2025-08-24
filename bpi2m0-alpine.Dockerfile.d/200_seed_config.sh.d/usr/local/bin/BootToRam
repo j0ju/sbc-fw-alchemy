@@ -178,6 +178,7 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
   ln -s "$WORKDIR/rom.sqfs" /overlay/rom.sqfs
 
   rc-update del mmc default || :
+  rc-update del mmc sysinit || :
   rm -rf \
     /boot/cloud-init \
     /run/*.pid \
@@ -185,9 +186,22 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
   # EO rm -rf
 
   rm -f /sbin/init
-  ln -s /bin/busybox /sbin/init
+  if [ -x /lib/init.wrap ]; then
+    ln -s /lib/init.wrap /sbin/init
+  else
+    ln -s /bin/busybox /sbin/init
+  fi
 
   mv /overlay/preinit /overlay/to-ram.sh
+  
+  if mount -o move /rom /mnt -o move; then
+    if mount -o move /rom/rom/mnt /mnt/mnt; then
+      if umount /rom/rom; then
+        umount /rom || :
+      fi
+    fi
+    mount -o move /mnt /rom
+  fi
 
   exec /sbin/init
 }
@@ -198,7 +212,7 @@ mksqfs() { # creates for the current overlay a rom.sqfs from /rom
   SQFS="${SQFS##* }"
   if [ -f "$SQFS" ] && [ -s "$SQFS" ]; then :
   else
-    mksquashfs /rom "$SQFS" -comp xz -b 512k
+    mksquashfs /rom "$SQFS" -comp zstd -b 1024k
   fi
 }
 
