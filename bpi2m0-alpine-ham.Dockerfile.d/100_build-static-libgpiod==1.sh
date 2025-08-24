@@ -8,6 +8,7 @@
 . ${0%/*}/000_svxlink_config.sh
 
 PREFIX=/usr
+NCPU=$(cat /proc/cpuinfo | grep -c ^processor) || NCPU=2
 
 chroot /target /bin/sh -eu << EOF
   PS4="${PS4%: }::chroot: "
@@ -25,6 +26,6 @@ chroot /target /bin/sh -eu << EOF
   autoreconf -f
   automake
   ./configure --prefix=$PREFIX --enable-tools --enable-static --disable-shared
-  make
+  make -j$NCPU
   make install
 EOF

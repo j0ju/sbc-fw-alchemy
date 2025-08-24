@@ -11,5 +11,8 @@ REPOS="
   https://github.com/g4klx/MMDVMCal.git
   https://github.com/g4klx/DMRGateway.git
   https://github.com/g4klx/FMGateway.git
+  https://github.com/g4klx/MMDVM_CM.git
+  https://github.com/g4klx/YSFClients.git
 "
-KEEP_SOURCE=no
+KEEP_SOURCE=no # yes
+NCPU=$(cat /proc/cpuinfo | grep -c ^processor) || NCPU=2

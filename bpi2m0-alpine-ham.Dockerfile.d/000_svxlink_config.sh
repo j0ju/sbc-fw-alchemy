@@ -7,3 +7,4 @@ PS4="> ${0##*/}: "
 TAG=25.05.1
 PREFIX="/opt/svxlink-$TAG"
 KEEP_SOURCE=no
+NCPU=$(cat /proc/cpuinfo | grep -c ^processor) || NCPU=2

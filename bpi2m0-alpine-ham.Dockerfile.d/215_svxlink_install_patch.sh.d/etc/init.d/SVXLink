@@ -1,0 +1,46 @@
+#!/sbin/openrc-run
+
+description="SVXLink"
+supervisor="supervise-daemon"
+pidfile="/run/$RC_SVCNAME.pid"
+
+command=/bin/sh
+command_args="/etc/init.d/${RC_SVCNAME} daemonize"
+command_background=true
+
+prog="/opt/svxlink-25.05.1/bin/svxlink"
+configfile="/etc/svxlink/svxlink.conf"
+user=svxlink
+runtimedir=/run/svxlink
+
+depend() {
+        need net
+        after firewall
+        use dns
+}
+
+daemonize() {
+  if [ -z "$RC_SVCNAME" ]; then
+    RC_SVCNAME="${0##*/}"
+    . "/etc/init.d/${RC_SVCNAME}"
+  fi
+  if [ -r "/etc/conf.d/${RC_SVCNAME}" ]; then
+    . "/etc/conf.d/${RC_SVCNAME}"
+  fi
+
+  read _pid _ < /proc/self/stat
+  PIPE="/run/.$RC_SVCNAME.pipe.$( tr -cd '_+:a-z0-9A-Z' < /dev/urandom | head -c 32 )"
+  rm -f $PIPE
+  mknod $PIPE p
+  /usr/bin/logger -t "$RC_SVCNAME[$_pid]" < $PIPE &
+  exec > $PIPE 2>&1
+  rm -f $PIPE
+
+  mkdir -p "$runtimedir"
+  chown svxlink:svxlink -R "$runtimedir"
+  chmod 750 "$runtimedir"
+
+  exec "$prog" --runasuser="$user" --config="$configfile"
+}
+
+! [ "$RC_SVCNAME:$1" = :daemonize ] || daemonize

@@ -29,7 +29,7 @@ chroot /target /bin/sh -eu << EOF
     ../svxlink-git/src \
     #
   # build
-  make -j all doc
+  make -j$NCPU all doc
 
   # install
   make install

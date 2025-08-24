@@ -19,6 +19,6 @@ chroot /target /bin/sh <<EOchroot
   cd "$PREFIX/src"
   git clone "$repo"
   cd "$project"
-  make -j
+  make -j$NCPU
 EOchroot
 done
