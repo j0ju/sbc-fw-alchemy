@@ -56,7 +56,7 @@ cp /target/$INITRD /iso/boot/initrd.img
 
 # generate squashfs
 echo "# empty" > /target/etc/fstab
-mksquashfs /target /iso/live/live.squashfs -comp zstd
+mksquashfs /target /iso/live/live.squashfs -comp zstd -b 1024k
 
 # generate grub
 cat > /iso/boot/grub/grub.cfg <<EOF
