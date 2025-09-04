@@ -47,6 +47,8 @@ chroot /target sh -eu <<EOchroot
   cp -a $PREFIX/src/YSFClients/YSFGateway/YSFGateway /opt/mmdvm/bin
   cp -a $PREFIX/src/YSFClients/YSFParrot/YSFParrot /opt/mmdvm/bin
 
+  strip -g /opt/mmdvm/bin/* || :
+
   ln -s $PREFIX/bin/* /usr/local/bin
 
   ln -s $PREFIX/lib/openrc.init.d /etc/init.d/MMDVMHost

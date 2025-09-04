@@ -12,7 +12,7 @@ set -x
 chroot /target /bin/sh -eu << EOF
   umask 022
   PS4="${PS4%: }::chroot: "
-  #set -x
+  set -x
 
   # create prefix
   mkdir -p "$PREFIX"/src
@@ -25,7 +25,7 @@ chroot /target /bin/sh -eu << EOF
   # prepare directory and build
   mkdir -p ../svxlink-build
   cd  ../svxlink-build
-  cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DSYSCONF_INSTALL_DIR=/etc -DLOCAL_STATE_DIR=/var -DUSE_QT=NO -DWITH_SYSTEMD=no \
+  cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DSYSCONF_INSTALL_DIR=/etc -DLOCAL_STATE_DIR=/var -DUSE_QT=NO -DWITH_SYSTEMD=no -DCMAKE_BUILD_TYPE=Release \
     ../svxlink-git/src \
     #
   # build

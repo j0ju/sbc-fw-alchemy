@@ -28,4 +28,6 @@ chroot /target /bin/sh -eu << EOF
   ./configure --prefix=$PREFIX --enable-tools --enable-static --disable-shared
   make -j$NCPU
   make install
+
+  rm -rf /usr/src/libgpiod*
 EOF
