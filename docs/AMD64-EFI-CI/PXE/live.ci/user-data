@@ -1,0 +1,68 @@
+#cloud-config
+---
+disable_root: true
+fqdn: live-ci
+hostname: live-ci
+manage_etc_hosts: true
+package_update: false
+ssh_pwauth: false
+
+users: []
+
+runcmd:
+  - |
+    PS4="runcmd: "; set -e; trap `exit $?` EXIT
+    set -ex
+
+    #: setup console
+    setupcon
+
+    #: ----- fetch user data from INSTALL_URL//images/user-data/user.lst
+    url=
+    default_user=debian
+    default_user_groups="sudo"
+    eval "$( grep -E -o ' fetch=[^ ]+' /proc/cmdline )"
+    url="${fetch%/images/*}/images/user-data/user.lst"
+    fname="${0%/*}/${url##*/}"
+    if wget "$url" -q -O "$fname"; then
+      delete_default_user=no
+      while IFS=: read uid user; do
+        adduser --uid "$uid" --gecos "$user" --disabled-password "$user" || continue
+        for g in $default_user_groups; do
+          [ "$g" != "$default_user" ] || continue
+          adduser "$user" "$g"
+        done
+        home="$(getent passwd "$user" | awk -F: '{print $6}')"
+        mkdir -p "$home/.ssh"
+        chown "$user": "$home/.ssh"
+        chmod 0700 "$home/.ssh"
+        if wget -q "${url%/*}/$uid:$user" -O "$home/.ssh/authorized_keys"; then
+          chown "$user": "$home/.ssh/authorized_keys"
+          chmod 0600 "$home/.ssh/authorized_keys"
+          delete_default_user=yes
+        fi
+      done < "$fname"
+      if [ "$delete_default_user" = yes ]; then
+      # enable passwordless sudo
+        sed -i -r -e "/^(%sudo|root)/ d" /etc/sudoers
+        echo "root    ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
+        echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
+      # remove user
+        deluser --remove-home "$default_user"
+        rm -rf "$default_user_home"
+      # sort passwd
+        sed -i -r -e 's/,,,:/:/' /etc/passwd
+        /usr/sbin/pwck -s
+        /usr/sbin/grpck -s
+      fi
+    fi
+
+write_files:
+  - path: /etc/default/keyboard
+    permissions: '0644'
+    owner: root:root
+    content: |
+      XKBMODEL="pc105"
+      XKBLAYOUT="de"
+      XKBVARIANT="nodeadkeys"
+      XKBOPTIONS=
