@@ -6,7 +6,13 @@ set -eu
 . "$SRC/lib.sh"; init
 #set -x
 
-chroot /target apt-get full-upgrade -y
+# TODO: fix upgrades fif a new kernel is installed, live image detection is broken
+#chroot /target dpkg-divert --divert /bin/systemd-detect-virt.disabled --local --rename --add /bin/systemd-detect-virt
+#echo "set -x; exit 0" > /target/bin/systemd-detect-virt
+#chmod 755 /target/bin/systemd-detect-virt
+#ls -l /target/bin/systemd-detect-virt
+
+chroot /target apt-get dist-upgrade -y
 
 ( cd /target/lib/modules
   ls [0-9]* -d 
@@ -20,3 +26,7 @@ chroot /target apt-get full-upgrade -y
 done
 
 apt-get clean
+
+# TODO: fix upgrades fif a new kernel is installed, live image detection is broken
+#rm -f /target/bin/systemd-detect-virt
+#chroot /target dpkg-divert --rename --remove /bin/systemd-detect-virt
