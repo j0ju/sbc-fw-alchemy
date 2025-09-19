@@ -6,6 +6,7 @@
 set -e
 PS4="> ${0##*/}: "
 SRC="${SRC%/}"
+DST="${DST:-/target}"
 
 init() {
   [ -d /target ] || return 0
@@ -43,7 +44,7 @@ deinit() {
     0 ) ;; # only commit /etc if exitcode is 0, otherwise we bailout and stop anyways
     * ) return $rs ;;
   esac
-  
+
   if [ -f /target/usr/sbin/invoke-rc.d.dist ]; then
     rm -f /target/usr/sbin/invoke-rc.d
     mv /target/usr/sbin/invoke-rc.d.dist /target/usr/sbin/invoke-rc.d
