@@ -8,6 +8,7 @@ RUN mv /target /vanilla
 
 # start /target with fresh armhf alpine
 COPY --from=alpine /target/ /target
+COPY --from=alpine /target.busybox.static /
 
 # populate modules and boot from vanilla
 RUN \
