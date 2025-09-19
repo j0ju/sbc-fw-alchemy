@@ -4,11 +4,8 @@ set -eu
 
 IMAGE="$1"
 
-#COMPRESSOR="xz"
-#BLOCKSIZE=128k
-
-COMPRESSOR="zstd"
-BLOCKSIZE=512k
+COMPRESSOR="${COMPRESSOR:-zstd}" # xz
+BLOCKSIZE="${BLOCKSIZE:-1024k}"  # 256k 512k
 
 rm -f /target/etc/resolv.conf
 rm -rf /target/etc/.git
