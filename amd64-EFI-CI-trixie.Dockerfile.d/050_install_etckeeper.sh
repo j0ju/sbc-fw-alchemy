@@ -1,12 +1,14 @@
 #!/bin/sh -eu
 # (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
 
-#set -x
 . "$SRC/lib.sh"; # do not call init, here yet
+set -x
 
-find /target/ -name .git -exec rm -rf {} \+
+chroot "$DST" apt-get install -y git ssmtp
 
-( cd /target/etc
+find "$DST" -name .git -exec rm -rf {} \+
+
+( cd  "$DST/etc"
   git init .
   git config user.email "root@"
   git config user.name "root"
@@ -16,4 +18,4 @@ find /target/ -name .git -exec rm -rf {} \+
 )
 
 # add ssmtp to prevent exim installed
-chroot /target apt-get install -y etckeeper ssmtp
+chroot "$DST" apt-get install -y etckeeper ssmtp

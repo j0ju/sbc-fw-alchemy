@@ -3,18 +3,43 @@
 
 FROM sbc:amd64-Debian-Trixie-Cloud-Image
 
-RUN \
-  dpkg --add-architecture amd64 ;\
-  apt-get update ;\
-  apt-get install -y grub-efi-amd64-bin/stable grub-efi/stable ;\
-: # eo RUN
+# set environment - all build containers inherit this
+ENV \
+  DEBIAN_FRONTEND=noninteractive \
+  DEBIAN_CHROOT=docker \
+  LANG=C.UTF-8 \
+  LANGUAGE=C.UTF-8 \
+  LC_CTYPE=C.UTF-8 \
+  LC_NUMERIC=C.UTF-8 \
+  LC_TIME=C.UTF-8 \
+  LC_COLLATE=C.UTF-8 \
+  LC_MONETARY=C.UTF-8 \
+  LC_MESSAGES=C \
+  LC_PAPER=C.UTF-8 \
+  LC_NAME=C.UTF-8 \
+  LC_ADDRESS=C.UTF-8 \
+  LC_TELEPHONE=C.UTF-8 \
+  LC_MEASUREMENT=C.UTF-8 \
+  LC_IDENTIFICATION=C.UTF-8
 
-CMD \
-  rm -f /target/etc/resolv.conf ;\
-  cp /etc/resolv.conf /target/etc/resolv.conf ;\
-  busybox mount -o bind /target /target 2> /dev/null || :; \
-  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
-  [ -x /target/bin/bash ] || \
-    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
-  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
-: # eo CMD
+# merge imported partitions together
+# /target/part1 /
+# /target/part15 /boot/efi
+COPY img-mangler/merge-to-root.sh /target/mv.sh
+
+RUN set -ex ; \
+  mv /target/part15/* /target/part1/boot/efi ; \
+  mv /target /target.old ; \
+  mv /target.old/part1 /target ; \
+  sh /target.old/mv.sh ; \
+  rm -rf /target.old ; \
+: EO RUN
+
+ENV \
+  DST=/
+
+#-
+# run scripts that do the modifications steps in one layer
+# * moving files around - see # copy scripts & outoftree resources above
+# * adding stuff, etc
+#-

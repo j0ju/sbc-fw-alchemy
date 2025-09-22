@@ -3,6 +3,6 @@
 
 PS4='> ${0##*/}: '
 set -eu
-#set -x
+set -x
 
-chroot /target apt-get update
+chroot "$DST" apt-get update

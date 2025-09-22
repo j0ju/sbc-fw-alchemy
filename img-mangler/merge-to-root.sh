@@ -18,7 +18,7 @@ for f in /*; do
     /busybox.static ) continue ;;
   esac
 
-  if $BB awk '$0=$2' /proc/mounts | $BB grep "^$f$"; then
+  if $BB awk '$0=$2' /proc/mounts | $BB grep "^$f$" > /dev/null; then
     $BB rm -rf /target/$f
     continue
   fi

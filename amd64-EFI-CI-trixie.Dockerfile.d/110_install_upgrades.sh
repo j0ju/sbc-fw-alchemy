@@ -12,9 +12,9 @@ set -eu
 #chmod 755 /target/bin/systemd-detect-virt
 #ls -l /target/bin/systemd-detect-virt
 
-chroot /target apt-get dist-upgrade -y
+chroot "$DST" apt-get dist-upgrade -y
 
-( cd /target/lib/modules
+( cd "$DST"/lib/modules
   ls [0-9]* -d 
 ) | sort | head -n -1 | while read ver; do 
   if [ -f "/target/var/lib/dpkg/info/linux-header-$ver.list" ]; then
