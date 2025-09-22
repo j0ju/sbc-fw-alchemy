@@ -1,26 +1,5 @@
 # (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: #onestep
 
-FROM scratch AS build
-COPY --from=sbc:amd64-EFI-CI-trixie /target/. /
-
-# create an alien/foreign ARCH container as we need /proc mounted for DKMS to work
-RUN set -ex; \
-  apt-get update ;\
-  apt-get install -y \
-    linux-headers-amd64 \
-    zfs-dkms \
-    zfs-initramfs \
-    zfsutils-linux \
-  ;: # EO apt-get
-# EO RUN
-
-# copyover rootfs with ZFS modules from DKMS
 FROM sbc:amd64-EFI-CI-trixie
 
-RUN set -ex; \
-  rm -rf /target ;\
-  mkdir -p /target ;\
-  :
-# EO RUN
-COPY --from=build /. /target/
