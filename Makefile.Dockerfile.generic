@@ -64,7 +64,10 @@ clean-dep:
 
 force-dep fd fdep: clean-dep
 	$(E) FORCE DEP
-	$(Q) rm -f *.Dockerfile
+	$(Q) find $(DEPDIR) -name "*.d"          -delete -o \
+	                    -name "*.built"      -delete -o \
+	                    -name ".*.workspace" -delete
+	$(Q) find ./input   -name "*.Dockerfile" -delete
 	$(Q) $(MAKE) dep
 
 clean: clean-files docker-image-prune clean-local
