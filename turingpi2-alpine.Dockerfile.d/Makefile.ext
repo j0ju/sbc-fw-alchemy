@@ -14,7 +14,10 @@ output/turingpi2-alpin%.multi.img: output/turingpi2-alpin%.rootfs.tar.zst \
   output/turingpi2-alpin%.sqfs
 	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=))" MULTIBOOT
 	$(Q) mkdir -p output
-	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+	$(Q) ./bin/img-mangler -p \
+	  -e IMAGE_SIZE_KB_MIN=$$(( 384 * 1024 )) \
+	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=)) \
+	  sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
 
 output/turingpi2-alpin%.sqfs: \
   .deps/turingpi2-alpin%.built \
