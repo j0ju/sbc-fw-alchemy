@@ -38,7 +38,7 @@ exec unshare -m -- sh -eu -c "
   if [ '$STDOUT_TO_SYSLOG' = yes ]; then
     rm -f /run/bmcd.pipe
     mknod /run/bmcd.pipe p
-    /usr/bin/logger -s -t 'bmcd[\$$]' < /run/bmcd.pipe &
+    /usr/bin/logger -s -t 'bmcd[$$]' < /run/bmcd.pipe &
     exec > /run/bmcd.pipe
     rm -f /run/bmcd.pipe
   fi
