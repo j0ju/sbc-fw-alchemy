@@ -25,7 +25,7 @@ done
 
 # "tinker" environment to run bmcd
 exec unshare -m -- sh -eu -c "
-  PS4="> ${0##*/}[$$] > mountns > "
+  PS4='> ${0##*/}[$$] > mountns > '
   set -x
 
   if [ '$MOCK_SERIAL' = yes ]; then
