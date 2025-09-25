@@ -1,0 +1,3 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+FROM sbc:turingpi2-alpine
