@@ -7,6 +7,7 @@ input/turingpi2-buildroot/uboot.img input/turingpi2-buildroot/rootfs.tar: .deps/
 input/turingpi2-buildroot.tar: input/turingpi2-buildroot/rootfs.tar input/turingpi2-buildroot/uboot.img
 	$(E) PREPARE $@
 	$(Q) set $(SHOPT); \
+		rm -f input/turingpi2-buildroot/boot ;\
 		ln -s . input/turingpi2-buildroot/boot ;\
 		cp $< $@ ;\
 		tar --append --file $@ -h -C input/turingpi2-buildroot ./boot/uboot.img ;\
