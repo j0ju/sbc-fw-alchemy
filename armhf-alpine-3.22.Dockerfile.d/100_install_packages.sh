@@ -84,6 +84,9 @@ PKGS=" \
 #  dtc \
 #"
 
+# add some directories needed for operation
+  mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
+
 # we install these pkgs in advance so -openrc and -bash-completion are installed
 # as recomends automatically for user convinience
   chroot /target apk add bash-completion openrc
