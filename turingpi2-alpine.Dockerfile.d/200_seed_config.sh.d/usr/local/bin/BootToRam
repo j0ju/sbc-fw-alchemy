@@ -1,0 +1,229 @@
+#!/bin/sh
+set -eu
+
+PS4_BASE="${0##*/}[\$$]:"
+PS4="$PS4_BASE "
+
+SQFS="/rom/mnt/CURRENT/root.sqfs /overlay/rom.sqfs"
+
+WORKDIR=/run/live
+
+stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as init
+  PS4="$PS4_BASE:stage0: "
+  set -x
+
+  for SQFS in $SQFS; do
+    if [ -r "$SQFS" ]; then
+      break
+    fi
+  done
+
+  #- pre-flight checks
+  if [ -f "$SQFS" ] && [ -s "$SQFS" ]; then :
+  else
+    echo "E: $SQFS not found, try generating" >&2
+    mksqfs
+  fi
+
+  #- cleanup
+  trap cleanup_stage0 EXIT
+  ( set +x; cleanup_stage0 )
+
+  #- prepare tmpfs
+  mkdir -p "$WORKDIR/overlay" "$WORKDIR/rom" "$WORKDIR/rootfs"
+  mount -t tmpfs tmpfs "$WORKDIR/overlay"
+  mkdir -p "$WORKDIR/overlay/upper" "$WORKDIR"/overlay/work
+
+  INIT="$(readlink -f /proc/1/exe)"
+  case "$INIT" in
+    */openrc-init ) ;;
+    * ) # assume busybox init
+      #- prepare inittab
+      echo "::restart:$WORKDIR/overlay/pid1stage1" > "$WORKDIR/overlay/inittab"
+      mount -o bind "$WORKDIR/overlay/inittab" /etc/inittab
+      kill -HUP 1
+      rm -f "$WORKDIR/overlay/inittab"
+      ;;
+  esac
+
+  #- prepare multicall script
+  cp "$0" "$WORKDIR/overlay/pid1stage1"
+  chmod 0744 "$WORKDIR/overlay/pid1stage1"
+
+  #- prepare read-only root
+  if [ -f "$WORKDIR/rom.sqfs" ] && [ -s "$WORKDIR/rom.sqfs" ]; then :
+  else
+    size="$( du -shk "$SQFS" | (read k _; echo $k ))"
+    size=$(( size * 2))
+    dir="$( findmnt -n -o TARGET --target "$WORKDIR" )"
+    mount -o "remount,size=${size}k" "$dir"
+    cat "$SQFS" > "$WORKDIR/rom.sqfs"
+  fi
+  modprobe loop 2> /dev/null || :
+  modprobe squashfs 2> /dev/null || :
+
+  # copy over base config and authorized_keys if any
+  ( cd /overlay/upper
+    find $(ls -d etc root home 2> /dev/null) ! -type d | grep -v /.git/ | xargs tar cf - --acls --xattrs
+  ) | tar xf - --acls --xattrs -C "$WORKDIR/overlay/upper"
+
+  #- prepare read-write rootfs backed from RAM
+  ( cd "$WORKDIR"
+    mount -o loop -r "$WORKDIR/rom.sqfs" "$WORKDIR/rom"
+    mount -t overlay overlay "$WORKDIR/rootfs" -o lowerdir=rom,upperdir=overlay/upper,workdir=overlay/work
+    rm -rf rootfs/etc/.git
+  )
+
+  #- restart init --> calling $WORKDIR/pid1stage1
+  case "$INIT" in
+    */openrc-init )
+      mount -o bind "$WORKDIR/overlay/pid1stage1" "$INIT"
+      openrc-shutdown -R
+      ;;
+    * ) # assume busybox init
+      kill -QUIT 1
+      ;;
+  esac
+
+  sleep 7
+  echo "E: this should never happen, investigate"
+}
+
+cleanup_stage0() { # cleanup handler for stage0
+  rs=$?
+  PS4="$PS4_BASE:cleanup_stage0: "
+  set -x
+  for m in /etc/inittab "$WORKDIR/rootfs" "$WORKDIR/rom" "$WORKDIR/overlay"; do
+    while umount $m 2>/dev/null; do :; done
+  done
+  kill -HUP 1
+  rm -rf "$WORKDIR"
+  exit $rs
+}
+
+emergency_console() {
+  PS4="$PS4_BASE:emergency_console: "
+  #set -x
+  env | sort
+  mount
+  exec /bin/bash --login
+  exec /bin/ash -l
+  exec /bin/sh
+}
+
+pid1stage1() { # running as PID 1 after re-exec from init
+  trap emergency_console EXIT
+  PS4="$PS4_BASE "
+  set -x
+
+  #- shutdown all processes except init/PID1
+  for sig in 15 15 15 9; do
+    for ps in /proc/[1-9]*/exe; do
+      head -c 1 "$ps" 2> /dev/null 1>&2 || continue
+      pid="${ps#/proc/}"
+      pid="${pid%/exe}"
+      case "$pid" in
+        1 ) continue ;;
+        * ) kill -$sig $pid || : ;;
+      esac
+    done 2> /dev/null
+  done
+
+  #- kill network
+  rm -f /run/ifstate* /var/run/udhcpc.*.pid
+  ifdown -af || :
+  ( cd /sys/class/net
+    for dev in *; do
+      [ -d "$dev" ] || continue
+      ip link set down dev $dev
+      ip link del dev $dev 2> /dev/null || :
+    done
+  )
+
+  #- pivot root
+  cd "$WORKDIR"
+  mkdir -p rootfs/rom rootfs/overlay rootfs/tmp
+  pivot_root rootfs rootfs/rom
+  cd /
+
+  #- cleanup mounts below /rom and move mounts
+  mount -o move /rom/proc /proc
+  mount -o move /rom/dev /dev
+  mount -o move /rom/sys /sys
+  mount -o move /rom/run /run
+  mount -o move /rom/tmp /tmp
+
+  #- next stage before re-exec - fixing up
+  mv "$WORKDIR/overlay/pid1stage1" "$WORKDIR/overlay/preinit"
+  exec "$WORKDIR/overlay/preinit"
+}
+
+preinit() { # running from rootfs if RAM/squashfs, applying fixes
+  trap emergency_console EXIT
+  PS4="$PS4_BASE: "
+  set -x
+  cd /
+
+  for _ in 1 2 3; do
+    grep -Eo " /rom[^ ]*" /proc/mounts | \
+    sort | \
+      while read m; do
+        while umount $m; do :; done
+    done 2> /dev/null
+  done
+
+  mount -o move "$WORKDIR/rom" /rom
+  mount -o move "$WORKDIR/overlay" /overlay
+  rmdir "$WORKDIR"/* 2> /dev/null || :
+  ln -s "$WORKDIR/rom.sqfs" /overlay/rom.sqfs
+
+  rc-update del mmc default || :
+  rc-update del mmc sysinit || :
+  rm -rf \
+    /boot/cloud-init \
+    /run/*.pid \
+    /run/openrc \
+  # EO rm -rf
+
+  rm -f /sbin/init
+  if [ -x /lib/init.wrap ]; then
+    ln -s /lib/init.wrap /sbin/init
+  else
+    ln -s /bin/busybox /sbin/init
+  fi
+
+  mv /overlay/preinit /overlay/to-ram.sh
+ 
+  if mount -o move /rom /mnt -o move; then
+    if mount -o move /rom/rom/mnt /mnt/mnt; then
+      if umount /rom/rom; then
+        umount /rom || :
+      fi
+    fi
+    mount -o move /mnt /rom
+  fi
+
+  exec /sbin/init
+}
+
+mksqfs() { # creates for the current overlay a rom.sqfs from /rom
+  PS4="$PS4_BASE:mksqfs: "
+  set -x
+  SQFS="${SQFS##* }"
+  if [ -f "$SQFS" ] && [ -s "$SQFS" ]; then :
+  else
+    mksquashfs /rom "$SQFS" -comp zstd -b 1024k
+  fi
+}
+
+case "$$:${0##*/}" in # multicall shell script selection
+  1:pid1stage1) pid1stage1 ;;
+  1:openrc-init) pid1stage1 ;;
+  #
+  1:preinit) preinit ;;
+  #
+  *:mk-sqfs.sh ) mksqfs ;;
+  *:to-ram.sh | *:BootToRam ) stage0 "$@" ;;
+esac
+
+# vim: ts=2 sw=2 et ft=shell foldmethod=indent
