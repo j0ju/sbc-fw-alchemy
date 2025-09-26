@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Copyright (C) 2023 Sam Edwards <CFSworks@gmail.com>
+
+# Set bootargs:
+setenv bootargs loglevel=8 cma=8M init=/sbin/preinit rootwait=5
+
+if test ${devtype} = mmc; then
+        setenv bootargs ${bootargs} root=PARTUUID=${distro_bootpart_uuid}
+fi
+if test ${devtype} = ubi; then
+        setenv bootargs ${bootargs} ubi.mtd=ubi ubi.block=${devnum},${distro_bootpart} root=254:0
+fi
+
+setenv bootargs ${bootargs} ${bootmode}
+
+# Load FIT-image
+load ${devtype} ${devnum}:${distro_bootpart} ${loadaddr} /boot/turing-pi2.itb
+
+# read hardware version from EEPROM
+tpi_info hw_version tpi_hw_version
+
+setenv fit_boot_args "${loadaddr}#config-${tpi_hw_version:-v2.4.0}"
+if env exists boot_unlocked; then
+    echo "disabling write protection.."
+else
+    setenv fit_boot_args "${fit_boot_args}#locked"
+fi
+
+bootm ${fit_boot_args}

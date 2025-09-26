@@ -1,0 +1,30 @@
+#!/bin/sh
+set -eu
+
+telinit() { # mimics telinit
+  case "${1:-}" in
+    reload | [qQ] ) exit 0 ;; # NOP - makes now sense for openrc-init (not inittab)
+    reexec | [uU] ) openrc-shutdown --reexec ;;
+    single | [sS] ) openrc-shutdown --single now ;;
+    * )
+      echo "initctl: unknown action '${1:-}'" >&2
+      exit 69
+      ;;
+  esac
+}
+
+case "$$:${0##*/}" in
+  1:* )
+    umount /rom/mnt 2> /dev/null || :
+    umount /rom/sys 2> /dev/null || :
+    umount /rom/run 2> /dev/null || :
+    umount /rom/proc 2> /dev/null || :
+    exec /sbin/openrc-init "$@"
+    ;;
+  *:halt | *:reboot | *:shutdown ) exec /sbin/openrc-shutdown --${0##*/} now ;;
+  *:init | *:initctl | *:telinit ) telinit "$@" ;;
+  * )
+    echo "E: unknown call on multicall binary '$0', EXIT" >&2
+    exit 69
+    ;;
+esac

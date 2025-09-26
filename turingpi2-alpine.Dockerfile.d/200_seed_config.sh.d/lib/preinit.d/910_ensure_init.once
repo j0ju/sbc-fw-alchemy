@@ -1,0 +1,9 @@
+#- ensure initial init
+  if ! [ -x "$OVERLAY/upper/sbin/init" ]; then
+    rm -f /sbin/init
+    if [ -x /lib/init ]; then
+      ln -s /lib/init /sbin/init
+    else
+      ln -s /bin/busybox /sbin/init
+    fi
+  fi

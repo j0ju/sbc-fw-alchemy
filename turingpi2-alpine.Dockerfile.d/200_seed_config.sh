@@ -85,6 +85,9 @@ mkdir -p /target/usr/local/sbin /target/usr/local/bin
 # tune avahi anounced services
 rm -f /target/etc/avahi/services/sftp-ssh.service
 
+# adapt uboot script and compile
+chroot /target mkimage -T script -d /boot/boot.scr /boot/boot.scr.uimg
+
 # enable basic services
 chroot /target /bin/sh -e <<EOF
 
@@ -113,6 +116,7 @@ rc-update add chronyd default
 rc-update add bmcd default
 rc-update add dot default
 rc-update add mmc default
+rc-update add rdnssd default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown

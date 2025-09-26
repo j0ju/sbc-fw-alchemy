@@ -1,0 +1,10 @@
+# find init, try /sbin/preinit if it exists is executable and is not the same content as the current running script
+  if [ -x /sbin/preinit ]; then
+    if ! cmp -s /sbin/preinit $ROM/sbin/preinit; then
+      log "found /sbin/preinit in overlay fs"
+      log "running /sbin/preinit"
+      exec /sbin/preinit
+    else # if /sbin/preinit in overlay equals stock version, assume freshly initialized system
+      rm -f /sbin/preinit /sbin/mount_overlay
+    fi
+  fi

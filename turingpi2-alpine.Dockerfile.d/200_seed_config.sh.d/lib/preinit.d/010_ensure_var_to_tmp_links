@@ -1,0 +1,19 @@
+# ensure symlinks targets in /var to somewhere /tmp exist
+ensure_volatile_dir() {
+  local PS4="${PS4%: }::ensure_volatile_dir(): "
+  #set -x
+  #echo "${0}[$$]::ensure_volatile_dir() $*"
+  local link="$1"
+  local dest="$(readlink "$link")"
+  cd "${link%/*}"
+  if ! mkdir -p "$dest" 2> /dev/null; then
+    ensure_volatile_dir "${dest%/*}"
+    mkdir -p "$dest"
+  fi
+}
+
+  find /var -type l | \
+    while read d; do
+      ensure_volatile_dir "$d"
+    done
+  mount -o remount,size=256k /dev || :

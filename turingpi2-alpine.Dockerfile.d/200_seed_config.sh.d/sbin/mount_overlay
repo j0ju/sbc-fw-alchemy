@@ -5,7 +5,7 @@
 
 #- debugging, if needed
   PS4="${0}[$$]: +"
-  #set -x
+  set -x
 
 #- settings
   OVERLAY=${1:-/overlay}
@@ -28,48 +28,76 @@ if mountpoint $OVERLAY > /dev/null 2>&1; then
   exit 1
 fi
 
-log "searching for overlay and data partition..."
-for try in : "die 69 error creating data/overlay partition"; do
-  DEVNAME=
-  TYPE=
-  eval "$(blkid -t $FILTER -o export || :)" || :
-  if [ -n "${DEVNAME:-}" ]; then
-    break # found partition
-  else
-    log "no data partition found with filter: $FILTER"
-    # assumptions:
-    #  * freshly burned image
-    #  * ==> booted from ...
-    #  * ==> RO partition is
-    P_ROOT="$(findmnt -o SOURCE -n /)"
-    case "$P_ROOT" in
-      # in case we are started from a squashfs/erofs image on a loop device
-      /dev/loop[0-9]* ) P_ROOT="$(findmnt -o SOURCE -n /mnt)" ;;
-    esac
-    BLK="${P_ROOT%[0-9]}"
-    N="${P_ROOT#$BLK}"
-    N=$(( N + 1 ))
-    P_DATA="$BLK$N"
-    #  * ==> new partition will be created at the end of SD card named
-    #  NOTE: ${BLK%p} will break if we live on sdp/sd[a-z]p/vdp, etc...
-    #        we can assume that during boot on an SBC we will not have such devices
-    echo ",,," | sfdisk -a ${BLK%p} --force
-    partx -u ${BLK%p}
-    mkfs.f2fs -l $LABEL $P_DATA -f
+mount_block() {
+  log "searching for overlay and data partition..."
+  for try in : "die 69 error creating data/overlay partition"; do
+    DEVNAME=
+    TYPE=
+    eval "$(blkid -t $FILTER -o export || :)" || :
+    if [ -n "${DEVNAME:-}" ]; then
+      break # found partition
+    else
+      log "no data partition found with filter: $FILTER"
+      # assumptions:
+      #  * freshly burned image
+      #  * ==> booted from ...
+      #  * ==> RO partition is
+      P_ROOT="$(findmnt -o SOURCE -n /)"
+      case "$P_ROOT" in
+        # in case we are started from a squashfs/erofs image on a loop device
+        /dev/loop[0-9]* ) P_ROOT="$(findmnt -o SOURCE -n /mnt)" ;;
+      esac
+      BLK="${P_ROOT%[0-9]}"
+      N="${P_ROOT#$BLK}"
+      N=$(( N + 1 ))
+      P_DATA="$BLK$N"
+      #  * ==> new partition will be created at the end of SD card named
+      #  NOTE: ${BLK%p} will break if we live on sdp/sd[a-z]p/vdp, etc...
+      #        we can assume that during boot on an SBC we will not have such devices
+      echo ",,," | sfdisk -a ${BLK%p} --force
+      partx -u ${BLK%p}
+      mkfs.f2fs -l $LABEL $P_DATA -f
+    fi
+    $try
+  done
+
+  log "found $DEVNAME"
+  mount -t $TYPE "$DEVNAME" "$OVERLAY"
+
+  # use subdirectory to allow fresh bootstrapping by renaming or deleting
+  # /overlay on data partition
+  # maintainign multiple environements using symlinks and dirs does also work
+  if [ ! -d "$OVERLAY/overlay" ]; then
+    mkdir -p "$OVERLAY/overlay.1stboot"
+    ln -s "overlay.1stboot" "$OVERLAY/overlay"
+    log "$DEVNAME:$OVERLAY - create fresh overlay"
   fi
-  $try
+  log "using overlay $DEVNAME:$OVERLAY"
+  mount -o bind "$OVERLAY/overlay/." "$OVERLAY"
+}
+
+mount_ubifs() {
+  busybox ash
+}
+
+# detect root device
+for rootpath in / /mnt /rom /rom/mnt; do
+  ROOTDEV=$(busybox mountpoint -n $rootpath | cut -f 1 -d " ")
+  case "$ROOTDEV" in
+    UNKNOWN ) continue ;;
+    /dev/loop* ) continue ;;
+  esac
+  break
 done
 
-log "found $DEVNAME"
-mount -t $TYPE "$DEVNAME" "$OVERLAY"
+# determine root device type
+case "$ROOTDEV" in
+  *mmcblk*)   mount_block ;;
+  *ubiblock*) mount_ubifs ;;
+  *)          
+    echo "----- Unrecognized root device $ROOTDEV -----"
+    /bin/busybox ash -
+    die 69 "Unrecognized root device $ROOTDEV"
+    ;;
+esac
 
-# use subdirectory to allow fresh bootstrapping by renaming or deleting
-# /overlay on data partition
-# maintainign multiple environements using symlinks and dirs does also work
-if [ ! -d "$OVERLAY/overlay" ]; then
-  mkdir -p "$OVERLAY/overlay.1stboot"
-  ln -s "overlay.1stboot" "$OVERLAY/overlay"
-  log "$DEVNAME:$OVERLAY - create fresh overlay"
-fi
-log "using overlay $DEVNAME:$OVERLAY"
-mount -o bind "$OVERLAY/overlay/." "$OVERLAY"
