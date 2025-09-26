@@ -6,14 +6,14 @@ auto mgmt
 iface mgmt
   # how to do autoconfiguration
     use dhcp # for DHCPv4
-    #use ipv6-ra # for router advertisments
+    use ipv6-ra # for router advertisments
   # set VLAN parameters
     vlan-raw-device sw0
     vlan-id 4094
   # address config
-    ipv6-ll no
+    ipv6-ll yes
     address fe80::bc/64
-    address 169.254.23.14/16
+    address 169.254.66.67/16
 
 #    dns-search .
 #    dns-nameservers 8.8.8.8

@@ -10,6 +10,7 @@ iface sw0
   # configure default VLAN
   #  * egress traffic is untagged
   #  * ingress untagged traffic is put to into VLAN1
+  # allow untagged frames
     bridge-allow-untagged no
     bridge-default-pvid no
   # untagged vlans - the mgmt VID needs to be added
@@ -18,10 +19,5 @@ iface sw0
     bridge-vids 4094
   # enable spanning tree if needed
     bridge-stp off
-
-  # allow untagged frames
-    bridge-allow-untagged no
-  # expose managemnt VLAN tagged so we can create mgmt interface
-    bridge-vids 4094
 
 # vim: ts=2 sw=2 et foldmethod=indent

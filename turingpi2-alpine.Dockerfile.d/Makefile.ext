@@ -1,8 +1,8 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
 # build turing pi image to get rootfs
-output/turingpi2-alpine.img: \
-  output/turingpi2-alpine.rootfs.tar.zst \
+output/turingpi2-alpin%.img: \
+  output/turingpi2-alpin%.rootfs.tar.zst \
   bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh
 	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
 	$(Q) mkdir -p output

@@ -23,6 +23,7 @@
 # loopback interface do not change
 auto lo
 iface lo inet loopback
+  address fe80::bc/64
 
 # include dynamic config
 source-directory /etc/network/interfaces.d
