@@ -16,7 +16,7 @@ set modeline
 set modelines=5
 
 set dir=/tmp/cache/vim
-#set dir=/tmp/
+"set dir=/tmp/
 
 set linebreak           " Don't wrap words by default
 set textwidth=0         " Don't wrap lines by default
