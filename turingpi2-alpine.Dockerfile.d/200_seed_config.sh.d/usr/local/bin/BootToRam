@@ -63,7 +63,8 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   modprobe squashfs 2> /dev/null || :
 
   # copy over base config and authorized_keys if any
-  ( cd /overlay/upper
+  ( cd /overlay/upper || busybox mount -o bind /tmp/overlay /overlay
+    cd /overlay/upper
     find $(ls -d etc root home 2> /dev/null) ! -type d | grep -v /.git/ | xargs tar cf - --acls --xattrs
   ) | tar xf - --acls --xattrs -C "$WORKDIR/overlay/upper"
 
@@ -114,7 +115,7 @@ emergency_console() {
 pid1stage1() { # running as PID 1 after re-exec from init
   trap emergency_console EXIT
   PS4="$PS4_BASE "
-  set -x
+  #set -x
 
   #- shutdown all processes except init/PID1
   for sig in 15 15 15 9; do
@@ -186,8 +187,8 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
   # EO rm -rf
 
   rm -f /sbin/init
-  if [ -x /lib/init.wrap ]; then
-    ln -s /lib/init.wrap /sbin/init
+  if [ -x /lib/init ]; then
+    ln -s /lib/init /sbin/init
   else
     ln -s /bin/busybox /sbin/init
   fi
@@ -201,6 +202,7 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
       fi
     fi
     mount -o move /mnt /rom
+    umount /rom/mnt || :
   fi
 
   exec /sbin/init
