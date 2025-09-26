@@ -13,16 +13,11 @@ telinit() { # mimics telinit
   esac
 }
 
-case "$$:${0##*/}" in
-  1:* )
-    umount /rom/mnt 2> /dev/null || :
-    umount /rom/sys 2> /dev/null || :
-    umount /rom/run 2> /dev/null || :
-    umount /rom/proc 2> /dev/null || :
-    exec /sbin/openrc-init "$@"
-    ;;
-  *:halt | *:reboot | *:shutdown ) exec /sbin/openrc-shutdown --${0##*/} now ;;
-  *:init | *:initctl | *:telinit ) telinit "$@" ;;
+case "$$:${0##*/}:${1:-}" in
+  1:*:* )                             exec /sbin/openrc-init "$@" ;;
+  *:halt:*  | *:reboot | *:shutdown ) exec /sbin/openrc-shutdown --${0##*/} now ;;
+  *:halt:-f | *:reboot | *:shutdown ) exec /bin/busybox ${0##*/} -f ;;
+  *:init:*  | *:initctl | *:telinit ) telinit "$@" ;;
   * )
     echo "E: unknown call on multicall binary '$0', EXIT" >&2
     exit 69

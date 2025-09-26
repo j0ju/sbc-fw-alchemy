@@ -132,8 +132,8 @@ wrap_init() {
   trap emergency_console EXIT
   if ! [ -x "$OVERLAY/upper/sbin/init" ]; then
     rm -f /sbin/init
-    if [ -x /rom/lib/init.wrap ]; then
-      ln -s /lib/init.wrap /sbin/init
+    if [ -x /rom/lib/init ]; then
+      ln -s /lib/init /sbin/init
     else
       ln -s /bin/busybox /sbin/init
     fi
