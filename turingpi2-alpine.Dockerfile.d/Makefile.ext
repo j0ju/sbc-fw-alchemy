@@ -29,4 +29,10 @@ output/turingpi2-alpin%.sqfs: \
 	  -e BLOCKSIZE=256k \
 	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh $@
 
+input/artifacts/turingpi2-alpine-bmcd.tar.zst: \
+  turingpi2-alpine.Dockerfile.d/build_bmcd.sh \
+  output/armhf-alpine-3.22.rootfs.tar.zst \
+  #
+	./bin/img-mangler --name turingpi2-build-bmcd -w /workspace -v sbc-turingpi2-buildroot:/workspace -e HOME=/workspace sh $(SHOPT) /src/$< $@
+
 # vim: ts=4 sw=2 noet
