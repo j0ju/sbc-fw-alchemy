@@ -42,7 +42,7 @@ $BB mountpoint -q /proc || \
 if [ -f /CURRENT/root.sqfs ]; then :             # SQUASHFS image, with extracted /boot
   $BB mount -o loop /CURRENT/root.sqfs /CURRENT
 elif [ -f /CURRENT/root.erofs ]; then :          # EROFS image with extracted /boot
-  $BB mount -o loop /CURRENT/root.sqfs /CURRENT
+  $BB mount -o loop /CURRENT/root.erofs /CURRENT
 else :                                           # plain rootfs
   $BB mount -o bind /CURRENT/. /CURRENT
 fi
