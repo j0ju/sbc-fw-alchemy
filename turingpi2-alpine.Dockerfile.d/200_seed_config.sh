@@ -86,10 +86,12 @@ mkdir -p /target/usr/local/sbin /target/usr/local/bin
 rm -f /target/etc/avahi/services/sftp-ssh.service
 
 # adapt uboot script and compile
-chroot /target mkimage -T script -d /boot/boot.scr /boot/boot.scr.uimg
+chroot /target mkimage -T script -d /boot/boot.scr /boot/boot.scr.uimg > /dev/null
 
 # enable basic services
-chroot /target /bin/sh -e <<EOF
+chroot /target /bin/sh > /dev/null -e <<EOF
+PS4='> ${PS4%: }:chroot: '
+set -x
 
 ln -s getty /etc/init.d/getty.ttyS0
 ln -s getty /etc/init.d/getty.ttyGS0
@@ -124,4 +126,5 @@ rc-update add mount-ro shutdown
 /usr/local/sbin/update-rc 1> /dev/null
 EOF
 
-chroot /target etckeeper commit -m "${0##*/} finish"
+! chroot /target which etckeeper > /dev/null 2>&1 || \
+  chroot /target etckeeper commit -m "${0##*/} finish"

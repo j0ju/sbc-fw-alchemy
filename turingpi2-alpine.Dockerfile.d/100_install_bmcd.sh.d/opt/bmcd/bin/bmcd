@@ -3,8 +3,6 @@ set -eu
 
 PS4="> ${0##*/}[$$] > "
 
-export CARGO_PKG_VERSION=2.3.7
-
 set -x
 # this prevents bmcd from binding to /dev/ttyS[1234]
 # this allow ungarbled access with minicom, screen, ...
@@ -18,12 +16,13 @@ while [ $# != 0 ]; do
     --serial    | -s ) MOCK_SERIAL=no ;;
     --syslog    | -L ) STDOUT_TO_SYSLOG=yes ;;
     --no-syslog | -l ) STDOUT_TO_SYSLOG=no ;;
-    * )                BMCD_CMDLINE="$BMCD_CMDLINE $1"
+    * )                BMCD_CMDLINE="$BMCD_CMDLINE '$1'"
   esac
   shift
 done
 
 # "tinker" environment to run bmcd
+PIPE="/run/.$( tr -cd '[a-zA-Z0-9]' < /dev/urandom | head -c 32 ).bmcd.log.pipe"
 exec unshare -m -- sh -eu -c "
   PS4='> ${0##*/}[$$] > mountns > '
   set -x
@@ -36,13 +35,13 @@ exec unshare -m -- sh -eu -c "
     mount -o bind,rprivate /dev/tty7 /dev/ttyS4
   fi
   if [ '$STDOUT_TO_SYSLOG' = yes ]; then
-    rm -f /run/bmcd.pipe
-    mknod /run/bmcd.pipe p
-    /usr/bin/logger -s -t 'bmcd[$$]' < /run/bmcd.pipe &
-    exec > /run/bmcd.pipe
-    rm -f /run/bmcd.pipe
+    rm -f "$PIPE"
+    mknod "$PIPE" p
+    /usr/bin/logger -s -t 'bmcd[$$]' < '$PIPE' &
+    exec > "$PIPE"
+    rm -f "$PIPE"
   fi
 
-  mount -o bind,rprivate /opt/bmcd/bin/bmcd.bin '$0'
-  exec '$0' $BMCD_CMDLINE 2>&1
+  mount -o bind,rprivate /opt/bmcd/libexec/bmcd '$0'
+  exec '$0' ${BMCD_CMDLINE# } 2>&1
 "

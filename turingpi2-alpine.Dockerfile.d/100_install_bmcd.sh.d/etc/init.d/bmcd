@@ -1,7 +1,7 @@
 #!/sbin/openrc-run
 
 name="${RC_SVCNAME}"
-command="/usr/local/sbin/bmcd"
+command="/opt/bmcd/bin/bmcd"
 supervisor=supervise-daemon
 
 CERTFILE="/etc/ssl/certs/bmcd_cert.pem"
