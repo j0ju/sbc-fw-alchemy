@@ -17,13 +17,12 @@ PKGS="$PKGS
   sntpc
   strace lsof
   squashfs-tools
-  zram-init
-  nftables iptables
-    nftables-openrc iptables-openrc nftables-vim
   bird2
   ppp
   dnsmasq dnsmasq-openrc dnsmasq-utils
   make diffutils
+  nftables
+    nftables-openrc nftables-vim
 "
 
 PKGS="$PKGS

@@ -10,4 +10,7 @@ umask 022
 
 mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
 #yes | chroot /target apk del git etckeeper
-chroot /target apk add iptables iptables-openrc mtd-utils rdnssd
+chroot /target apk add \
+  iptables iptables-openrc \
+  mtd-utils rdnssd zram-init \
+  #
