@@ -30,13 +30,14 @@ else :
   ./scripts/build.sh
 fi
 
-mkdir -p /src/input/turingpi2-buildroot
-# fix permissions if container UID != host UID
-[ -z "$OWNER" ] || \
-  chown -R "$OWNER${GROUP:+:$GROUP}" /src/input/turingpi2-buildroot
-cp /workspace/bmc-firmware/buildroot/output/images/rootfs.tar                /src/input/turingpi2-buildroot
-cp /workspace/bmc-firmware/buildroot/output/images/u-boot-sunxi-with-spl.bin /src/input/turingpi2-buildroot/uboot.img
+TARGET=/src/input/turingpi2-buildroot.tar
+
+cp /workspace/bmc-firmware/buildroot/output/images/rootfs.tar "$TARGET"
+cp /workspace/bmc-firmware/buildroot/output/images/u-boot-sunxi-with-spl.bin /workspace/bmc-firmware/buildroot/output/images/uboot.img
+rm -f /workspace/bmc-firmware/buildroot/output/images/boot
+ln -s . /workspace/bmc-firmware/buildroot/output/images/boot
+tar --append --file $TARGET -h -C /workspace/bmc-firmware/buildroot/output/images ./boot/uboot.img ;\
 
 # fix permissions if container UID != host UID
 [ -z "$OWNER" ] || \
-  chown -R "$OWNER${GROUP:+:$GROUP}" /workspace/bmc-firmware/buildroot/output/images/.
+  chown -R "$OWNER${GROUP:+:$GROUP}" "$TARGET"
