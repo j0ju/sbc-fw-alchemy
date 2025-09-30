@@ -17,6 +17,8 @@ apt-get install -y --no-install-recommends \
   procps psmisc man-db \
   git \
   build-essential libncurses-dev \
+  uuid-dev liblzma-dev libzstd-dev libz-dev \
+  autoconf automake autoconf-archive libtool pkgconf \
   rsync bc cmake bzip2 \
   bspatch bsdiff hexer bbe \
   strace tcpdump \
@@ -28,6 +30,7 @@ apt-get install -y --no-install-recommends \
   sqlite3 sqlite3-tools sqlite-utils \
   inetutils-ping traceroute mtr-tiny bind9-dnsutils \
 # EO apt-get install
+
 
 # this ensures that an EFI grub and binaries are installed so we can build bootable images for AMD64
 # this implies building onyl works on amd64/arm64/i386
