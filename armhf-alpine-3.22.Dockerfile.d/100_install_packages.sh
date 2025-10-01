@@ -14,31 +14,9 @@ PKGS=" \
     openrc-bash-completion \
   iproute2 iproute2-ss iproute2-tc \
     iproute2-bash-completion \
-  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
-  e2fsprogs f2fs-tools \
-  wipefs \
-  mount \
-  util-linux util-linux-misc \
-    util-linux-bash-completion \
-  mc vim minicom tmux minicom \
-  avahi avahi-tools \
-  openresolv \
-  kmod \
-  git \
-    git-bash-completion \
-  etckeeper \
-    etckeeper-bash-completion \
-  curl wget \
-  sfdisk \
-  blkid \
-  mtr tcpdump \
-    mtr-bash-completion \
-  ppp-chat \
   sed \
-  u-boot-tools \
-  partx \
   rsyslog \
-  htop procps psmisc usbutils hwids-usb \
+  htop procps psmisc
   xxd xz zstd pv tar \
   coreutils \
   bash-completion \
@@ -46,8 +24,42 @@ PKGS=" \
     procs-bash-completion \
     wireguard-tools-bash-completion \
   openssl \
-  busybox-openrc busybox-mdev-openrc \
+  busybox-openrc
 "
+# user convinience and debugging extras
+#  vim
+#  e2fsprogs f2fs-tools \
+#  mc 
+#  pv \
+#  etckeeper \
+#    etckeeper-bash-completion \
+#  git \
+#    git-bash-completion \
+#  tcpdump \
+#  mtr
+#    mtr-bash-completion \
+#  blkid \
+
+# network core
+#  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
+#  openresolv \
+#  avahi avahi-tools \
+#  rdnssd \
+
+# platform speceifc
+#  u-boot-tools \
+#  usbutils hwids-usb \
+#  busybox-mdev-openrc \
+#  kmod \
+#  sfdisk \
+#  partx \
+#  screen minicom \
+#  wipefs \
+#  mount \
+#  curl wget \
+#  util-linux util-linux-misc \
+#    util-linux-bash-completion \
+#  ppp-chat \
 
 # extras
 #PKGS="$PKGS \

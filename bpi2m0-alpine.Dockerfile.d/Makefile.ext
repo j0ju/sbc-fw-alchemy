@@ -14,4 +14,3 @@ output/bpi2m0-alpin%.sqfs: .deps/bpi2m0-alpin%.built bpi2m0-alpine.Dockerfile.d/
 	$(E) "SQUASHFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=))"
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh $@
-
