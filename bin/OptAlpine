@@ -3,7 +3,7 @@
 set -eu
 #set -x
 
-VER=3.21
+VER=3.22
 CMD=
 ARCH=armhf
 HELP=
@@ -103,8 +103,7 @@ pkg() {
   PKGs="$(docker exec $C sh -c "ls $OUTDIR/*.bin.tar.gz $OUTDIR/*.pkg.tar.gz 2> /dev/null || :")"
   for f in $PKGs; do
     mkdir -p "$OUTDIR"
-    echo "${f##*/}: "
-    echo -n "  "
+    printf "${f##*/}: "
     docker cp "$C:$f" "$OUTDIR"
   done
 }
