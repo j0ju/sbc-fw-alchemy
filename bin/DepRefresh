@@ -1,0 +1,50 @@
+#!/bin/sh
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
+set -eu
+#set -x
+
+while [ $# != 0 ]; do
+  case "${1:-}" in
+    -h | --help | "-?" )
+      echo
+      echo "Cleans dependency files and force dependency rebuild"
+      echo
+      echo "USAGE:"
+      echo "    $0 [OPTIONS] <TARGET> <TARGET> ..."
+      echo
+      echo "Options"
+      echo "    --help | -h         This fine text"
+      echo
+      ;;
+    -- ) shift; break ;;
+    * ) break ;;
+  esac
+  shift
+done
+
+if [ -z "${1:-}" ]; then
+  echo "E: no target given"
+  echo "   for HELP use --help"
+  exit 1
+fi >&2
+
+for TARGET; do
+  # user convenience, allow using, file commandline completion, strip Directory / and Dockerfile.d at the end
+  case "$TARGET" in
+      *.Dockerfile.d/ | *.Dockerfile.d )
+          TARGET="${TARGET%/}"
+          TARGET="${TARGET%.Dockerfile.d}"
+
+          rm -vf .deps/$TARGET.d input/$TARGET.Dockerfile 
+          ;;
+
+      # TODO:
+      #*.Workspace.d/ | *.Workspace.d )
+      #    TARGET="${TARGET%/}"
+      #    TARGET="${TARGET%.Workspace.d}"
+      #    ;;
+      #*.tgz.url ) TARGET="${TARGET%.tgz.url}" ;;
+  esac
+done
+
+
