@@ -9,8 +9,11 @@ if [ -z "$IMAGE_SIZE_KB_MIN" ]; then
   #IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 fi
 
+set -x
 IMAGE="$2"
 SRC="$1"
+ROFSTYPE=${ROFSTYPE:-sqfs}
+set +x
 
 #--- calculate image size
 DECOMPRESSOR=cat
@@ -136,7 +139,7 @@ ln -s "$ROOTDIR" /mnt/CURRENT
 # use sqfs and extract /boot
   echo "COPY $IMAGE <- $SRC::/boot"
   tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs ./boot
-  echo "COPY $IMAGE <- ${SRC%.rootfs.tar.zst}.sqfs"
-  cp "${SRC%.rootfs.tar.zst}".sqfs /mnt/CURRENT/root.sqfs
+  echo "COPY $IMAGE <- ${SRC%.rootfs.tar.zst}.$ROFSTYPE"
+  cp "${SRC%.rootfs.tar.zst}.$ROFSTYPE" "/mnt/CURRENT/root.$ROFSTYPE"
 
 # vim: ts=2 sw=2 ft=sh et
