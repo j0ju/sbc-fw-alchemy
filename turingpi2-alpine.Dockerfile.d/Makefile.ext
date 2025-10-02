@@ -8,15 +8,27 @@ output/turingpi2-alpin%.img: \
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh $< $@
 
-output/turingpi2-alpin%.multi.img: output/turingpi2-alpin%.rootfs.tar.zst \
+output/turingpi2-alpin%.sqfs.img: output/turingpi2-alpin%.rootfs.tar.zst \
   bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
   bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
   output/turingpi2-alpin%.sqfs
-	$(E) "GEN IMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=))" MULTIBOOT
+	$(E) "GEN IMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=))" MULTIBOOT
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p \
 	  -e IMAGE_SIZE_KB_MIN=$$(( 384 * 1024 )) \
-	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.multi.img=)) \
+	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=)) \
+	  sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+
+output/turingpi2-alpin%.erofs.img: output/turingpi2-alpin%.rootfs.tar.zst \
+  bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
+  bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
+  output/turingpi2-alpin%.erofs
+	$(E) "GEN IMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs.img=))" MULTIBOOT
+	$(Q) mkdir -p output
+	$(Q) ./bin/img-mangler -p \
+	  -e IMAGE_SIZE_KB_MIN=$$(( 384 * 1024 )) \
+	  -e ROFSTYPE=erofs \
+	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs.img=)) \
 	  sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
 
 output/turingpi2-alpin%.sqfs: \
@@ -37,8 +49,6 @@ output/turingpi2-alpin%.erofs: \
 	$(E) "MK EROFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=))"
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p \
-	  -e COMPRESSOR=xz \
-	  -e BLOCKSIZE=256k \
 	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-erofs.sh $@
 
 input/artifacts/turingpi2-alpine-bmcd.tar.zst: \
