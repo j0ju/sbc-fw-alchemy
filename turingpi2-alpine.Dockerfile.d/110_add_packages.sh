@@ -9,8 +9,45 @@ umask 022
   set -x
 
 mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
-#yes | chroot /target apk del git etckeeper
-chroot /target apk add \
+
+PKGS=
+
+# platform speceifc
+PKGS="$PKGS \
   iptables iptables-openrc \
   mtd-utils rdnssd zram-init \
-  #
+  u-boot-tools \
+  usbutils hwids-usb \
+  busybox-mdev-openrc \
+  f2fs-tools \
+  e2fsprogs \
+  kmod \
+  sfdisk \
+  partx \
+  blkid \
+  wipefs \
+  mount \
+  wget \
+  util-linux util-linux-misc \
+    util-linux-bash-completion \
+  ppp-chat \
+  erofs-utils
+"
+
+# network core
+PKGS="$PKGS \
+  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
+  openresolv \
+  avahi avahi-tools \
+  rdnssd \
+" # EO PKGS
+
+# user convinience and debugging extras
+PKGS="$PKGS \
+  vim \
+  tmux \
+  minicom \
+  pv \
+"
+
+chroot /target apk add $PKGS

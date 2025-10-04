@@ -8,8 +8,20 @@ PS4='> ${0##*/}: '
 
 PKGS=
 
+
+
+
 # extras
 PKGS="$PKGS
+  mc
+  etckeeper
+    etckeeper-bash-completion
+  git
+    git-bash-completion
+  tcpdump
+  mtr
+    mtr-bash-completion
+  curl
   file
   rsync
   make
