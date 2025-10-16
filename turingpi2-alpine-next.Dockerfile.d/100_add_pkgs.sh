@@ -8,9 +8,6 @@ PS4='> ${0##*/}: '
 
 PKGS=
 
-
-
-
 # extras
 PKGS="$PKGS
   mc
@@ -35,6 +32,7 @@ PKGS="$PKGS
   make diffutils
   nftables
     nftables-openrc nftables-vim
+  keepalived
 "
 
 PKGS="$PKGS
