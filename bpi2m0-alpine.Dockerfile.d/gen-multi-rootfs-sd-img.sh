@@ -9,11 +9,9 @@ if [ -z "$IMAGE_SIZE_KB_MIN" ]; then
   #IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 fi
 
-set -x
 IMAGE="$2"
 SRC="$1"
 ROFSTYPE=${ROFSTYPE:-sqfs}
-set +x
 
 #--- calculate image size
 DECOMPRESSOR=cat

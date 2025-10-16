@@ -5,7 +5,7 @@
 
 #- debugging, if needed
   PS4="${0}[$$]: +"
-  set -x
+  #set -x
 
 #- settings
   OVERLAY=${1:-/overlay}
@@ -76,8 +76,24 @@ mount_block() {
   mount -o bind "$OVERLAY/overlay/." "$OVERLAY"
 }
 
+ubi_find_vol() {
+  local vol
+  if vol="$( grep -H "$1" /sys/class/ubi/ubi*/name )"; then
+    vol="${vol#/sys/class/ubi/}"
+    vol="${vol%/name:*}"
+  fi
+  echo "$vol"
+}
+
 mount_ubifs() {
-  busybox ash
+  UBI_VOL="$(ubi_find_vol overlay)"
+  if [ -z "$UBI_VOL" ]; then
+    #- create overlay on the rest of flash
+    FREE_LEBs=$( cat /sys/class/ubi/ubi0/avail_eraseblocks )
+    ubimkvol /dev/ubi0 -N overlay -t dynamic -S 629
+    UBI_VOL="$(ubi_find_vol overlay)"
+  fi
+  mount -t ubifs ubi:overlay "$OVERLAY"
 }
 
 # detect root device
