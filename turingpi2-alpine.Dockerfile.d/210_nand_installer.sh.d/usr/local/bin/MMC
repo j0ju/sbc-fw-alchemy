@@ -1,0 +1,65 @@
+#!/bin/sh
+set -eu
+umask 022
+
+update_root() {
+  if ! [ -L /rom/mnt/CURRENT ]; then
+    echo "E: not booted from MMC/SD, cannot update."
+    exit 2
+  fi
+set -x
+
+  SQFS="$1"
+  MNT=/mnt
+  RO=/rom/mnt
+  CURRENT="$RO/CURRENT"
+  CURRENT=$(readlink -f "$RO/CURRENT")
+
+  trap cleanup EXIT
+  cleanup() {
+    local rs=$?
+    while umount /mnt; do :; done 2> /dev/null
+    mount -o remount -r "$RO"
+  }
+
+  mount -o loop "$1" "$MNT"
+
+  losetup
+
+  VERSION=$( cat "$MNT/boot/build.meta" )
+
+  mount -o remount -w "$RO"
+
+  NEXT="$RO/ROOTFS.$VERSION"
+
+  mkdir -p "$NEXT"
+  cp -a "$MNT/boot" "$NEXT"
+  cp -a "$SQFS" "$NEXT/root.sqfs"
+  rm -f "$RO/CURRENT"
+  ln -s "ROOTFS.$VERSION" "$RO/CURRENT"
+}
+
+help() {
+cat <<EOF
+${0##/*} ($0)
+
+USAGE:
+  ${0##/*} <COMMAND> [OPTIONS]
+  
+  Commands:
+     update <IMAGE>           - update rootfs with SQFS image
+  
+     snapshot                 - NOT implemented yet - snapshot overlay in /mmc
+EOF
+}
+
+CMD="${1:-}"
+shift 2> /dev/null || :
+case "$CMD" in
+  update | up )         update_root "$@" ;;
+
+  # TODO:
+  #snapshot | snap )    snapshot "$@" ;;
+
+  -h | --help | "" )    help ;;
+esac
