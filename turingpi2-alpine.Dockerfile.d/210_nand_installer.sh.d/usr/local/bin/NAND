@@ -122,10 +122,10 @@ flash() {
           fi
           dst="$NAND_ROOT_TMP/${f##*/}"
           ;;
-        */uboot.img ) # do not duplicate uboot.img to NAND
+        */uboot.img | */build.meta | */boot.scr ) # do not duplicate uboot.img to NAND
           continue
           ;;
-        */boot.scr | */boot.scr.uimg ) # source them unmodified (LOCKED mtd0)
+        */boot.scr.uimg ) # source them unmodified (LOCKED mtd0)
           src="/rom/boot/${f##*/}"
           ;;
       esac
@@ -155,7 +155,7 @@ flash() {
 
   echo "I: sync uboot"
   SIZE="$(stat -c %s "/rom/boot/uboot.img")"
-  if ! dd status=none if=/dev/mtd0 bs="$SIZE" count=1 | cmp -s "/rom/boot/uboot.img" -; then
+  if ! head -c "$SIZE" /dev/mtd0 | cmp -s "/rom/boot/uboot.img" -; then
     if ( exec 2> /dev/null; : > /dev/mtd0 ); then
       ( set -x
         flashcp "/rom/boot/uboot.img" /dev/mtd0
@@ -189,7 +189,7 @@ flash() {
   SIZE="$( stat -c %s "$EROFS_IMG" )"
 
   ubi_find_vol() {
-    local vol
+    local vol=
     if vol="$( grep -H "$1" /sys/class/ubi/ubi*/name )"; then
       vol="${vol#/sys/class/ubi/}"
       vol="${vol%/name:*}"
@@ -198,12 +198,16 @@ flash() {
   }
 
   UBI_VOL="$(ubi_find_vol rootfs)"
-  if [ -n "$UBI_VOL" ] && ! dd status=none if="/dev/$UBI_VOL" bs="$SIZE" count=1 | cmp -s "$EROFS_IMG" -; then
+  if ! head -c "$SIZE" "/dev/$UBI_VOL" | cmp -s "$EROFS_IMG" -; then
     ( set -x
-      ubirmvol "/dev/${UBI_VOL%_*}" -N rootfs
+      [ -z "$UBI_VOL" ] || \
+        ubirmvol "/dev/${UBI_VOL%_*}" -N rootfs
+      # delete overlay as it might space-wise collide
       # TODO: backup overlay
-      ubirmvol "/dev/${UBI_VOL%_*}" -N overlay
-      ubimkvol "/dev/${UBI_VOL%_*}" -N rootfs -k -t static -s "$SIZE"
+      OVL_VOL="$(ubi_find_vol overlay)"
+      [ -z "$OVL_VOL" ] || \
+        ubirmvol "/dev/${UBI_VOL%_*}" -N overlay
+      ubimkvol "/dev/ubi0" -N rootfs -k -t static -s "$SIZE"
     )
     UBI_VOL="$(ubi_find_vol rootfs)"
     ( set -x
