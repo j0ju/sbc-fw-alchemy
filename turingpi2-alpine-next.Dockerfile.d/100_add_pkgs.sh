@@ -33,6 +33,7 @@ PKGS="$PKGS
   nftables
     nftables-openrc nftables-vim
   keepalived
+  jq
 "
 
 PKGS="$PKGS
@@ -55,4 +56,6 @@ PKGS="$PKGS
 # install packages for tarballs
   mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper /target/tmp/cache/vim
   chroot /target apk add $PKGS
+
+  chroot /target update-rc
 
