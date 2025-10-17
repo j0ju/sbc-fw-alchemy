@@ -39,7 +39,7 @@ output/turingpi2-alpin%.sqfs: \
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p \
 	  -e COMPRESSOR=xz \
-	  -e BLOCKSIZE=256k \
+	  -e BLOCKSIZE=512k \
 	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh $@
 
 output/turingpi2-alpin%.erofs: \
