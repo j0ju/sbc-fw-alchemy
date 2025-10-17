@@ -90,7 +90,7 @@ mount_ubifs() {
   if [ -z "$UBI_VOL" ]; then
     #- create overlay on the rest of flash
     FREE_LEBs=$( cat /sys/class/ubi/ubi0/avail_eraseblocks )
-    ubimkvol /dev/ubi0 -N overlay -t dynamic -S 629
+    ubimkvol /dev/ubi0 -N overlay -t dynamic -S $FREE_LEBs
     UBI_VOL="$(ubi_find_vol overlay)"
   fi
   mount -t ubifs ubi:overlay "$OVERLAY"
@@ -110,7 +110,7 @@ done
 case "$ROOTDEV" in
   *mmcblk*)   mount_block ;;
   *ubiblock*) mount_ubifs ;;
-  *)          
+  *)
     echo "----- Unrecognized root device $ROOTDEV -----"
     /bin/busybox ash -
     die 69 "Unrecognized root device $ROOTDEV"
