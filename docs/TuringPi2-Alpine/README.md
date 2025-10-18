@@ -104,6 +104,15 @@ Possible commands are
  * `sync` - will sync MMC overlay to NAND
  * `backup` - will backup overlay to `/mmc`
 
+### `BootToRam`
+
+Boots the current running alpine image as live system from RAM.
+For this it copies the current squashfs image to RAM and pivot_roots into it with the current config in /etc.
+
+NOTE: this needs a lot of RAM, best have a small image and zram-init/zram-swap enabled.
+
+...TBD...
+
 ## Config
 
 ### Networking
