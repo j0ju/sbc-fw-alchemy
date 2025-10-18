@@ -25,28 +25,29 @@ lock() {
 }
 
 status() {
-  # do a null write
-  # according to some meaningful content this did not erase that flash page
-  #   root @ tpi2bmc > ~ > head -c 64 /dev/mtd0 | hexdump -C
-  #   00000000  16 00 00 ea 65 47 4f 4e  2e 42 54 30 70 7c 4e eb  |....eGON.BT0p|N.|
-  #   00000010  00 60 00 00 53 50 4c 02  00 00 00 00 00 00 00 00  |.`..SPL.........|
-  #   00000020  2c 00 00 00 00 00 00 00  00 00 00 00 73 75 6e 38  |,...........sun8|
-  #   00000030  69 2d 74 31 31 33 73 2d  74 75 72 69 6e 67 2d 70  |i-t113s-turing-p|
-  #   00000040
-  #   root @ tpi2bmc > ~ > : > /dev/mtd0
-  #   root @ tpi2bmc > ~ > head -c 64 /dev/mtd0 | hexdump -C
-  #   00000000  16 00 00 ea 65 47 4f 4e  2e 42 54 30 70 7c 4e eb  |....eGON.BT0p|N.|
-  #   00000010  00 60 00 00 53 50 4c 02  00 00 00 00 00 00 00 00  |.`..SPL.........|
-  #   00000020  2c 00 00 00 00 00 00 00  00 00 00 00 73 75 6e 38  |,...........sun8|
-  #   00000030  69 2d 74 31 31 33 73 2d  74 75 72 69 6e 67 2d 70  |i-t113s-turing-p|
-  #
+  : # IDEA: do a null write
+  : # according to some meaningful content this did not erase that flash page
+  : #   root @ tpi2bmc > ~ > head -c 64 /dev/mtd0 | hexdump -C
+  : #   00000000  16 00 00 ea 65 47 4f 4e  2e 42 54 30 70 7c 4e eb  |....eGON.BT0p|N.|
+  : #   00000010  00 60 00 00 53 50 4c 02  00 00 00 00 00 00 00 00  |.`..SPL.........|
+  : #   00000020  2c 00 00 00 00 00 00 00  00 00 00 00 73 75 6e 38  |,...........sun8|
+  : #   00000030  69 2d 74 31 31 33 73 2d  74 75 72 69 6e 67 2d 70  |i-t113s-turing-p|
+  : #   00000040
+  : #   root @ tpi2bmc > ~ > : > /dev/mtd0
+  : #   root @ tpi2bmc > ~ > head -c 64 /dev/mtd0 | hexdump -C
+  : #   00000000  16 00 00 ea 65 47 4f 4e  2e 42 54 30 70 7c 4e eb  |....eGON.BT0p|N.|
+  : #   00000010  00 60 00 00 53 50 4c 02  00 00 00 00 00 00 00 00  |.`..SPL.........|
+  : #   00000020  2c 00 00 00 00 00 00 00  00 00 00 00 73 75 6e 38  |,...........sun8|
+  : #   00000030  69 2d 74 31 31 33 73 2d  74 75 72 69 6e 67 2d 70  |i-t113s-turing-p|
+  : #
+  echo "BOOTLOADER"
   nstate=UNKNOWN
   if grep ^"setenv boot_unlocked" /boot/boot.scr.uimg; then
     nstate="UNLOCKED /dev/mtd0 (boot)"
   else
     nstate="LOCKED /dev/mtd0 (boot)"
   fi
-  echo "NEXT BOOT: $nstate"
+  echo "  NEXT BOOT: $nstate"
 
   cstate=UNKNOWN
   rs=69
@@ -56,11 +57,25 @@ status() {
   else
     cstate="LOCKED /dev/mtd0 (boot)"
   fi
-  echo "CURRENT  : $cstate"
+  echo "  CURRENT  : $cstate"
 
   if [ "$cstate" != "$nstate" ]; then
     echo "I: Reboot needed."
   fi
+  echo
+
+  if [ -d /sys/class/ubi/ubi0 ]; then
+    echo "UBI: NAND attached"
+    printf '  %-16s  %12s   %s \n' "NAME" "SIZE" "DEVICE"
+    grep -H ^ /sys/class/ubi/ubi*/name | while IFS=":/" read _ _ _ _ dev _ name; do
+      size=$(( $(cat /sys/class/ubi/$dev/data_bytes) / 1024 ))
+      printf '  %-16s  %9d KB   %s \n' "$name" "$size" "(/dev/$dev)"
+    done
+  else
+    echo "UBI: NAND NOT attached"
+  fi
+  echo
+
   return $rs
 }
 
@@ -71,7 +86,7 @@ flash() {
   NAND_ROOT_TMP=/overlay/nand
   EROFS_IMG=/overlay/nand.erofs
 
-  echo "I: build and sync $NAND_ROOT_TMP"
+  echo "I: prepare root for NAND (ubifs/erofs) in $NAND_ROOT_TMP"
   CHANGED=n
   mkdir -p "$NAND_ROOT_TMP"
   for f in "$NAND_ROOT_TMP"/*; do
@@ -84,17 +99,18 @@ flash() {
     case "$f" in
       */boot | */root.*fs ) continue ;;
     esac
-    ( set -x
+    echo "I: cleaning up '$f'"
+    #( set -x
       rm -rf "$f"
-    )
+    #)
     CHANGED=y
   done
 
   for dir in proc dev sbin CURRENT CURRENT/boot; do
     if [ ! -d "$NAND_ROOT_TMP/$dir" ]; then
-      ( set -x
+      #( set -x
         mkdir -p "$NAND_ROOT_TMP/$dir"
-      )
+      #)
       CHANGED=y
     fi
     for f in "$SD_ROOT/$dir"/*; do
@@ -129,91 +145,118 @@ flash() {
           src="/rom/boot/${f##*/}"
           ;;
       esac
+      echo "I: comparing '$f'"
       if ! cmp -s "$src" "$dst" 2> /dev/null; then
+         echo "I: sync '$f'"
          if [ -f "$dst}" ]; then
            rm -f "$dst}"
            CHANGED=y
          fi
          rm -rf "$dst}"
          if [ -f "$src" ] || [ -d "$src" ]; then
-           ( set -x
+           #( set -x
              cp -a "$src" "$dst"
-           )
+           #)
            CHANGED=y
          fi
       fi
     done
   done
 
+  echo "I: NAND root changed? $CHANGED"
   if [ "$CHANGED" = y ] || [ ! -f "$EROFS_IMG" ]; then
+    echo "I: update $EROFS_IMG"
     rm -f "$NAND_ROOT_TMP/boot/uboot.img" # do not duplicate this in sqfs and erofs
     rm -f "$EROFS_IMG"
-    ( set -x
+    #( set -x
       mkfs.erofs "$EROFS_IMG" "$NAND_ROOT_TMP"
-    )
+    #)
   fi
 
-  echo "I: sync uboot"
   SIZE="$(stat -c %s "/rom/boot/uboot.img")"
   if ! head -c "$SIZE" /dev/mtd0 | cmp -s "/rom/boot/uboot.img" -; then
+    echo "I: updateable uboot detected"
     if ( exec 2> /dev/null; : > /dev/mtd0 ); then
-      ( set -x
+      echo "I: update uboot"
+      #( set -x
         flashcp "/rom/boot/uboot.img" /dev/mtd0
-      )
+      #)
     else
       echo "W: uboot updated, but bootloader locked, SKIP" >&2
     fi
   fi
 
   while [ ! -d /sys/class/ubi/ubi0 ]; do
-    ( set -x
-      ubiattach -m 1 || ubiformat -q -y /dev/mtd1
-    )
+    if ! ubiattach -m 1; then
+      echo "I: UBI: format NAND"
+      ubiformat -q -y /dev/mtd1
+    else
+      echo "I: UBI: NAND attached"
+    fi
   done
 
   # enforce uboot-env is ubi_vol_id == 0, reformat ubi if that is not the case
-  if ! [ "$(cat /sys/class/ubi/ubi0_0/name 2> /dev/null)" = "uboot-env" ]; then
-    ( set -x
+  if [ -d /sys/class/ubi/ubi0_0 ] && ! [ "$(cat /sys/class/ubi/ubi0_0/name 2> /dev/null)" = "uboot-env" ]; then
+    echo "I: UBI: uboot-env is not ubi volume with ID 0"
+    echo "I: UBI: re-format NAND"
+    #( set -x
       ubidetach -m 1
       ubiformat -q -y /dev/mtd1
       ubiattach -m 1
-    )
+    #)
+    echo "I: UBI: NAND attached"
   fi
 
   if ! [ "$(cat /sys/class/ubi/ubi0_0/name 2> /dev/null)" = "uboot-env" ]; then
-    ( set -x
+    echo "I: UBI: create volume uboot-env (id 0)"
+    #( set -x
       ubimkvol /dev/ubi0 -k -t static -N uboot-env -n 0 -s 64KiB
-    )
+    #)
   fi
 
   SIZE="$( stat -c %s "$EROFS_IMG" )"
 
-  ubi_find_vol() {
-    local vol=
-    if vol="$( grep -H "$1" /sys/class/ubi/ubi*/name )"; then
-      vol="${vol#/sys/class/ubi/}"
-      vol="${vol%/name:*}"
-    fi
-    echo "$vol"
-  }
-
   UBI_VOL="$(ubi_find_vol rootfs)"
   if ! head -c "$SIZE" "/dev/$UBI_VOL" | cmp -s "$EROFS_IMG" -; then
-    ( set -x
-      [ -z "$UBI_VOL" ] || \
+    echo "I: update NAND rootfs"
+      if [ -n "$UBI_VOL" ]; then
+      #( set -x
+        echo "I: UBI: cleanup old UBI:rootfs"
         ubirmvol "/dev/${UBI_VOL%_*}" -N rootfs
+      #)
+      fi
       # delete overlay as it might space-wise collide
       # TODO: backup overlay
       OVL_VOL="$(ubi_find_vol overlay)"
-      [ -z "$OVL_VOL" ] || \
+      if [ -n "$OVL_VOL" ]; then
+      #( set -x
+        echo "I: UBI: cleanup old UBI:overlay"
         ubirmvol "/dev/${UBI_VOL%_*}" -N overlay
-      ubimkvol "/dev/ubi0" -N rootfs -k -t static -s "$SIZE"
-    )
+      #)
+      fi
+      #( set -x
+        ubimkvol "/dev/ubi0" -N rootfs -k -t static -s "$SIZE"
+        echo "I: UBI: create new UBI:rootfs"
+      #)
     UBI_VOL="$(ubi_find_vol rootfs)"
-    ( set -x
+    #( set -x
       ubiupdatevol "/dev/$UBI_VOL" /overlay/nand.erofs
-    )
+      echo "I: UBI: wrote UBI:rootfs"
+    #)
+  else
+    echo "I: NAND rootfs up-to-date"
   fi
+
+  detach
+}
+
+ubi_find_vol() {
+  local vol=
+  if vol="$( grep -H "$1" /sys/class/ubi/ubi*/name )"; then
+    vol="${vol#/sys/class/ubi/}"
+    vol="${vol%/name:*}"
+  fi
+  echo "$vol"
 }
 
 booted_from_mmc() {
@@ -223,24 +266,101 @@ booted_from_mmc() {
   fi
 }
 
+attach() {
+  if [ ! -d /sys/class/ubi/ubi0 ]; then
+    ubiattach -m 1
+    echo "I: ubi attached"
+  else
+    echo "I: ubi already attached"
+  fi
+}
+
+detach() {
+  if [ -d /sys/class/ubi/ubi0 ]; then
+    ubidetach -m 1
+    echo "I: ubi detached"
+  else
+    echo "I: ubi not attached"
+  fi
+}
+
+sync_config() {
+  attach
+
+  echo "I: find UBI overlay"
+  UBI_VOL="$(ubi_find_vol overlay)"
+  if [ -z "$UBI_VOL" ]; then
+    echo "I: UBI volume 'overlay' not found"
+    #- create overlay on the rest of flash
+    FREE_LEBs=$( cat /sys/class/ubi/ubi0/avail_eraseblocks )
+    ubimkvol /dev/ubi0 -N overlay -t dynamic -S $FREE_LEBs
+    echo "I: UBI volume 'overlay' created"
+    UBI_VOL="$(ubi_find_vol overlay)"
+  fi
+  echo "I: mount UBI overlay"
+  mount -t ubifs ubi:overlay /mnt
+
+  echo "I: cleanup and prepare overlay"
+  rm -rf /mnt/*
+  mkdir -p /mnt/work /mnt/upper
+
+  echo "I: sync current overlay to NAND"
+  tar cf - --exclude "*-" --exclude ".git" --exclude ".etckeeper" --xattrs -C /overlay upper | tar xf - --xattrs -C /mnt
+
+  echo "I: umount"
+  umount /mnt
+
+  detach
+}
+
+backup_overlay() {
+  : # idea back current NAND overlay to /mmc
+  : # ( works only if /mmc is mounted )
+
+  if ! mountpoint -q /mmc; then
+    echo "E: /mmc is not mounted, ABORT" >&2
+    exit 69
+  fi
+
+  trap 'rs=$?; set +e; umount /mnt; detach; exit $rs' EXIT
+
+  attach
+  UBI_VOL="$(ubi_find_vol overlay)"
+  if [ -z "$UBI_VOL" ]; then
+    echo "E: no UBI volume overlay found, ABORT"
+  fi
+  mount -t ubifs ubi:overlay /mnt
+  echo "I: mounted overlay"
+
+  DST="/mmc/overlay.nand.$(date +%Y-%m-%d.%H:%M.%S)"
+  echo "I: copying NAND overlay to '$DST'"
+  mkdir -p "$DST"/work
+  tar cf - --xattrs --zstd -C /mnt upper | tee "$DST.tar.zst" | tar xf - --zstd --xattrs -C "$DST"
+}
+
 help() {
 cat <<EOF
-${0##/*} ($0)
+${0##*/} ($0)
 
-USAGE:
-  ${0##/*} <COMMAND> [OPTIONS]
- 
-  Tool to flash current running SD image to NAND.
+  USAGE:
+  ${0##*/} <COMMAND> [OPTIONS]
 
-  Commands:
-     flash                    - flashes current system to NAND
-                                NOTE: deletes config(overlay) in NAND
+    Tool to flash current running SD image to NAND.
 
-     unlock | lock            - (un)lock bootloader /dev/mtd0
-     status                   - status of bootloader /dev/mtd0
+    Commands:
+       flash                    - flashes current system to NAND
+                                  NOTE: deletes config(overlay) in NAND
 
-     backup                   - NOT implemented yet - will backup overlay
-     sync                     - NOT implemented yet - will sync MMC overlay to NAND
+       unlock | lock            - (un)lock bootloader /dev/mtd0
+       status                   - status of bootloader /dev/mtd0
+
+       attach                   - attach NAND UBI
+       detach                   - detach NAND UBI
+
+       sync                     - will sync MMC overlay to NAND
+
+       backup                   -  will backup overlay
+
 EOF
 }
 
@@ -249,11 +369,18 @@ shift 2> /dev/null || :
 case "$CMD" in
   unlock | u )       unlock "$@" ;;
   lock   | l )       lock "$@" ;;
-  status | st ) status "$@" ;;
-  flash )            flash "$@" ;;
 
-  # TODO:
-  #backup )           backup_overlay "$@" ;;
+  status | st )      status "$@" ;;
+  flash | fl )       flash "$@" ;;
+
+  attach | a )       attach "$@" ;;
+  detach | d )       detach "$@" ;;
+
+  sync )             sync_config "$@" ;;
+  backup )           backup_overlay "$@" ;;
+
   "" )               help ; status ;;
   -h | --help )      help ;;
 esac
+
+# vim: foldmethod=indent ft=shell

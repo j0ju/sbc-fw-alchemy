@@ -81,10 +81,38 @@ Handy tools:
 
 ### `etckeeper`
 
-On /mmc
+If booted from MMC:
 
 The `/etc` directory is backed up by `etckeeper` which uses `git` to version control any changes.
 If you install packages or change configs with `apk` it will commit changes before and after package install.
+
+### `NAND`
+
+Is a tool to help flashing current booted Firmware to NAND.
+
+USAGE: `NAND <command>`
+
+Possible commands are
+
+ * `flash` - flashes current system to NAND NOTE: deletes config(overlay) in NAND
+
+ * `unlock` or `lock` - (un)lock bootloader /dev/mtd0
+ * `status` - status of bootloader /dev/mtd0
+ * `attach` - attach NAND UBI
+ * `detach` - detach NAND UBI
+
+ * `sync` - will sync MMC overlay to NAND
+ * `backup` - will backup overlay to `/mmc`
+
+## Config
+
+### Networking
+
+Networking is done via ifupdown-ng see `/etc/network/interfaces.d`.
+
+The mgmt is using the VLAN ID 4094 internally. Untagged traffic on all interfaces is normally put into this VLAN.
+
+More VLANs are possible.
 
 ### Logging
 
@@ -104,6 +132,8 @@ information from hostname and /etc/hosts.
 Rsyslog in this config per default emits RSYSLOG_SyslogProtocol23Format.
 https://www.rsyslog.com/doc/configuration/templates.html
 This is close to RFC5424 which is understood by promtail and vector.
+
+
 
 ## Ideas
 
