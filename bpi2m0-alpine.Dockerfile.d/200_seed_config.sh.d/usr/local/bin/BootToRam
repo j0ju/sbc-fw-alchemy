@@ -53,8 +53,9 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   #- prepare read-only root
   if [ -f "$WORKDIR/rom.sqfs" ] && [ -s "$WORKDIR/rom.sqfs" ]; then :
   else
-    size="$( du -shk "$SQFS" | (read k _; echo $k ))"
-    size=$(( size * 2))
+    size_ro="$( du -shkL "$SQFS" | (read k _; echo $k ))"
+    size_overlay="$( du -shkL /overlay/upper | (read k _; echo $k ))"
+    size="$(( size_ro + size_overlay * 3 / 2 ))"
     dir="$( findmnt -n -o TARGET --target "$WORKDIR" )"
     mount -o "remount,size=${size}k" "$dir"
     cat "$SQFS" > "$WORKDIR/rom.sqfs"
@@ -63,7 +64,8 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   modprobe squashfs 2> /dev/null || :
 
   # copy over base config and authorized_keys if any
-  ( cd /overlay/upper
+  ( cd /overlay/upper || busybox mount -o bind /tmp/overlay /overlay
+    cd /overlay/upper
     find $(ls -d etc root home 2> /dev/null) ! -type d | grep -v /.git/ | xargs tar cf - --acls --xattrs
   ) | tar xf - --acls --xattrs -C "$WORKDIR/overlay/upper"
 
@@ -114,7 +116,7 @@ emergency_console() {
 pid1stage1() { # running as PID 1 after re-exec from init
   trap emergency_console EXIT
   PS4="$PS4_BASE "
-  set -x
+  #set -x
 
   #- shutdown all processes except init/PID1
   for sig in 15 15 15 9; do
@@ -186,14 +188,14 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
   # EO rm -rf
 
   rm -f /sbin/init
-  if [ -x /lib/init.wrap ]; then
-    ln -s /lib/init.wrap /sbin/init
+  if [ -x /lib/init ]; then
+    ln -s /lib/init /sbin/init
   else
     ln -s /bin/busybox /sbin/init
   fi
 
   mv /overlay/preinit /overlay/to-ram.sh
-  
+
   if mount -o move /rom /mnt -o move; then
     if mount -o move /rom/rom/mnt /mnt/mnt; then
       if umount /rom/rom; then
@@ -201,6 +203,7 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
       fi
     fi
     mount -o move /mnt /rom
+    umount /rom/mnt || :
   fi
 
   exec /sbin/init
