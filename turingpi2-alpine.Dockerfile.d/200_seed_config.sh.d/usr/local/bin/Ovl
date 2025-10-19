@@ -1,0 +1,133 @@
+#!/bin/sh
+set -eu
+
+OVERLAY_DIR=/overlay/upper
+ROM_DIR=/rom
+
+list() {
+  list_files "$@"
+  }
+
+list_files_collector() ( # use brackets for true forked subshell
+  # command line passing carefully
+  find_opts=
+  find_dirs=
+  while [ ! $# = 0 ]; do
+    case "${1:-}" in
+      "!" ) find_opts="$find_opts '!'" ;;
+      -type | -t )
+        shift
+        case "${1:-}" in
+          f | d ) find_opts="$find_opts -type '$1'"
+        esac
+        ;;
+      -name | -n )
+        shift
+        find_opts="$find_opts -name '$1'"
+        ;;
+      -a | o ) find_opts="$find_opts $1";;
+      -* ) ;;
+      * )
+        dir="${1}" 
+        [ ! "$1" = / ] || dir="."
+        find_dirs="$find_dirs '$dir'" 
+        ;;
+    esac
+    shift
+  done
+  [ -n "$find_dirs" ] || \
+    find_dirs=etc
+
+  cd "$OVERLAY_DIR"
+  eval "find $find_dirs $find_opts" | sort -r
+  )
+
+list_files() {
+  list_files_collector "$@" | \
+    list_files_filter "$@" # | \
+    #list_files_display "$@"
+  }
+
+list_files_filter() {
+  while read f; do
+    case "$f" in
+      . | .. ) continue ;;
+      ./* ) f="${f#./}" ;;
+    esac
+    stat="-?-"
+    kind="-"
+
+    # directory | regular file | character special file | block special file | symbolic link
+    kind_stat="$( stat -c "%t:%T:%a:%U:%G:%F" "$OVERLAY_DIR/$f" 2> /dev/null )"
+    case "${kind_stat##*:}" in
+      dir* )   kind="D" ;;
+      reg* )   kind="F" ;;
+      char* )  kind="c" ;;
+      block* ) kind="b" ;;
+      sym* )   kind="L" ;;
+    esac
+
+    if [ ! -e "$ROM_DIR/$f" ]; then
+      stat=".N."
+    else
+      case "${kind_stat}" in
+        0:0:*char* )
+          kind="-"
+          stat=".D."
+          ;;
+        *:dir* )
+          stat="..."
+          kind_rom_stat="$( stat -c "%t:%T:%a:%U:%G:%F" "$ROM_DIR/$f" 2> /dev/null || : )"
+          [ "${kind_stat}" = "${kind_rom_stat}" ] || \
+            stat="..p"
+          ;;
+        *:sym* )
+          stat="..."
+          kind_readlink="$( readlink "$OVERLAY_DIR/$f" 2> /dev/null || : )"
+          kind_rom_readlink="$( readlink "$ROM_DIR/$f" 2> /dev/null || : )"
+          [ "${kind_readlink}" = "${kind_rom_readlink}" ] || \
+            stat="d.."
+          ;;
+        *:reg* )
+          stat="..."
+          kind_rom_stat="$( stat -c "%t:%T:%a:%U:%G:%F" "$ROM_DIR/$f" 2> /dev/null || : )"
+          [ "${kind_stat}" = "${kind_rom_stat}" ] || \
+            stat="${stat%[.-]}p"
+          if ! cmp -s "$ROM_DIR/$f" "$OVERLAY_DIR/$f"; then
+            stat="d${stat#[.-]}"
+          fi
+          ;;
+        * )
+          kind_rom_stat="$( stat -c "%t:%T:%a:%U:%G:%F" "$ROM_DIR/$f" 2> /dev/null || : )"
+          [ "${kind_stat##*:}" = "${kind_rom_stat##*:}" ] || \
+            stat=".T."
+          ;;
+        esac
+    fi
+    
+    echo "$stat  $kind  $f"
+  done
+  }
+
+list_files_display() {
+  set +x
+  while read i; do
+    set -- $i
+    echo "  $1   $2   $3"
+  done
+  }
+
+help() { echo "E: not implemented, yet" >&2; exit 69; }
+
+main() {
+  OP="${1:-}"
+  shift 2> /dev/null
+  case "$OP" in
+    list | ls | li | lis | l ) list "$@" ;;
+    * ) help ;;
+  esac
+}
+SCRIPT="$0"
+main "$@"
+
+# vim: ts=2 sw=2 et foldmethod=indent ft=sh
