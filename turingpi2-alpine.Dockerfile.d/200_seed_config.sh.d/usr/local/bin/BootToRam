@@ -4,7 +4,7 @@ set -eu
 PS4_BASE="${0##*/}[\$$]:"
 PS4="$PS4_BASE "
 
-SQFS="/rom/mnt/CURRENT/root.sqfs /overlay/rom.sqfs"
+SQFS="/overlay/rescue.sqfs /rom/mnt/CURRENT/root.sqfs /overlay/rom.sqfs"
 
 WORKDIR=/run/live
 
@@ -179,6 +179,10 @@ preinit() { # running from rootfs if RAM/squashfs, applying fixes
   rmdir "$WORKDIR"/* 2> /dev/null || :
   ln -s "$WORKDIR/rom.sqfs" /overlay/rom.sqfs
 
+  #- don't change node status
+  rc-update del bmcd default || :
+
+  #- unmount mmc and that should stay that way
   rc-update del mmc default || :
   rc-update del mmc sysinit || :
   rm -rf \
