@@ -13,25 +13,26 @@ mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
 PKGS=
 
 # platform speceifc
-PKGS="$PKGS \
-  iptables iptables-openrc \
-  mtd-utils rdnssd zram-init \
-  u-boot-tools \
-  usbutils hwids-usb \
-  busybox-mdev-openrc \
-  f2fs-tools \
-  e2fsprogs \
-  kmod \
-  sfdisk \
-  partx \
-  blkid \
-  wipefs \
-  mount \
-  wget \
-  util-linux util-linux-misc \
-    util-linux-bash-completion \
-  ppp-chat \
+PKGS="$PKGS
+  iptables iptables-openrc
+  mtd-utils rdnssd zram-init
+  u-boot-tools
+  usbutils hwids-usb
+  busybox-mdev-openrc
+  f2fs-tools
+  e2fsprogs
+  kmod
+  sfdisk
+  partx
+  blkid
+  wipefs
+  mount
+  wget
+  util-linux util-linux-misc
+    util-linux-bash-completion
+  ppp-chat
   erofs-utils
+  attr
 "
 
 # network core
