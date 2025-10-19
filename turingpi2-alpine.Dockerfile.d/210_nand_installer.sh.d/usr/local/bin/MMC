@@ -7,8 +7,8 @@ update_root() {
     echo "E: not booted from MMC/SD, cannot update."
     exit 2
   fi
-set -x
 
+  set -x
   SQFS="$1"
   MNT=/mnt
   RO=/rom/mnt
@@ -37,7 +37,12 @@ set -x
   cp -a "$SQFS" "$NEXT/root.sqfs"
   rm -f "$RO/CURRENT"
   ln -s "ROOTFS.$VERSION" "$RO/CURRENT"
-}
+  }
+
+status() {
+  : # for now
+  /etc/init.d/mmc stat
+  }
 
 help() {
 cat <<EOF
@@ -48,6 +53,10 @@ USAGE:
   
   Commands:
      update <IMAGE>           - update rootfs with SQFS image
+
+     rw                       - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
+     ro                       - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
+     status                   - mount /mmc & overlay read-write
   
      snapshot                 - NOT implemented yet - snapshot overlay in /mmc
 EOF
@@ -57,9 +66,13 @@ CMD="${1:-}"
 shift 2> /dev/null || :
 case "$CMD" in
   update | up )         update_root "$@" ;;
+  rw | ro )             /etc/init.d/mmc "$CMD" ; status ;;
+  status | stat | st )  status ;;
 
   # TODO:
   #snapshot | snap )    snapshot "$@" ;;
 
   -h | --help | "" )    help ;;
 esac
+
+# vim: ts=2 sw=2 et foldmethod=indent ft=sh

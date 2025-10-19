@@ -8,11 +8,16 @@ list() {
   list_files "$@"
   }
 
+list_files() {
+  list_files_collector "$@" | \
+    list_files_filter "$@" | \
+    list_files_action "$@"
+  }
+
 list_files_collector() ( # use brackets for true forked subshell
-  # command line passing carefully
   find_opts=
   find_dirs=
-  while [ ! $# = 0 ]; do
+  while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
       "!" ) find_opts="$find_opts '!'" ;;
       -type | -t )
@@ -28,9 +33,9 @@ list_files_collector() ( # use brackets for true forked subshell
       -a | o ) find_opts="$find_opts $1";;
       -* ) ;;
       * )
-        dir="${1}" 
+        dir="${1}"
         [ ! "$1" = / ] || dir="."
-        find_dirs="$find_dirs '$dir'" 
+        find_dirs="$find_dirs '${dir#/}'"
         ;;
     esac
     shift
@@ -42,18 +47,34 @@ list_files_collector() ( # use brackets for true forked subshell
   eval "find $find_dirs $find_opts" | sort -r
   )
 
-list_files() {
-  list_files_collector "$@" | \
-    list_files_filter "$@" # | \
-    #list_files_display "$@"
-  }
-
 list_files_filter() {
+  ETCKEEPER_EXCLUDES="etc/.git | etc/.git/*"
+  select_modified=
+  select_new=
+  while [ ! $# = 0 ]; do # command line passing carefully
+    case "${1:-}" in
+      --etckeeper | -E ) ETCKEEPER_EXCLUDES="" ;;
+      --mod ) select_modified=yes ;;
+      --new ) select_new=yes ;;
+    esac
+    shift
+  done
   while read f; do
     case "$f" in
       . | .. ) continue ;;
-      ./* ) f="${f#./}" ;;
     esac
+
+    f="${f#./}"
+    excludes="$ETCKEEPER_EXCLUDES"
+    e=
+    if [ -n "$excludes" ]; then
+      eval "
+        case '$f' in
+          $excludes ) continue ;; # in exclude list
+        esac
+      "
+    fi
+
     stat="-?-"
     kind="-"
 
@@ -94,7 +115,7 @@ list_files_filter() {
           [ "${kind_stat}" = "${kind_rom_stat}" ] || \
             stat="${stat%[.-]}p"
           if ! cmp -s "$ROM_DIR/$f" "$OVERLAY_DIR/$f"; then
-            stat="d${stat#[.-]}"
+            stat="M${stat#[.-]}"
           fi
           ;;
         * )
@@ -104,16 +125,39 @@ list_files_filter() {
           ;;
         esac
     fi
-    
+
+    case "$select_modified:$stat:$kind" in
+      yes:M??:F ) ;;
+      yes:* ) continue ;;
+    esac
+
+    case "$select_new:$stat:$kind" in
+      yes:?N?:*  ) ;;
+      yes:* ) continue ;;
+    esac
+
     echo "$stat  $kind  $f"
   done
   }
 
-list_files_display() {
-  set +x
+list_files_action() {
+  do_diff=no
+  while [ ! $# = 0 ]; do # command line passing carefully
+    case "${1:-}" in
+      #--cleanup ) ;;
+      --diff ) do_diff=yes ;;
+    esac
+    shift
+  done
   while read i; do
     set -- $i
-    echo "  $1   $2   $3"
+    if [ "$do_diff" = yes ]; then
+      o="$ROM_DIR/$3"
+      [ -f "$o" ] || o=/dev/null
+      diff -ua "$o" "$OVERLAY_DIR/$3" || :
+    else
+      echo "  $1   $2   $3"
+    fi
   done
   }
 
