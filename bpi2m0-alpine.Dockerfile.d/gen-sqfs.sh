@@ -8,9 +8,10 @@ COMPRESSOR="${COMPRESSOR:-zstd}" # xz
 BLOCKSIZE="${BLOCKSIZE:-1024k}"  # 256k 512k
 
 rm -f /target/etc/resolv.conf
-rm -rf /target/etc/.git
+find /target/ -name ".git" -exec rm -rf {} +
+find /target/etc/ -name "*.apk-*" -o -name "*.dpkg-*" -o -name "*.ucf-*" -o -name "*-" -delete
 ln -s ../run/resolv.conf /target/etc/resolv.conf
- 
+
 GITREV="$( cd /src ; git log HEAD^..HEAD --oneline | awk '$0=$1' )"
 DATE="$( date +%Y-%m-%d-%H:%M )"
 VERSION=$DATE-$GITREV+dirty
