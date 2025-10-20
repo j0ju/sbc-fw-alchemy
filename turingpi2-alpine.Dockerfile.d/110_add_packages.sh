@@ -50,5 +50,6 @@ PKGS="$PKGS \
   minicom \
   pv \
 "
-
 chroot /target apk add $PKGS
+
+find /target/etc -name "*.apk-*" -delete

@@ -58,4 +58,3 @@ PKGS="$PKGS
   chroot /target apk add $PKGS
 
   chroot /target update-rc
-

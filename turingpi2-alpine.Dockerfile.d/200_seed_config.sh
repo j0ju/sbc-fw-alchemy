@@ -14,6 +14,7 @@ PS4='> ${0##*/}: '
     var/log var/spool/mail var/tmp \
     var/cache/apk var/cache/etckeeper var/cache/misc \
     var/lib/dbus var/lib/misc var/lib/rsyslog \
+    sbin/acpid etc/acpi \
   # EO rm -rf
 
   # recreate some toplevel directories
