@@ -2,5 +2,14 @@
 # enable and keep in sync with /etc/bmcd/config.yaml
 # if changed
 
-#export TPI_HOST=[::1]
-#export TPI_PORT=443
+unset TPI_HOST
+unset TPI_PORT
+
+if [ -f /etc/conf.d/tpi ]; then
+  . /etc/conf.d/tpi
+fi
+
+[ -z "$TPI_HOST" ] || \
+  export TPI_HOST
+[ -z "$TPI_PORT" ] || \
+  export TPI_PORT

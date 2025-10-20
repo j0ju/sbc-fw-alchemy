@@ -1,0 +1,12 @@
+# extract bmcd config very basic from /etc/bmcd/config.yaml
+TPI_HOST="$(sed -n -r -e '/^host: / s/host: +// p' /etc/bmcd/config.yaml)"
+TPI_HOST="${TPI_HOST#\"}"
+TPI_HOST="${TPI_HOST%\"}"
+TPI_HOST="${TPI_HOST#\'}"
+TPI_HOST="${TPI_HOST%\'}"
+
+TPI_PORT="$(sed -n -r -e '/^port: / s/port: +// p' /etc/bmcd/config.yaml)"
+TPI_PORT="${TPI_PORT#\"}"
+TPI_PORT="${TPI_PORT%\"}"
+TPI_PORT="${TPI_PORT#\'}"
+TPI_PORT="${TPI_PORT%\'}"

@@ -61,7 +61,7 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
-    echo " * /$f"
+    #echo " * /$f"
   done
 
 # pre-seed initial seed credentials
@@ -91,7 +91,7 @@ chroot /target mkimage -T script -d /boot/boot.scr /boot/boot.scr.uimg > /dev/nu
 # enable basic services
 chroot /target /bin/sh > /dev/null -e <<EOF
 PS4='> ${PS4%: }:chroot: '
-set -x
+#set -x
 
 ln -s getty /etc/init.d/getty.ttyS0
 ln -s getty /etc/init.d/getty.ttyGS0

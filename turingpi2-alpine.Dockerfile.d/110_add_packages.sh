@@ -6,7 +6,7 @@ umask 022
 #- debug
   trap 'exit $?' EXIT
   PS4='> ${0##*/}: '
-  set -x
+  #set -x
 
 mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
 
