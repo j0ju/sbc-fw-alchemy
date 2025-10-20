@@ -11,8 +11,9 @@ FILTER=${FILTER:-LABEL=mmc-data}
 LABEL="${FILTER#LABEL=}"
 DISCARD=${DISCARD:-no}
 ATIME="${ATIME:-noatime}" # relatime, or atime if you want holes to be writen into you mmc cards ;)
+RO="${RO:-no}"
 
-extra_commands="ro rw status stat st"
+extra_commands="ro rw status stat st reload"
 
 start() {
   ebegin "searching for data partition on MMC/SD - $FILTER"
@@ -27,14 +28,7 @@ start() {
   mount -t $TYPE "$DEVNAME" /mmc
   rc=$?
 
-  if [ "$DISCARD" = yes ]; then
-    # might fail, but this might just mean discard is not supported by the FS
-    # or the mmc card does not support it
-    mount -o remount,discard /mmc || \
-      echo "setting discard FAILED"
-  fi
-  mount -o remount,discard /mmc || \
-    echo "setting atime to '$ATIME' FAILED"
+  reload
 
   eend $rc
 
@@ -44,10 +38,30 @@ start() {
   return $rc
 }
 
+reload() {
+  case "$RO" in
+    yes ) ro ;;
+    no  ) rw ;;
+  esac
+
+  if [ "$DISCARD" = yes ]; then
+    # might fail, but this might just mean discard is not supported by the FS
+    # or the mmc card does not support it
+    findmnt $FILTER -n -o TARGET | while read m; do
+      mount -o remount,discard $m || \
+        echo "setting discard FAILED ($m)"
+    done
+  fi
+  findmnt $FILTER -n -o TARGET | while read m; do
+    mount -o remount,$ATIME $m || \
+      echo "setting atime to '$ATIME' FAILED ($m)"
+  done
+}
+
 stop() {
   ebegin "unmount /mmc"
   while umount /mmc 2> /dev/null; do : ; done
-  grep " /mmc " /proc/mounts
+  grep " /mmc " /proc/mounts > /dev/null
   rc=$?
   case "$rc" in
     0 ) eend 1 ;;
@@ -57,13 +71,15 @@ stop() {
 
 ro() {
   findmnt $FILTER -n -o TARGET | while read m; do
-    mount -o remount -r "$m"
+    mount -o remount -r "$m" || \
+    echo "remounting read-only FAILED ($m)"
   done
 }
 
 rw() {
   findmnt $FILTER -n -o TARGET | while read m; do
-    mount -o remount -w "$m"
+    mount -o remount -w "$m" || \
+    echo "remounting read-write FAILED ($m)"
   done
 }
 

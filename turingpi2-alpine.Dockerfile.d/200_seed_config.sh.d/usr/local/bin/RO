@@ -1,0 +1,6 @@
+#!/bin/sh
+
+case "${0##*/}" in
+  ro | RO ) /etc/init.d/mmc ro;;
+  rw | RW ) /etc/init.d/mmc rw;;
+esac

@@ -1,0 +1,6 @@
+# /etc/conf.d/mmc
+#
+DISCARD=yes     # no
+ATIME="noatime" #    relatime
+#               # or atime     if you want holes to be written into you mmc cards ;)
+RO=no           # no
