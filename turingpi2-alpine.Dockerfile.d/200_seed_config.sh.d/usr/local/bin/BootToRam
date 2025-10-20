@@ -66,14 +66,13 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   # copy over base config and authorized_keys if any
   ( cd /overlay/upper || busybox mount -o bind /tmp/overlay /overlay
     cd /overlay/upper
-    find $(ls -d etc root home 2> /dev/null) ! -type d | grep -v /.git/ | xargs tar cf - --acls --xattrs
-  ) | tar xf - --acls --xattrs -C "$WORKDIR/overlay/upper"
+    tar cf - --xattrs --exclude=.git $(ls etc home root usr/local opt/bmcd 2> /dev/null || :)
+  ) | tar xf - --xattrs -C "$WORKDIR/overlay/upper"
 
   #- prepare read-write rootfs backed from RAM
   ( cd "$WORKDIR"
     mount -o loop -r "$WORKDIR/rom.sqfs" "$WORKDIR/rom"
     mount -t overlay overlay "$WORKDIR/rootfs" -o lowerdir=rom,upperdir=overlay/upper,workdir=overlay/work
-    rm -rf rootfs/etc/.git
   )
 
   #- restart init --> calling $WORKDIR/pid1stage1
