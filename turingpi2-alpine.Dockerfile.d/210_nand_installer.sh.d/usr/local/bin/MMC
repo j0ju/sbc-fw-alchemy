@@ -3,40 +3,108 @@ set -eu
 umask 022
 
 update_root() {
+  [ -z "${TRACE:-}" ] || set -x
+
   if ! [ -L /rom/mnt/CURRENT ]; then
     echo "E: not booted from MMC/SD, cannot update."
     exit 2
   fi
 
-  set -x
+  if [ -z "${1:-}" ]; then
+    echo "E: no image file supplied as \$1" 1>&2
+    exit 1
+  fi
   SQFS="$1"
-  MNT=/mnt
+  MNT="$(mktemp -d)"
   RO=/rom/mnt
-  CURRENT="$RO/CURRENT"
-  CURRENT=$(readlink -f "$RO/CURRENT")
+  MIN_FREE_kb=5120
+
 
   trap cleanup EXIT
   cleanup() {
     local rs=$?
-    while umount /mnt; do :; done 2> /dev/null
-    mount -o remount -r "$RO"
+    set +e +x
+    umount "$MNT" || \
+      echo "E: could not unmount update image from '$MNT'" 1>&2
+    rmdir "$MNT" || \
+      echo "E: could not remove temp dir '$MNT'" 1>&2
+    mount -o remount -r "$RO" || \
+      echo "E: could not remount '$RO' read-only" 1>&2
+    exit $rs
   }
 
-  mount -o loop "$1" "$MNT"
+  if ! mount -o loop "$1" "$MNT"; then
+    echo "E: image '$SQFS' could not be mounted, ABORT" 1>&2
+    exit 1
+  fi
 
-  losetup
+  [ -z "${TRACE:-}" ] || losetup
 
-  VERSION=$( cat "$MNT/boot/build.meta" )
+  NEXT="$(readlink -f /rom/mnt/CURRENT)"
 
-  mount -o remount -w "$RO"
+  RUNNING_VERSION="$( cat /rom/boot/build.meta )"
+  RUNNING="/rom/mnt/ROOTFS.$RUNNING_VERSION"
 
-  NEXT="$RO/ROOTFS.$VERSION"
+  NEXT_VERSION=$( cat "$MNT/boot/build.meta" )
+  NEXT="$RO/ROOTFS.$NEXT_VERSION"
+  NEXT_SIZE_kb=$( sum=0; du -xshkL "$SQFS" "$MNT/boot" "$MNT/sbin/busybox.static" | { while read i _; do sum=$(( sum + i)); done; echo $sum ; } )
+  NEXT_SIZE_kb=$(( NEXT_SIZE_kb + MIN_FREE_kb ))
 
+  echo
+  echo "I: running image: $RUNNING"
+  echo "I: next boot:     $NEXT"
+  echo "I: -> new image:  $SQFS"
+  echo
+  echo "I: running version: $RUNNING_VERSION"
+  echo "I: new version    : $NEXT_VERSION"
+  echo
+  echo "I: needed size: $NEXT_SIZE_kb KB"
+
+  # TODO: size check
+
+  # TODO: ensuring structure in /rom/mnt
+  #        * /dev /proc /sbin
+  #        * /sbin/busybox           (static)
+  #        * /sbin/init
+  #        * /sbin/preinit -> init   (symlink)
+  #        * /boot -> CURRENT/boot   (symlink)
+
+  if ! mount -o remount -w "$RO"; then
+    echo "E: could not remount '$RO' read-write, ABORT. See logs!" 1>&2
+    exit 1
+  fi
+
+  echo "I: creating dir '$NEXT'"
   mkdir -p "$NEXT"
+  echo "I: copying /boot to '$NEXT'"
   cp -a "$MNT/boot" "$NEXT"
+  echo "I: copying image to '$NEXT/root.sqfs'"
   cp -a "$SQFS" "$NEXT/root.sqfs"
+
+  echo "I: updating next boot"
   rm -f "$RO/CURRENT"
-  ln -s "ROOTFS.$VERSION" "$RO/CURRENT"
+  ln -s "${NEXT##*/}" "$RO/CURRENT"
+
+  NEXT="$(readlink -f /rom/mnt/CURRENT)"
+  echo "I: --> next boot:     $NEXT"
+  echo
+
+  echo "I: space usage in /rom/mnt"
+  # TODO: cleanup
+  ( cd /rom/mnt
+    du -xshkL $(ls -td ROOTFS.*) | \
+      ( while read kb f; do
+         echo "    $f     $kb KB"
+        done
+      ) | \
+      sed -e "/${NEXT#*/ROOTFS.}/ "'s/$/ <--- next boot/'
+  )
+  echo
+  df -k /rom/mnt
+  echo
+
+  # TODO: cleanup old unused ROOTFS? which?
+  #       do FS maintenance?
   }
 
 status() {
@@ -50,14 +118,14 @@ ${0##/*} ($0)
 
 USAGE:
   ${0##/*} <COMMAND> [OPTIONS]
-  
+
   Commands:
      update <IMAGE>           - update rootfs with SQFS image
 
      rw                       - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
      ro                       - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
      status                   - mount /mmc & overlay read-write
-  
+
      snapshot                 - NOT implemented yet - snapshot overlay in /mmc
 EOF
 }
@@ -66,7 +134,7 @@ CMD="${1:-}"
 shift 2> /dev/null || :
 case "$CMD" in
   update | up )         update_root "$@" ;;
-  rw | ro )             /etc/init.d/mmc "$CMD" ; status ;;
+  rw | ro )             /etc/init.d/mmc reload ; /etc/init.d/mmc "$CMD" ; status ;;
   status | stat | st )  status ;;
 
   # TODO:

@@ -4,10 +4,6 @@ set -eu
 OVERLAY_DIR=/overlay/upper
 ROM_DIR=/rom
 
-list() {
-  list_files "$@"
-  }
-
 list_files() {
   list_files_collector "$@" | \
     list_files_filter "$@" | \
@@ -30,7 +26,7 @@ list_files_collector() ( # use brackets for true forked subshell
         shift
         find_opts="$find_opts -name '$1'"
         ;;
-      -a | o ) find_opts="$find_opts $1";;
+      -a | -o ) find_opts="$find_opts $1";;
       -* ) ;;
       * )
         dir="${1}"
@@ -41,21 +37,23 @@ list_files_collector() ( # use brackets for true forked subshell
     shift
   done
   [ -n "$find_dirs" ] || \
-    find_dirs=etc
+    find_dirs="etc usr/local opt"
 
   cd "$OVERLAY_DIR"
   eval "find $find_dirs $find_opts" | sort -r
   )
 
 list_files_filter() {
-  ETCKEEPER_EXCLUDES="etc/.git | etc/.git/*"
+  ETCKEEPER_EXCLUDES="etc/.git | etc/.git/* | etc/.etckeeper"
   select_modified=
+  select_obsolete=
   select_new=
   while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
       --etckeeper | -E ) ETCKEEPER_EXCLUDES="" ;;
       --mod ) select_modified=yes ;;
       --new ) select_new=yes ;;
+      --obsolete | --obs | --cleanup ) select_obsolete=yes ;;
     esac
     shift
   done
@@ -90,6 +88,12 @@ list_files_filter() {
 
     if [ ! -e "$ROM_DIR/$f" ]; then
       stat=".N."
+      case "${kind_stat}" in
+        0:0:*char* )
+          kind="-"
+          stat="..."
+          ;;
+      esac
     else
       case "${kind_stat}" in
         0:0:*char* )
@@ -131,8 +135,13 @@ list_files_filter() {
       yes:* ) continue ;;
     esac
 
-    case "$select_new:$stat:$kind" in
-      yes:?N?:*  ) ;;
+    case "$select_new:$stat" in
+      yes:?N?  ) ;;
+      yes:* ) continue ;;
+    esac
+
+    case "$select_obsolete:$stat" in
+      yes:...  ) ;;
       yes:* ) continue ;;
     esac
 
@@ -142,10 +151,13 @@ list_files_filter() {
 
 list_files_action() {
   do_diff=no
+  do_cleanup=no
+  simulate=yes
   while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
-      #--cleanup ) ;;
+      --cleanup ) do_cleanup=yes ;;
       --diff ) do_diff=yes ;;
+      --yes ) simulate=no ;;
     esac
     shift
   done
@@ -155,6 +167,14 @@ list_files_action() {
       o="$ROM_DIR/$3"
       [ -f "$o" ] || o=/dev/null
       diff -ua "$o" "$OVERLAY_DIR/$3" || :
+    elif [ "$do_cleanup" = yes ]; then
+
+      case "$simulate:$1:$2" in
+        *:...:D ) rmdir "$OVERLAY_DIR/$3" 2>/dev/null || : ;;
+        #
+        yes:...:? ) echo "'$3': would delete from overlay" ;;
+        no:...:? )  ( set -x; rm -f "$OVERLAY_DIR/$3" ) ;;
+      esac
     else
       echo "  $1   $2   $3"
     fi
@@ -163,15 +183,7 @@ list_files_action() {
 
 help() { echo "E: not implemented, yet" >&2; exit 69; }
 
-main() {
-  OP="${1:-}"
-  shift 2> /dev/null
-  case "$OP" in
-    list | ls | li | lis | l ) list "$@" ;;
-    * ) help ;;
-  esac
-}
 SCRIPT="$0"
-main "$@"
+list_files "$@"
 
 # vim: ts=2 sw=2 et foldmethod=indent ft=sh
