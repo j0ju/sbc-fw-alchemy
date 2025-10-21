@@ -9,6 +9,7 @@ BLOCKSIZE="${BLOCKSIZE:-1024k}"  # 256k 512k
 
 rm -f /target/etc/resolv.conf
 find /target/ -name ".git" -exec rm -rf {} +
+rm -f /target/etc/.etckeeper
 find /target/etc/ -name "*.apk-*" -o -name "*.dpkg-*" -o -name "*.ucf-*" -o -name "*-" -delete
 ln -s ../run/resolv.conf /target/etc/resolv.conf
 
