@@ -5,7 +5,7 @@
  * It compiles the kernel via buildroot from official sources with a slighly different config.
  * Kernel an modules are then merged with an alpine/armv7 userland.
  * Kernel and read-only rootfs reside in partition 1 / ext4 mounted ad /rom
- * On first boot a second partition is created with filesystem LABEL=tpi2data (f2fs currently) mounted as /mmc
+ * On first boot a second partition is created with filesystem LABEL=mmc-data (f2fs currently) mounted as /mmc
  * read-write root filesystem is created with overlayfs with base /rom and read-write store /mmc/overlay
 
  Note: The default secret is the same as from the official firmware. Change it!
@@ -113,6 +113,19 @@ NOTE: this needs a lot of RAM, best have a small image and zram-init/zram-swap e
 
 ...TBD...
 
+### `MMC`
+
+Tool to update an instance running the BMC from MMC/SD card.
+
+USAGE: `MMC <command>`
+
+Possible commands are
+
+ * `update <IMAGE>` - update rootfs with SQFS image (.sqfs)
+ * `ro`- mount /mmc & overlay read-only ( via /etc/init.d/mmc )
+ * `rw`- mount /mmc & overlay read-write ( via /etc/init.d/mmc )
+ * `status`- display status
+
 ## Config
 
 ### Networking
@@ -162,7 +175,7 @@ Factory-Reset: without loosing config?
 I prefer to put my images and content below:
  * `/mmc/RK1` - images and patches for RK1
  * `/mmc/CM4` - images and patches for CM4
- * `/mmc/TuringPi2` - scripts and development
+ * `/mmc/TP2` - scripts and development
 
  * `/mmc/overlay` - a symlink to `overlay.CURRENTRUNNINGSCNAPSHOT`
  * `/mmc/overlay.YOUNAMEIT` - overlay directories or snapshots. On dump or copy, copy ACL or XATTRS.
