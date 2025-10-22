@@ -1,0 +1,25 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+FROM sbc:armhf-alpine-3.22 AS alpine
+FROM sbc:rk1-trixie-edge
+
+# keep imported build /vanilla rom with original bmcd and tpi
+RUN set -e; \
+  mv /target/part2 /vanilla ;\
+  rm -rf /vanilla/boot ;\
+  mv /target/part1 /vanilla/boot ;\
+  rm -rf /target ;\
+: EO RUN
+
+# start /target with fresh armhf alpine
+COPY --from=alpine /target/ /target
+COPY --from=alpine /target.busybox.static /
+
+# populate modules and boot from vanilla
+RUN set -e; \
+  rm -rf /target/boot /target/lib/modules ;\
+  cp -a /vanilla/lib/modules /target/lib/modules ;\
+  cp -a /vanilla/boot /target/boot ;\
+  chown -R 0:0 /target/boot/* ;\
+  cp -a /target.busybox.static /target/sbin/busybox.static ;\
+: EO RUN
