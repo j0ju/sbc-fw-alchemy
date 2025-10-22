@@ -20,19 +20,16 @@ PKGS="$PKGS
     mtr-bash-completion
   curl
   file
-  rsync
   make
   dtc
   sntpc
   strace lsof
   squashfs-tools
-  bird2
   ppp
   dnsmasq dnsmasq-openrc dnsmasq-utils
   make diffutils
   nftables
     nftables-openrc nftables-vim
-  keepalived
   jq
 "
 

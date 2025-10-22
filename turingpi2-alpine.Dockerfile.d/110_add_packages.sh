@@ -19,13 +19,9 @@ PKGS="$PKGS
   u-boot-tools
   usbutils hwids-usb
   busybox-mdev-openrc
-  f2fs-tools
-  e2fsprogs
+  f2fs-tools e2fsprogs dosfstools mtools
+  sfdisk sgdisk partx blkid wipefs
   kmod
-  sfdisk
-  partx
-  blkid
-  wipefs
   mount
   wget
   util-linux util-linux-misc
@@ -33,22 +29,25 @@ PKGS="$PKGS
   ppp-chat
   erofs-utils
   attr
+  rsync
 "
 
 # network core
-PKGS="$PKGS \
-  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick \
-  openresolv \
-  avahi avahi-tools \
-  rdnssd \
+PKGS="$PKGS
+  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick
+  openresolv
+  avahi avahi-tools
+  rdnssd
+  keepalived
+  bird2
 " # EO PKGS
 
 # user convinience and debugging extras
-PKGS="$PKGS \
-  vim \
-  tmux \
-  minicom \
-  pv \
+PKGS="$PKGS
+  vim
+  tmux
+  minicom
+  pv
 "
 chroot /target apk add $PKGS
 
