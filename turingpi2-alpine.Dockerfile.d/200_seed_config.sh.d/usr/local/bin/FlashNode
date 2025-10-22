@@ -1,0 +1,178 @@
+#!/bin/sh
+set -eu
+umask 022
+PS4="${0##*/}: "
+
+PATCH_DIR=
+DO_RESIZE=no
+DO_BOOT=no
+
+help() {
+  echo
+  echo "${0##*/} ($0)"
+  echo
+  echo "USAGE:"
+  echo "  ${0##*/} [OPTIONS] <IMAGE> <NODE>"
+  echo
+  echo "  IMAGE can .xz, zstd, gz compressed"
+  echo "  NODE  1, 2, 3, 4"
+  echo
+  echo "  OPTIONS:"
+  #echo "     -r                        - resize root partition with ext2/3/4, f2fs"
+  echo "     -p <DIR>                  - run PatchNode with that dir afterwards."
+  echo "     -b                        - boot node after write (and patch)"
+  echo "     -h | --help               - this"
+  echo
+  }
+
+argvparse() {
+  local PS4="${0##*/}::argvparse: "
+  while [ ! $# = 0 ]; do # command line passing carefully
+    case "${1:-}" in
+      #-r )
+      #  DO_RESIZE=yes
+      #  shift
+      #  ;;
+      -b )
+        DO_BOOT=yes
+        shift
+        ;;
+      -p )
+        PATCH_DIR="${2:-}"
+        shift
+        shift
+        if [ ! -d "$PATCH_DIR" ]; then
+          echo "E: -p '$PATCH_DIR' is not a directory." >&2
+          exit 1
+        fi
+        ;;
+      -[!-] )
+        echo "E: unknown argument '$1'." >&2
+        ;;
+      -- | * ) break
+        ;;
+    esac
+  done
+
+  image="${1:-}"
+  node="${2:-}"
+  if ! [ -f "$image" ]; then
+    echo "E: '$image' does not exist, ABORT" >&2
+    exit 1
+  fi
+  case "$node" in
+  [1234] ) ;;
+    * )
+      echo "E: unknown node, must be either 1,2,3,4, ABORT" >&2
+      exit 1
+      ;;
+  esac
+  }
+
+detect_pv() {
+  local PS4="${0##*/}::detect_pv: "
+  PV=
+  if which pv > /dev/null; then
+    PV="pv -brat"
+  fi
+  }
+
+detect_decompressor() {
+  local PS4="${0##*/}::detect_decompressor: "
+  DECOMPRESSOR=
+  case "$image" in
+    *.xz  | *.tpxz ) DECOMPRESSOR="xz -dc"   ;;
+    *.zst          ) DECOMPRESSOR="zstd -dc" ;;
+    *.gz  | *.tgz  ) DECOMPRESSOR="gzip -dc" ;;
+    *.tar | *.img  ) DECOMPRESSOR="cat"      ;;
+    * )
+      echo "E: unknown COMPRESSOR for '$image', ABORT" >&2
+      exit 1
+      ;;
+  esac
+  }
+
+cleanup() {
+  rs=$?
+  set -x
+  local PS4="${0##*/}::cleanup: "
+  trap - EXIT
+  rs=$rs
+  eval "$CLEANUP_TRAP"
+  exit $rs
+  }
+  trap 'cleanup' EXIT INT QUIT USR1 USR2
+  CLEANUP_TRAP=:
+
+sync_thread() {
+  while :; do
+    local PS4="${0##*/}::sync_thread: "
+    set +x
+    rnd=$(( RANDOM % 7 + 1 ))
+    sleep $rnd
+    sync
+  done & # TODO: rename, this is technically not a thread but a fork ;)g
+  SYNC_THREAD_PID=$!
+  echo "I: sync thread PID $SYNC_THREAD_PID"
+  }
+  SYNC_THREAD_PID=
+
+sync_thread_cleanup() {
+  local PS4="${0##*/}::sync_thread_cleanup: "
+  kill $SYNC_THREAD_PID 2> /dev/null || :
+  echo "I: sync thread killed (PID $SYNC_THREAD_PID)."
+  }
+
+find_usb_device() {
+  local PS4="${0##*/}::find_usb_device: "
+  for i in $(grep -EH "^Rockchip" /sys/block/*/device/vendor); do
+    dev="${i%/device/vendor:*}"
+    dev="${dev#/sys/block/}"
+    vendor="${i#*:}"
+    case "$vendor" in
+      Rockchip ) USB_DEVICE=/dev/$dev ; break ;;
+    esac
+  done
+  }
+  USB_DEVICE=
+
+write_image() {
+  local PS4="${0##*/}::write_image: "
+  CLEANUP_TRAP="off $node"
+  msd "$node"
+  find_usb_device
+  if [ -z "$USB_DEVICE" ]; then
+    echo "E: could not find usb device, ABORT" >&2
+    exit 1
+  fi
+
+  CLEANUP_TRAP="$CLEANUP_TRAP; sync_thread_cleanup"
+  sync_thread
+  wipefs -af "$USB_DEVICE"[0-9]* 2> /dev/null || :
+  wipefs -af "$USB_DEVICE" 2> /dev/null
+  if tty > /dev/null && [ -n "$PV" ]; then
+    $DECOMPRESSOR "$image" | $PV | dd bs=1M > "$USB_DEVICE"
+  else
+    $DECOMPRESSOR "$image" | dd bs=1M > "$USB_DEVICE"
+  fi
+  }
+
+: main #
+  argvparse "$@"
+  detect_pv
+  detect_decompressor
+
+  set -x
+  write_image
+
+  if [ "$DO_BOOT" = yes ]; then
+    CLEANUP_TRAP="$CLEANUP_TRAP; [ ! \$rs = 0 ] || on $node"
+  fi
+
+  if [ -d "$PATCH_DIR" ]; then
+    PatchNode --assume-msd "$PATCH_DIR" "$node"
+  fi
+
+  exit $?
+
+# vim: ts=2 sw=2 et foldmethod=indent ft=sh

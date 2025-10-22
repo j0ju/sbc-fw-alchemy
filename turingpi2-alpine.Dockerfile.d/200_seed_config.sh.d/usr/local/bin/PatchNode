@@ -1,0 +1,151 @@
+#!/bin/sh
+set -eu
+umask 022
+
+ASSUME_MSD=n
+DO_BOOT_BACKUP=n
+case "${1:-}" in
+  --assume-msd )     ASSUME_MSD=y ; shift ;;
+  --backup-boot )    DO_BOOT_BACKUP=y ; shift ;;
+  --no-backup-boot ) DO_BOOT_BACKUP=n ; shift ;;
+esac
+
+PATCH_DIR="${1:-}"
+NODE="${2:-}"
+
+usage() {
+  echo "usage: $0 <OPTIONS> [PATCH_DIR] [NODE]" >&2
+  echo "  --assume-msd     - MSD mode already enabled"
+  echo "  --backup-boot    - backup boot"
+  echo "  --no-backup-boot - do not backup boot"
+}
+
+case "$PATCH_DIR:$NODE" in
+  ?*:[1234] ) ;;
+  * ) usage ;;
+esac
+
+if ! [ -d "$PATCH_DIR" ]; then
+  echo "E: '$PATCH_DIR' does not exist, ABORT" >&2
+  echo
+  usage
+  exit 1
+fi
+
+CLEANUP_TRAP=:
+cleanup() {
+  rs=$?
+  eval "$CLEANUP_TRAP"
+  exit $rs
+}
+trap 'cleanup' EXIT
+
+MSD_eMMC_cleanup() {
+  if [ -d "${MSD_DIR:-}" ]; then
+    grep -Eo "${MSD_DIR:-}(|[^ ]+)" /proc/mounts | sort -r | while read line; do
+      while umount $line 2> /dev/null; do :; done
+      if [ "$RMDIR_BOOT" = y ]; then
+        if [ "$line" = "${MSD_DIR%/}/${boot#/}" ]; then
+          rmdir "$line"
+        fi
+      fi
+    done
+    rmdir "$MSD_DIR"
+    sync
+    echo "I: synced"
+  fi
+}
+# TODO: use mktemp
+MSD_DIR=/tmp/${0##*/}.node$NODE.$$
+CLEANUP_TRAP="MSD_eMMC_cleanup;${CLEANUP_TRAP%[;:]}"
+
+envsubst() {
+  if [ -r "$1" ]; then
+    local tmp="$(mktemp -u -p "" HTML_XXXXXXXX)"
+    tmp="${tmp#/}"
+    local e="cat <<$tmp
+$(cat "$1")
+$tmp"
+    eval "$e"
+  else
+    return 1
+  fi
+}
+
+patchNode() {
+  mkdir "$MSD_DIR"
+  echo "I: mount / to $MSD_DIR"
+  mount /dev/sda2 "$MSD_DIR"
+
+  RMDIR_BOOT=n
+  # mount /boot or /boot/firmware
+  for boot in /boot/firmware /boot; do
+    [ -b /dev/sda1 ] || continue
+    [ -d "$MSD_DIR/$boot" ] || continue
+    if grep "$boot " "$MSD_DIR"/etc/fstab; then
+      echo "I: mount $boot to $MSD_DIR$boot"
+      mount /dev/sda1 "$MSD_DIR/$boot"
+      break
+    fi
+    # fall through
+    boot=
+  done
+  if [ "$boot" = "" ]; then
+    boot=/boot/meta-data
+    RMDIR_BOOT=y
+    mkdir -p "$MSD_DIR/$boot"
+    mount /dev/sda1 "$MSD_DIR/$boot"
+  fi
+
+  # copy over files, retaining permissions
+  # permission changes need to be done via patch.sh
+  find "$PATCH_DIR"/ -type f -o -type l | grep -vE "^$PATCH_DIR/.git" | while read src; do
+    file="${src#$PATCH_DIR/}"
+    dest="$MSD_DIR/$file"
+    dest_dir="${dest%/*}"
+    mkdir -p "$dest_dir"
+
+    if [ -L "$src" ]; then
+      rm -f "$dest"
+      cp -a "$src" "$dest"
+      echo "I: copied link /${file%.envsubst}"
+    else
+      case "$src" in
+        "$PATCH_DIR/patch.sh" ) continue ;;
+        *.envsubst )
+          dest="${dest%.envsubst}"
+          envsubst "$src" > "$dest"
+          echo "I: envsubst /${file%.envsubst}"
+          ;;
+        * )
+          cat "$src" > "$dest"
+          echo "I: copied /${file%.envsubst}"
+          ;;
+      esac
+      chown root:root "$dest"
+      chmod 0644 "$dest"
+    fi
+  done
+
+  # exec patch need $TARGET set
+  if [ -f "$PATCH_DIR/patch.sh" ]; then
+    echo "I: found patch.sh"
+    TARGET="$MSD_DIR" \
+      /bin/sh "$PATCH_DIR/patch.sh"
+    echo "I: patch.sh done"
+  fi
+
+  if [ "$DO_BOOT_BACKUP" = y ]; then
+    if [ ! -f "$MSD_DIR/$boot"/SNAPSHOT.flash.tar.zst ]; then
+      echo "I: dump snapshot of $boot"
+      tar cf - -C "$MSD_DIR/$boot" --exclude="SNAPSHOT.*" --exclude="*.bak" --exclude="*~" . | zstd > "$MSD_DIR/$boot/SNAPSHOT.flash.tar.zst" || \
+        rm -f "$MSD_DIR/$boot/SNAPSHOT.flash.tar.zst"
+    fi
+  fi
+}
+
+if [ ! "$ASSUME_MSD" = y ]; then
+  CLEANUP_TRAP="${CLEANUP_TRAP%[;:]}; off $NODE"
+  msd $NODE
+fi
+patchNode "$PATCH_DIR" "$NODE"
