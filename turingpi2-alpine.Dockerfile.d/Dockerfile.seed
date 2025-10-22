@@ -13,7 +13,7 @@ COPY --from=alpine /target.busybox.static /
 COPY input/artifacts/turingpi2-alpine-bmcd.tar.zst /
 
 # populate modules and boot from vanilla
-RUN \
+RUN set -e; \
   rm -rf /target/boot /target/lib/modules ;\
   cp -a /vanilla/lib/modules /target/lib/modules ;\
   cp -a /vanilla/boot /target/boot ;\

@@ -1,50 +1,59 @@
 #!/bin/sh
+PS4="${0##*/}: "
 
 switch() {
-  local mode="$1"
-  case "$mode" in
-    on | 1 | ON ) mode=on ;;
-    off | 0 | OFF ) mode=off ;;
-    status | stat | st | "" ) 
-      status
-      return $?
-      ;;
-    * )
-      echo "E: unknown mode '$mode', ABORT (on, 1, ON, off, 0, off)." >&2
-      exit 2
-      ;;
-  esac
-  shift
-  for node; do
-    case "$node" in
+  before="$(tpi power status)"
+  local mode=
+  for op; do
+    case "$op" in
       [1234] )
+        if [ -z "$mode" ]; then
+          echo "E: no mode was specified, skipping unknown operation on node $op" >&2
+          continue
+        fi
+        node="$op"
+        echo "I: before: $(echo "$before" | grep "$node") | target mode: $mode"
+        nodes="$nodes $node"
+        nodes="${nodes% }"
         ( set -ex
           tpi power -n "$node" "$mode"
-        )
-        #if [ "$mode" = off ]; then
-        #  ( set -ex
-        #    tpi advanced -n "$node" normal
-        #  )
-        #fi
+        ) | grep -v ok
+        ;;
+      on | off ) # batch actions from left to right like "off 3 on 3" - Power cycle
+        mode=$op
+        continue
         ;;
       all )
+        if [ -z "$mode" ]; then
+          echo "E: no mode was specified, skipping unknown operation on ALL nodes" >&2
+          continue
+        fi
         switch $mode 1 2 3 4
         return $?
         ;;
       * )
-        echo "E: unknown node specifier '$node', ABORT (1,2,3,4,all)." >&2
-        exit 2
+        echo "E: unknown node specifier '$node', ABORT (1,2,3,4,all) or (on, off)." >&2
+        rs=2
+        break
     esac
   done
-  status
-}
+  nodes="$(echo -n $nodes | tr ' ' '\n' | sort -u)"
+  status "$nodes"
+  return $rs
+  }
+  nodes=
 
 status() {
-  tpi power status
-}
+  nodes="${*:-^}"
+  regex="$(echo -n $nodes | sed 's/ /|/g')"
+  tpi power status | sed -r -n -e "s/^/I: after: /g" -e "/$regex/ p"
+  }
 
 case "$0" in
   */on | on ) switch on "$@" ;;
   */off | off ) switch off "$@" ;;
-  */pwr | pwr ) switch "$@"
-esac
+  */pwr | pwr ) switch "$@" ;;
+  * ) echo "E: multi-call script: apps: on, off, pwr" ;;
+  esac
+
+# vim: ts=2 sw=2 et foldmethod=indent ft=sh
