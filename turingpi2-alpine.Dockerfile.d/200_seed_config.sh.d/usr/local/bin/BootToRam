@@ -4,9 +4,8 @@ set -eu
 PS4_BASE="${0##*/}[\$$]:"
 PS4="$PS4_BASE "
 
-SQFS="/overlay/rescue.sqfs /rom/mnt/CURRENT/root.sqfs /overlay/rom.sqfs"
-
 WORKDIR=/run/live
+SQFS="$WORKDIR/rom.sqfs /overlay/rescue.sqfs /rom/mnt/CURRENT/root.sqfs /overlay/rom.sqfs"
 
 stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as init
   PS4="$PS4_BASE:stage0: "
@@ -51,7 +50,8 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   chmod 0744 "$WORKDIR/overlay/pid1stage1"
 
   #- prepare read-only root
-  if [ -f "$WORKDIR/rom.sqfs" ] && [ -s "$WORKDIR/rom.sqfs" ]; then :
+  if [ -f "$WORKDIR/rom.sqfs" ] && [ -s "$WORKDIR/rom.sqfs" ]; then
+    : rom.sqfs already there, are we on live already?
   else
     size_ro="$( du -shkL "$SQFS" | (read k _; echo $k ))"
     size_overlay="$( du -shkL /overlay/upper | (read k _; echo $k ))"
@@ -59,14 +59,14 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
     dir="$( findmnt -n -o TARGET --target "$WORKDIR" )"
     mount -o "remount,size=${size}k" "$dir"
     cat "$SQFS" > "$WORKDIR/rom.sqfs"
+    modprobe loop 2> /dev/null || :
+    modprobe squashfs 2> /dev/null || :
   fi
-  modprobe loop 2> /dev/null || :
-  modprobe squashfs 2> /dev/null || :
 
   # copy over base config and authorized_keys if any
   ( cd /overlay/upper || busybox mount -o bind /tmp/overlay /overlay
     cd /overlay/upper
-    tar cf - --xattrs --exclude=.git $(ls etc home root usr/local opt/bmcd 2> /dev/null || :)
+    tar cf - --xattrs --exclude=.git $(ls -d etc home root usr/local opt/bmcd 2> /dev/null || :)
   ) | tar xf - --xattrs -C "$WORKDIR/overlay/upper"
 
   #- prepare read-write rootfs backed from RAM
@@ -86,8 +86,9 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
       ;;
   esac
 
-  sleep 7
-  echo "E: this should never happen, investigate"
+  : wait a bit
+  sleep 99
+  : E: this should never happen, investigate
 }
 
 cleanup_stage0() { # cleanup handler for stage0
