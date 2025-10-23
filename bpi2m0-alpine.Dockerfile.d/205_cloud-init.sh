@@ -8,6 +8,9 @@ DEFAULT_USER=alpine
 PS4='> ${0##*/}: '
 #set -x
 
+chroot /target \
+  apk add cloud-init
+
 # copy over config seed
 DST="${DST:-/target}"
 FSDIR="$0.d"
