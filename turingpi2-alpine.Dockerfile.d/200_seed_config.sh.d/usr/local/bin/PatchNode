@@ -3,12 +3,20 @@ set -eu
 umask 022
 
 ASSUME_MSD=n
+BOOT=n
 DO_BOOT_BACKUP=n
-case "${1:-}" in
-  --assume-msd )     ASSUME_MSD=y ; shift ;;
-  --backup-boot )    DO_BOOT_BACKUP=y ; shift ;;
-  --no-backup-boot ) DO_BOOT_BACKUP=n ; shift ;;
-esac
+
+while [ ! $# = 0 ]; do
+  case "${1:-}" in
+    --assume-msd )     ASSUME_MSD=y ; shift ;;
+    # for Raspberry PI, keep booting from eMMC, so we can re bootstrap
+    --backup-boot )    DO_BOOT_BACKUP=y ; shift ;;
+    --no-backup-boot ) DO_BOOT_BACKUP=n ; shift ;;
+    --boot | -b )      BOOT=y ; ASSUME_MSD=n ; shift ;;
+    --boot-mmc | -B )  BOOT=F ; ASSUME_MSD=n ; shift ;;
+    * | -- ) break ;;
+  esac
+done
 
 PATCH_DIR="${1:-}"
 NODE="${2:-}"
@@ -18,6 +26,8 @@ usage() {
   echo "  --assume-msd     - MSD mode already enabled"
   echo "  --backup-boot    - backup boot"
   echo "  --no-backup-boot - do not backup boot"
+  echo "  --boot | -b      - turn node on after write"
+  echo "  --boot-mmc | -B  - turn node on after write, RK1: forcing to boot from emmc"
 }
 
 case "$PATCH_DIR:$NODE" in
@@ -32,6 +42,21 @@ if ! [ -d "$PATCH_DIR" ]; then
   exit 1
 fi
 
+find_usb_device() {
+  local PS4="${0##*/}::find_usb_device: "
+  for i in $(grep -EH "^Rockchip" /sys/block/*/device/vendor); do
+    dev="${i%/device/vendor:*}"
+    dev="${dev#/sys/block/}"
+    vendor="${i#*:}"
+    case "$vendor" in
+      Rockchip ) USB_DEVICE=/dev/$dev ; break ;;
+      * ) dev=; break ;;
+      # TODO: add support for Raspberry Pi, etc
+    esac
+  done
+}
+USB_DEVICE=
+
 CLEANUP_TRAP=:
 cleanup() {
   rs=$?
@@ -44,11 +69,6 @@ MSD_eMMC_cleanup() {
   if [ -d "${MSD_DIR:-}" ]; then
     grep -Eo "${MSD_DIR:-}(|[^ ]+)" /proc/mounts | sort -r | while read line; do
       while umount $line 2> /dev/null; do :; done
-      if [ "$RMDIR_BOOT" = y ]; then
-        if [ "$line" = "${MSD_DIR%/}/${boot#/}" ]; then
-          rmdir "$line"
-        fi
-      fi
     done
     rmdir "$MSD_DIR"
     sync
@@ -74,28 +94,33 @@ $tmp"
 
 patchNode() {
   mkdir "$MSD_DIR"
-  echo "I: mount / to $MSD_DIR"
-  mount /dev/sda2 "$MSD_DIR"
+  find_usb_device
 
-  RMDIR_BOOT=n
+  echo "I: mount to $MSD_DIR"
+  mount "$USB_DEVICE"2 "$MSD_DIR"
+
   # mount /boot or /boot/firmware
   for boot in /boot/firmware /boot; do
-    [ -b /dev/sda1 ] || continue
+    [ -b "$USB_DEVICE"1 ] || continue
     [ -d "$MSD_DIR/$boot" ] || continue
-    if grep "$boot " "$MSD_DIR"/etc/fstab; then
+    if grep "$boot " "$MSD_DIR"/etc/fstab > /dev/null; then
       echo "I: mount $boot to $MSD_DIR$boot"
-      mount /dev/sda1 "$MSD_DIR/$boot"
+      mount "$USB_DEVICE"1 "$MSD_DIR/$boot"
       break
     fi
     # fall through
     boot=
   done
-  if [ "$boot" = "" ]; then
-    boot=/boot/meta-data
-    RMDIR_BOOT=y
-    mkdir -p "$MSD_DIR/$boot"
-    mount /dev/sda1 "$MSD_DIR/$boot"
+  if [ -z "$boot" ]; then
+    echo "E: could not if if 1st partitioan is /boot or /boot/firmware, ABORT" >&2
+    exit 1
   fi
+  BOOT_PART="$USB_DEVICE"1
+  BOOT_UUID="$(blkid -o value -s UUID "$BOOT_PART")"
+  BOOT_TYPE="$(blkid -o value -s TYPE "$BOOT_PART")"
+  ROOTFS_PART="$USB_DEVICE"2
+  ROOTFS_UUID="$(blkid -o value -s UUID "$ROOTFS_PART")"
+  ROOTFS_TYPE="$(blkid -o value -s TYPE "$ROOTFS_PART")"
 
   # copy over files, retaining permissions
   # permission changes need to be done via patch.sh
@@ -147,5 +172,10 @@ patchNode() {
 if [ ! "$ASSUME_MSD" = y ]; then
   CLEANUP_TRAP="${CLEANUP_TRAP%[;:]}; off $NODE"
   msd $NODE
+fi
+if [ "$BOOT" = y ]; then
+  CLEANUP_TRAP="${CLEANUP_TRAP%[;:]}; [ ! \$rs = 0 ] || on $NODE"
+elif [ "$BOOT" = F ]; then
+  CLEANUP_TRAP="${CLEANUP_TRAP%[;:]}; [ ! \$rs = 0 ] || RK1-Boot-from-eMMC $NODE"
 fi
 patchNode "$PATCH_DIR" "$NODE"
