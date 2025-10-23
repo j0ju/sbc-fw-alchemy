@@ -1,0 +1,15 @@
+## template:jinja
+# Your system has configured 'manage_etc_hosts' as True.
+# a.) make changes to the master file in /etc/cloud/templates/hosts.alpine.tmpl
+
+127.0.0.1 {{fqdn}} {{hostname}}
+::1 {{fqdn}} {{hostname}}
+
+127.0.0.1 localhost.localdomain localhost
+::1 localhost.localdomain localhost
+
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts

@@ -1,0 +1,4 @@
+# no passwd
+%wheel ALL=(ALL) NOPASSWD: ALL
+# user passwd
+#%wheel ALL=(ALL) ALL
