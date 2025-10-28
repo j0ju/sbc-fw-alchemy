@@ -1,0 +1,6 @@
+# fixes of /tmp and cleanup lefovers
+  umount $ROM/$OVERLAY 2> /dev/null || :
+  umount $ROM/$ROM 2> /dev/null || :
+  umount $ROM/proc 2> /dev/null || :
+  umount $ROM/sys 2> /dev/null || :
+  umount $ROM/run 2> /dev/null || :

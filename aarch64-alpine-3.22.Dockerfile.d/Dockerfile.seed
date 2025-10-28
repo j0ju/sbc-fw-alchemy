@@ -32,3 +32,8 @@ CMD \
     exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
   exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
 : # eo CMD
+
+# recipes
+RECIPE cleanup.remove-platform-dirs
+RECIPE alpine/etckeeper
+RECIPE alpine/cleanup.unlink-overloaded-busybox-applets

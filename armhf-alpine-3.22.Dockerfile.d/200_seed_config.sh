@@ -61,7 +61,7 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
-    echo " * /$f"
+    #echo " * /$f"
   done
 
 # change shell to bash
@@ -71,9 +71,10 @@ sed -i -re '/^root/ s|/sh|/bash|' /target/etc/passwd
 mkdir -p /target/usr/local/sbin /target/usr/local/bin
 
 # update rc-files
-chroot /target /usr/local/sbin/update-rc 1> /dev/null
+! [ -x /target/usr/local/sbin/update-rc ] || \
+  chroot /target /usr/local/sbin/update-rc 1> /dev/null
 
 ! chroot /target which etckeeper || \
   chroot /target etckeeper commit "${0##*/} finish"
-# FIXME: why? the commit is successful 
+# FIXME: why? the commit is successful
 rm -f /target/etc/.git/HEAD.lock

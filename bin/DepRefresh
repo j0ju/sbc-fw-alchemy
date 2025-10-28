@@ -35,7 +35,7 @@ for TARGET; do
           TARGET="${TARGET%/}"
           TARGET="${TARGET%.Dockerfile.d}"
 
-          rm -vf .deps/$TARGET.d input/$TARGET.Dockerfile 
+          rm -vf .deps/$TARGET.d input/$TARGET.Dockerfile
           ;;
 
       # TODO:
@@ -53,4 +53,4 @@ for TARGET; do
   esac
 done
 
-
+make dep

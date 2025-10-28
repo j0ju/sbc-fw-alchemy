@@ -1,0 +1,93 @@
+#!/sbin/openrc-run
+
+description="mount MMC data partition"
+
+depend() {
+  need localmount dev
+}
+
+# can be overriden in /etc/conf.d/mmc
+FILTER=${FILTER:-LABEL=mmc-data}
+LABEL="${FILTER#LABEL=}"
+DISCARD=${DISCARD:-no}
+ATIME="${ATIME:-noatime}" # relatime, or atime if you want holes to be writen into you mmc cards ;)
+RO="${RO:-no}"
+
+extra_commands="ro rw status stat st reload"
+
+start() {
+  ebegin "searching for data partition on MMC/SD - $FILTER"
+  eval "$(blkid -t $FILTER -o export)"
+  rc=$?
+  eend $rc
+
+  ebegin "mount $DEVNAME to /mmc"
+  [ -d /mmc ] || \
+    mkdir -p /mmc
+
+  mount -t $TYPE "$DEVNAME" /mmc
+  rc=$?
+
+  reload
+
+  eend $rc
+
+  # in case we have data and initscript in /mmc
+  rc-update -u
+
+  return $rc
+}
+
+reload() {
+  case "$RO" in
+    yes ) ro ;;
+    no  ) rw ;;
+  esac
+
+  if [ "$DISCARD" = yes ]; then
+    # might fail, but this might just mean discard is not supported by the FS
+    # or the mmc card does not support it
+    findmnt $FILTER -n -o TARGET | while read m; do
+      mount -o remount,discard $m || \
+        echo "setting discard FAILED ($m)"
+    done
+  fi
+  findmnt $FILTER -n -o TARGET | while read m; do
+    mount -o remount,$ATIME $m || \
+      echo "setting atime to '$ATIME' FAILED ($m)"
+  done
+}
+
+stop() {
+  ebegin "unmount /mmc"
+  while umount /mmc 2> /dev/null; do : ; done
+  grep " /mmc " /proc/mounts > /dev/null
+  rc=$?
+  case "$rc" in
+    0 ) eend 1 ;;
+    * ) eend 0 ;;
+  esac
+}
+
+ro() {
+  findmnt $FILTER -n -o TARGET | while read m; do
+    mount -o remount -r "$m" || \
+    echo "remounting read-only FAILED ($m)"
+  done
+}
+
+rw() {
+  findmnt $FILTER -n -o TARGET | while read m; do
+    mount -o remount -w "$m" || \
+    echo "remounting read-write FAILED ($m)"
+  done
+}
+
+status() { st "$@"; }
+stat() { st "$@"; }
+st() {
+  findmnt $FILTER
+}
+
+
+# vim: ts=2 et sw=2 ft=sh

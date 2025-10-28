@@ -1,22 +1,18 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
-FROM sbc:armhf-alpine-3.22 AS alpine
-FROM sbc:turingpi2
-
-# keep imported build /vanilla rom with original bmcd and tpi
-RUN mv /target /vanilla
+FROM sbc:turingpi2 AS donor
+FROM sbc:armhf-alpine-3.22
 
 # start /target with fresh armhf alpine
-COPY --from=alpine /target/ /target
-COPY --from=alpine /target.busybox.static /
+COPY --from=donor /target/ /donor
 
 COPY input/artifacts/turingpi2-alpine-bmcd.tar.zst /
 
 # populate modules and boot from vanilla
-RUN set -e; \
+RUN set -e; umask 022; \
   rm -rf /target/boot /target/lib/modules ;\
-  cp -a /vanilla/lib/modules /target/lib/modules ;\
-  cp -a /vanilla/boot /target/boot ;\
+  cp -a /donor/lib/modules /target/lib/ ;\
+  cp -a /donor/boot /target/ ;\
   chown -R 0:0 /target/boot/* ;\
   cp -a /target.busybox.static /target/sbin/busybox.static ;\
 : EO RUN
