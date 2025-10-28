@@ -31,6 +31,7 @@ PKGS="$PKGS
   nftables
     nftables-openrc nftables-vim
   jq
+  libgpiod
 "
 
 PKGS="$PKGS
