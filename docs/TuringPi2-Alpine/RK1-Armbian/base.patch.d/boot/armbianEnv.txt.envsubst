@@ -1,0 +1,10 @@
+verbosity=1
+bootlogo=false
+console=serial
+extraargs=
+overlay_prefix=rockchip-rk3588
+fdtfile=rockchip/rk3588-turing-rk1.dtb
+rootdev=UUID=$ROOTFS_UUID
+rootfstype=auto
+docker_optimizations=off
+usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u

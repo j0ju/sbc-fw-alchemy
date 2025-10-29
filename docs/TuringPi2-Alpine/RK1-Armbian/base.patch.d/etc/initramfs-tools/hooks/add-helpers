@@ -1,0 +1,57 @@
+#!/bin/bash
+# Managed by Ansible - roles/crypt-rootfs - templates/initramfs-tools-hooks-add-helpers.j2
+
+PREREQ="busybox add-busybox-applets"
+
+CMDS=
+CMDS="$CMDS openvt chvt deallocvt fgconsole"
+CMDS="$CMDS mountpoint"
+CMDS="$CMDS strace ltrace ldd"
+CMDS="$CMDS flashrom"
+
+CMDS="$CMDS wipefs"
+CMDS="$CMDS gdisk cfdisk fdisk sgdisk sfdisk"
+CMDS="$CMDS e2fsck tune2fs mke2fs"
+CMDS="$CMDS btrfs mkfs.btrfs fsck.btrfs"
+CMDS="$CMDS mkfs.vfat mkfs.exfat mkfs.ntfs mkfs.minix mkfs.f2fs"
+CMDS="$CMDS fsck.vfat fsck.exfat fsck.minix fsck.f2fs"
+CMDS="$CMDS ntfsfix ntfsclone"
+CMDS="$CMDS testdisk fidentify photorec"
+
+CMDS="$CMDS gpm"
+CMDS="$CMDS tcpdump"
+CMDS="$CMDS mii-tool ethtool rfkill"
+CMDS="$CMDS pkill pgrep killall ps"
+CMDS="$CMDS iostat"
+CMDS="$CMDS htop"
+CMDS="$CMDS ddrescue"
+CMDS="$CMDS ip vconfig brctl bridge"
+CMDS="$CMDS run-parts"
+CMDS="$CMDS tty reset stty"
+CMDS="$CMDS minicom rz sz rx sx"
+CMDS="$CMDS keyctl"
+CMDS="$CMDS flock"
+CMDS="$CMDS pv"
+CMDS="$CMDS lsblk blkid"
+CMDS="$CMDS ping traceroute traceroute6"
+CMDS="$CMDS curl wget"
+
+CMDS="$CMDS gzip pigz xz pixz zstd bzip2 lzop"
+
+prereqs() { echo "$PREREQ"; exit 0; }
+[ "$1" = "prereqs" ] && prereqs
+. /usr/share/initramfs-tools/hook-functions
+
+echo "I: add '$0'"
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+for cmd in $CMDS; do
+  if file="$(which "$cmd")"; then
+    rm -f "$DESTDIR/$file"
+    copy_exec "$file"
+  else
+    echo "W: warning '$cmd' not avail, thus not installed into initrd" >&2
+  fi
+done
+
+# vim: ft=sh sw=2 ts=2 et fdm=marker fmr=#{,#}

@@ -1,0 +1,11 @@
+version: 2
+ethernets:
+  all-ethernets:
+    dhcp4: false
+    dhcp6: false
+    accept-ra: yes
+    optional: true
+    match:
+      name: "eth*"
+    addresses:
+      - fd80:141:314:0::$NODE/64

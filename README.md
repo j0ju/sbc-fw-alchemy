@@ -120,9 +120,3 @@
  This depacks the image to the tar file `input/unknown-beauty.tar` for easier use.
  To create a docker image from this tar use `make .deps/unknown-beauty.built` and use `IRun unknown-beauty bash -`.
  The contents of the image can be found in /target inside of the running docker container.
-
-# Ideas & Plans
-
- * integrate builds via buildroot inside of the docker container
- * make use of ansible in sbc:image-mangler provide further settings and channels for the R1CBU app
-

@@ -1,0 +1,61 @@
+#!/bin/sh
+set -e
+#set -x
+
+#- adapt tmpfs sizes
+  mount -o remount,size=16M   /dev     2> /dev/null || :
+  mount -o remount,size=128M  /run     2> /dev/null || :
+  mount -o remount,size=1024M /tmp     2> /dev/null || :
+  mount -o remount,size=1024M /var/tmp 2> /dev/null || :
+
+#- unbind mmc if not rootfs
+  if ! grep " / " /proc/mounts | grep "mmcblk0p" > /dev/null; then
+    if echo "mmc0:0001" > /sys/class/block/mmcblk0/device/driver/unbind 2> /dev/null; then
+      echo "I: unbind /dev/mmcblk0"
+    fi 2> /dev/null
+  fi
+
+#- ensure block device scheduler
+  sched_default=kyber #mq-deadline
+  sched_disk=kyber    #mq-deadline
+  sched_vm=mq-deadline
+
+  for f in /sys/block/*/queue/scheduler; do
+    sched="$sched_default"
+    dev="${f#/sys/block/}"; dev="${dev%%/*}"
+    case "$dev" in
+    #=== real block devices ==== #
+      sd[a-z] | sd[a-z][a-z] |  \
+      nvme[0-9]                  )
+        sched="$sched_disk"
+        ;;
+    #=== child / virtual block devices ==== #
+      dm-[0-9]*     | \
+      loop[0-9]*    | \
+      md[0-9]*      | \
+      zd[0-9]*      | \
+      zram[0-9]*    | \
+      ram[0-9]*     | \
+      sd[a-z][0-9]* | sd[a-z][a-z][0-9]* )
+        sched=none
+        ;;
+      xvda[a-z] | xvda[a-z][a-z] )
+        sched="$sched_vm"
+    esac
+    echo "$sched" > $f
+  done
+
+  echo "I: configured schedulers"
+  grep -o '\[[^]]\+\]' /sys/block/*/queue/scheduler | \
+    ( g=
+      while IFS=":" read d s; do
+        s=${s%]}; s=${s#[}
+        d="${d#/sys/block/}"; d="${d%/queue/scheduler}"
+        eval "$s=\"\$$s \${d# }\""
+        g="$g $s"
+      done
+      for s in $g; do
+        eval "echo '  $s: '\$$s"
+      done
+    ) | \
+      sort -u

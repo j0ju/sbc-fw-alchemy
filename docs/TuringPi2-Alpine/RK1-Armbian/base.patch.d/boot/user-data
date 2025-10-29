@@ -1,0 +1,54 @@
+#cloud-config
+
+hostname: armbian
+
+users:
+  - default
+
+user:
+  name: armbian
+  gecos: armbian
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  groups: users, admin, sudo
+  lock_passwd: true
+  ssh_authorized_keys: []
+
+# disable
+package_update: false
+package_upgrade: false
+
+runcmd:
+  # do not resize the partitions
+  - [ cloud-init-per, once, resize_part, growpart, /dev/mmcblk0, '2' ]
+  - |
+    export LC_ALL=C LANG=C
+    PS4="runcmd: "; set -ex; trap `exit $?` EXIT
+    set -x
+    : -- de-couple my PID from units cgroup, to prevent being killed by systemd
+    echo $$ > /sys/fs/cgroup/cgroup.procs
+    (
+    #- wait for cloud-init to be finished
+      while : -- "unbind PID $$ from systemd service and wait for cloud-final to be done"; do
+        sleep 7
+        ! systemctl status cloud-final.service | grep exited > /dev/null || \
+          break
+      done
+      
+    #- cloud init will re-run every time booted from mmc
+      cloud-init clean
+
+    #- wait for default route and DNS, tested via ping
+      while ! ping -6 -c 1 ubuntu.com > /dev/null 2>&1; do sleep 3; done
+    #- try to fetch the sources 3 times
+      for i in 1 2 3; do
+        ! apt-get update || \
+          break
+        sleep $(( i * 3 ))
+      done
+
+    #- run runcmd.ci.sh
+      if [ -r /boot/runcmd.ci.sh ]; then
+        sh -eu /boot/runcmd.ci.sh
+      fi
+    ) &
+# vim: ft=yaml sw=2 ts=2 et

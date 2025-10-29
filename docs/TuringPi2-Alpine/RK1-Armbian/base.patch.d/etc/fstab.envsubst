@@ -1,0 +1,5 @@
+# /etc/fstab
+UUID=$ROOTFS_UUID                        /         $ROOTFS_TYPE relatime,commit=120,errors=remount-ro 0 1
+UUID=$BOOT_UUID                          $boot     $BOOT_TYPE   defaults                              0 2
+tmpfs                                    /tmp      tmpfs        nosuid          0 0
+/tmp                                     /var/tmp  auto         bind            0 0

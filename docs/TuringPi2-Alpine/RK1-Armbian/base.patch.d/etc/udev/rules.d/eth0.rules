@@ -1,0 +1,3 @@
+# this renames the randomly flipping end0/end1 device to eth0 again
+
+SUBSYSTEM=="net", NAME=="end[01]", NAME="eth0"
