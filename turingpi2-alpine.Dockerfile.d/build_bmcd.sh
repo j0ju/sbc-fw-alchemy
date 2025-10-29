@@ -27,7 +27,7 @@ umask 022
   BMCUI_BLOB="https://github.com/turing-machines/BMC-UI/releases/download/${BMCUI_VERSION}/bmc-ui-${BMCUI_VERSION}.tar.gz"
 
   TPI_GIT=https://github.com/turing-machines/tpi.git
-  
+
   ROOT=/workspace/alpine.build-bmcd
 
 #- ensure build env
@@ -98,4 +98,9 @@ chroot "$ROOT" /bin/sh -eu <<EOchroot
 EOchroot
 
 mkdir -p  /src/"${1%/*}"
+: > /src/"$1"
+[ -z "$OWNER" ] || \
+  chown "$OWNER${GROUP:+:$GROUP}" /src/"$1" /src/"${1%/*}"
+
 chroot "$ROOT" tar cf - "$PREFIX" | zstd > /src/"$1"
+
