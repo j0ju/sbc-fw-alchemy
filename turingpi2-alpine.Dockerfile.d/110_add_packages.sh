@@ -19,8 +19,6 @@ PKGS="$PKGS
   u-boot-tools
   usbutils hwids-usb
   busybox-mdev-openrc
-  f2fs-tools e2fsprogs dosfstools mtools
-  sfdisk sgdisk partx blkid wipefs
   kmod
   mount
   wget
@@ -34,8 +32,6 @@ PKGS="$PKGS
 
 # network core
 PKGS="$PKGS
-  ifupdown-ng ifupdown-ng-iproute2 ifupdown-ng-wireguard ifupdown-ng-wireguard-quick
-  openresolv
   avahi avahi-tools
   rdnssd
   keepalived
@@ -46,6 +42,7 @@ PKGS="$PKGS
 PKGS="$PKGS
   vim
   tmux
+  screen
   minicom
   pv
 "
