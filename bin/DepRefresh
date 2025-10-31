@@ -44,6 +44,12 @@ for TARGET; do
       #    TARGET="${TARGET%.Workspace.d}"
       #    ;;
       #*.tgz.url ) TARGET="${TARGET%.tgz.url}" ;;
+
+      * )
+        if [ -d "$TARGET.Dockerfile.d" ]; then
+          rm -vf .deps/$TARGET.d input/$TARGET.Dockerfile
+        fi
+        ;;
   esac
 done
 
