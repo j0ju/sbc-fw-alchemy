@@ -1,0 +1,14 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+# vim: ts=4 sw=2 noet
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+output/rk1-alpin%.img: output/rk1-alpin%.rootfs.tar.zst rk1-alpine.Dockerfile.d/gen-flat-overlayed-sdcard-img.sh
+	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
+	$(Q) mkdir -p output
+	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) rk1-alpine.Dockerfile.d/gen-flat-overlayed-sdcard-img.sh $< $@
+
+output/rk1-alpin%.sqfs: .deps/rk1-alpin%.built bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh
+	$(E) "SQUASHFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=))"
+	$(Q) mkdir -p output
+	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh $@

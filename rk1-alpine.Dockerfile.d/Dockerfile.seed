@@ -1,0 +1,24 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: #onestep
+
+FROM sbc:rk1-trixie-edge AS donor
+FROM sbc:aarch64-alpine-3.22
+
+# keep imported build /vanilla rom with original bmcd and tpi
+COPY --from=donor /target/part1                                       /target/boot
+COPY --from=donor /target/part2/lib/modules                           /target/lib/modules
+COPY --from=donor /target/part2/lib/firmware                          /target/lib/firmware
+COPY --from=donor /target/part2/usr/lib/linux-u-boot-edge-turing-rk1  /target/usr/lib/linux-u-boot-edge-turing-rk1
+
+RUN set -e; umask 022; \
+  cp -a /target.busybox.static /target/sbin/busybox.static; \
+: EO RUN
+
+# recipes
+RECIPE alpine/SBC+openrc-init+overlay
+RECIPE alpine/ifupdown-ng
+RECIPE alpine/ifupdown-ng.update-executors
+RECIPE alpine/sshd
+RECIPE alpine/chronyd
+RECIPE alpine/cloud-init
+RECIPE alpine/cleanup.unlink-overloaded-busybox-applets
