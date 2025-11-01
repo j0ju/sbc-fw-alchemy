@@ -160,7 +160,6 @@ find_usb_device() {
 
 write_image() {
   local PS4="${0##*/}::write_image: "
-  set -x
   CLEANUP_TRAP="off $node"
   msd "$node"
   find_usb_device
