@@ -22,11 +22,11 @@ ENV \
   LC_MEASUREMENT=C.UTF-8 \
   LC_IDENTIFICATION=C.UTF-8
 
-# merge imported partitions together
+# merge imported partitions together and create workspace in /
+# instead of /target so DKMS can run
 # /target/part1 /
 # /target/part15 /boot/efi
 COPY img-mangler/merge-to-root.sh /target/mv.sh
-
 RUN set -ex ; \
   mv /target/part15/* /target/part1/boot/efi ; \
   mv /target /target.old ; \
@@ -34,7 +34,6 @@ RUN set -ex ; \
   sh /target.old/mv.sh ; \
   rm -rf /target.old ; \
 : EO RUN
-
 ENV \
   DST=/
 
