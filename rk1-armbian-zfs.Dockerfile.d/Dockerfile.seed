@@ -1,0 +1,42 @@
+# (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: #onestep
+
+FROM sbc:rk1-armbian
+
+# set environment - all build containers inherit this
+ENV \
+  DEBIAN_FRONTEND=noninteractive \
+  DEBIAN_CHROOT=docker \
+  LANG=C.UTF-8 \
+  LANGUAGE=C.UTF-8 \
+  LC_CTYPE=C.UTF-8 \
+  LC_NUMERIC=C.UTF-8 \
+  LC_TIME=C.UTF-8 \
+  LC_COLLATE=C.UTF-8 \
+  LC_MONETARY=C.UTF-8 \
+  LC_MESSAGES=C \
+  LC_PAPER=C.UTF-8 \
+  LC_NAME=C.UTF-8 \
+  LC_ADDRESS=C.UTF-8 \
+  LC_TELEPHONE=C.UTF-8 \
+  LC_MEASUREMENT=C.UTF-8 \
+  LC_IDENTIFICATION=C.UTF-8
+
+# merge imported partitions together and create workspace in /
+# instead of /target so DKMS can run
+# /target/part1 /
+# /target/part15 /boot/efi
+COPY img-mangler/merge-to-root.sh /target/mv.sh
+RUN set -ex ; \
+  sh /target/mv.sh ;\
+  mv /busybox.static /sbin ;\
+  rm /mv.sh ;\
+: EO RUN
+ENV \
+  DST=/
+
+#-
+# run scripts that do the modifications steps in one layer
+# * moving files around - see # copy scripts & outoftree resources above
+# * adding stuff, etc
+#-
