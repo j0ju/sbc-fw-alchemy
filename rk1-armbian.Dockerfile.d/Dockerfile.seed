@@ -1,0 +1,9 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: #onestep
+
+FROM sbc:rk1-trixie-edge AS donor
+FROM sbc:img-mangler
+
+# keep imported build /vanilla rom with original bmcd and tpi
+COPY --from=donor /target/part1                                       /target/boot
+COPY --from=donor /target/part2                                       /target
