@@ -13,6 +13,7 @@ chroot /target \
     dnsmasq \
     libgpiod \
     squashfs-tools \
+    rdnssd \
 # EO chroot /target apk add
 
 rm -f /target/etc/.git/HEAD.lock

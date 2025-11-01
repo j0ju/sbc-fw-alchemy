@@ -97,6 +97,7 @@ rc-update add networking default
 rc-update add sshd default
 rc-update add avahi-daemon default
 rc-update add chronyd default
+rc-update add rdnssd default
 
 rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
