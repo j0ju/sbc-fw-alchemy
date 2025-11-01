@@ -100,7 +100,7 @@ to_overlay() {
 
 exec_init() {
   PS4="${0}[$$]::exec_init(): "
-  set -x
+  #set -x
   trap emergency_console EXIT
   init=/sbin/init
 
