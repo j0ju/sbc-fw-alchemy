@@ -34,6 +34,7 @@ CMD \
 : # eo CMD
 
 # recipes
+RECIPE alpine/SBC-base
 RECIPE cleanup.remove-platform-dirs
 RECIPE alpine/etckeeper
 RECIPE alpine/cleanup.unlink-overloaded-busybox-applets

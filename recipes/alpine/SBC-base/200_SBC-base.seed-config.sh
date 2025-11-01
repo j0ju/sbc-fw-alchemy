@@ -67,6 +67,15 @@ find . ! -type d | \
 # change shell to bash
 sed -i -re '/^root/ s|/sh|/bash|' /target/etc/passwd
 
-chroot /target etckeeper commit "${0##*/} finish"
-# FIXME: why? the commit is successful 
+# ensure *bin below /usr/local
+mkdir -p /target/usr/local/sbin /target/usr/local/bin
+
+# update rc-files
+! [ -x /target/usr/local/sbin/update-rc ] || \
+  chroot /target /usr/local/sbin/update-rc 1> /dev/null
+
+! chroot /target which etckeeper || \
+  chroot /target etckeeper commit "${0##*/} finish"
+
+# FIXME: why? the commit is successful
 rm -f /target/etc/.git/HEAD.lock

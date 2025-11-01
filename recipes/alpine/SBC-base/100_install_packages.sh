@@ -7,12 +7,10 @@ PS4='> ${0##*/}: '
 
 PKGS=" \
   bash \
-  mc vim minicom tmux minicom \
+  mc vim tmux minicom \
   avahi avahi-tools \
   openresolv \
   kmod \
-  git \
-    git-bash-completion \
   curl wget \
   mtr tcpdump \
     mtr-bash-completion \
@@ -26,7 +24,6 @@ PKGS=" \
   bash-completion \
     alpine-repo-tools-bash-completion \
     procs-bash-completion \
-    wireguard-tools-bash-completion \
   openssl \
   busybox-openrc busybox-mdev-openrc \
 "
