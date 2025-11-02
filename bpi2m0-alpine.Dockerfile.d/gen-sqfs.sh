@@ -14,7 +14,7 @@ rm -f /target/etc/.etckeeper
 find /target/etc/ -name "*.apk-*" -o -name "*.dpkg-*" -o -name "*.ucf-*" -o -name "*-" -delete
 ln -s ../run/resolv.conf /target/etc/resolv.conf
 
-rm -rf /target/run /target/tmp
+rm -rf /target/run /target/tmp /target/usr/share/doc
 mkdir /target/run /target/tmp
 chmod 1777 /target/tmp
 chmod 0755 /target/run
