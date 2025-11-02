@@ -26,7 +26,10 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
 
   #- cleanup
   trap cleanup_stage0 EXIT
-  ( set +x; cleanup_stage0 )
+  case "$SQFS" in
+    $WORKDIR* ) ;;
+    * )         ( set +x; cleanup_stage0 ) ;;
+  esac
 
   #- prepare tmpfs
   mkdir -p "$WORKDIR/overlay" "$WORKDIR/rom" "$WORKDIR/rootfs"
@@ -99,7 +102,10 @@ cleanup_stage0() { # cleanup handler for stage0
     while umount $m 2>/dev/null; do :; done
   done
   kill -HUP 1
-  rm -rf "$WORKDIR"
+  case "$SQFS" in
+    $WORKDIR* ) ;;
+    * )         rm -rf "$WORKDIR" ;;
+  esac
   exit $rs
 }
 
