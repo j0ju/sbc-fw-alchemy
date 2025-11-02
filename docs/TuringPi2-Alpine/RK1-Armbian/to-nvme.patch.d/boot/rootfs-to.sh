@@ -60,7 +60,7 @@ set -x
     blkdiscard -f "$TARGET_DEV" 2> /dev/null || :
     wipefs -af "$TARGET_DEV$PART_SEP"* 2> /dev/null || :
     wipefs -af "$TARGET_DEV"
-    ( echo "label: gpt"         
+    ( echo "label: gpt"
       echo "${BOOT_OFFSET},${BOOT_SIZE},U"
       echo ",${ROOT_SIZE},L"
     ) | sfdisk "$TARGET_DEV" 1> /dev/null
@@ -150,11 +150,6 @@ set -x
   tar cf - --one-file-system --acls --xattrs --numeric-owner -C / . ./boot /dev | \
     tar xf - --acls --xattrs --numeric-owner -C "$ROOT_DIR"
 
-#- rescue initial /boot to root partitions
-  mount -o bind "$ROOT_DIR" "$ROOT_DIR/mnt"
-  tar cf - --one-file-system --acls --xattrs --numeric-owner -C / ./boot | \
-    tar xf - --acls --xattrs --numeric-owner -C "$ROOT_DIR/mnt"
-
 #- disable cloud init
   echo "disabled after rock chip install" > "$ROOT_DIR"/etc/cloud/cloud-init.disabled
 
@@ -168,11 +163,16 @@ set -x
   if [ "$FS" = btrfs ]; then
     echo "# FS=btrfs"
     echo "$ROOT_FSTAB_ENTRY /.btrfs $FS noauto,$ROOT_OPTS,subvol=/ 0 1"
-    mkdir -p "$ROOT_DIR/.btrfs
+    mkdir -p "$ROOT_DIR/.btrfs"
   fi >> "$ROOT_DIR/etc/fstab"
 
 #- adapt /boot/armbianEnv.txt
-  sed -i -r -e "/rootdev=/ s/=.*$/=$ROOT_CMDLINE/" $ROOT_DIR//boot/armbianEnv.txt
+  sed -i -r -e "/rootdev=/ s/=.*$/=$ROOT_CMDLINE/" "$ROOT_DIR"/boot/armbianEnv.txt
+
+#- rescue initial /boot to root partitions
+  mount -o bind "$ROOT_DIR" "$ROOT_DIR/mnt"
+  tar cf - --one-file-system --acls --xattrs --numeric-owner -C "$ROOT_DIR" ./boot | \
+    tar xf - --acls --xattrs --numeric-owner -C "$ROOT_DIR/mnt"
 
 #- cleanup
   rm -rf         "$ROOT_DIR"/tmp "$ROOT_DIR"/var/tmp "$ROOT_DIR"/log "$ROOT_DIR"/run
@@ -184,4 +184,4 @@ set -x
 #- write uboot
   # from /usr/lib/u-boot/platform_install.sh
   UBOOT_DIR=/usr/lib/linux-u-boot-edge-turing-rk1
-  dd "if=$UBOOT_DIR/u-boot-rockchip.bin" "of=$TARGET_DEV" bs=32k seek=1 conv=notrunc status=none
+  dd if="$UBOOT_DIR/u-boot-rockchip.bin" of="$TARGET_DEV" bs=32k seek=1 conv=notrunc status=none
