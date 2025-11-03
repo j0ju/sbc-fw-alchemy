@@ -1,0 +1,2 @@
+if net.len < 64 then reject;
+if ifname ~ "mgmt" then accept;
