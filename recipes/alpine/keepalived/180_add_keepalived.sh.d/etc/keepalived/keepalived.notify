@@ -1,0 +1,71 @@
+#!/bin/sh
+# NOT Managed by Ansible - roles/keepalived - templates/fifo.sh - roles/keepalived
+set -eu
+
+#exec 2> /tmp/keepalived.notify.trace 1>&2; set -x
+
+FIFO="$1"
+SCRIPT="${0##*/}"
+log() {
+  logger -t "$SCRIPT[$$]" "$*"
+}
+
+trap 'rs=$?; log EXIT $rs; exit $rs' HUP INT QUIT USR1 USR2 PIPE TERM
+
+if [ ! -p "$FIFO" ]; then
+  mkfifo "$FIFO"
+fi
+
+# If keepalived terminates, the FIFO will be closed, so
+# read the FIFO in a loop. It keepalived hasn't opened the
+# FIFO, the script will be blocked until it has been opened.
+
+cd /var/run/keepalived
+
+while :; do
+  if ! [ -p "$FIFO" ]; then
+    log "FIFO $FIFO missing"
+    exit 1
+  fi
+
+  while read line; do
+    log $line
+    set $line
+    STATEFILE=
+    STATE=
+    while [ ! $# = 0 ]; do
+      v="${2:-}"
+      v="${v#\"}"
+      v="${v%\"}"
+      case "$1" in
+        INSTANCE | GROUP )
+          STATEFILE="$1:$v"
+          eval "$1='${v}'"
+          shift > "$STATEFILE"
+          ;;
+        MASTER | \
+        MASTER_RX_LOWER_PRI | \
+        FAULT | \
+        BACKUP )
+          eval "$1='${v}'"
+          echo "$1:${v}" >> "$STATEFILE"
+          STATE="$1"
+          shift
+          ;;
+        * )
+          log "unknown state: '${1:-}'='${2:-}'"
+          shift
+          continue
+          ;;
+      esac
+      shift
+    done
+    if [ -r "/etc/keepalived/lib/$INSTANCE.$STATE.sh" ]; then
+      . "/etc/keepalived/lib/$INSTANCE.$STATE.sh"
+    fi & # <<<<<------ !!!! :)
+  done < "$FIFO"
+done
+
+exit 0
+
+# vim: ts=2 sw=2 et

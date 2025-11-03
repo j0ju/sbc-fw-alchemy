@@ -1,0 +1,8 @@
+# dummy interface for keepalived, bird, etc ...
+
+auto dummy0
+iface dummy0
+    ipv6-ll yes
+    pre-up modprobe dummy
+
+# vim: ts=2 sw=2 et foldmethod=indent
