@@ -23,7 +23,7 @@ done
   set -- ""
 for SUFFIX; do
   for d in $DIRS; do
-    ls -1d "$d"
-  done | \
-    sed -e 's|^|output/|' -e 's/.Dockerfile.d/.'"$SUFFIX"'/'
+    ls -1d "$d" | \
+      sed -e "s|^|${SUFFIX:+output/}|" -e "s|.Dockerfile.d|${SUFFIX:+.$SUFFIX}|"
+  done
 done
