@@ -42,7 +42,6 @@ find . ! -type d | \
   done
 
 # update rc-files
-chroot /target /usr/local/sbin/update-rc 1> /dev/null
 chroot /target rc-update add chronyd default 1> /dev/null
 
 ! chroot /target which etckeeper > /dev/null 2>&1 || \
