@@ -5,7 +5,7 @@ include Makefile.Dockerfile.generic
 NAME := sbc
 
 # include SBC specific targets
--include *.d/Makefile.ext
+-include */Makefile.ext
 
 # allow local config overrides, like in main Makefile used above
 -include config

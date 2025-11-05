@@ -6,7 +6,7 @@ umask 022
 IMAGE="$1"
 
 COMPRESSOR="${COMPRESSOR:-zstd}" # xz
-BLOCKSIZE="${BLOCKSIZE:-1024k}"  # 256k 512k
+BLOCKSIZE="${BLOCKSIZE:-512k}"   # 256k 512k
 
 rm -f /target/etc/resolv.conf
 find /target/ -name ".git" -exec rm -rf {} +

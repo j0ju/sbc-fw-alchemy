@@ -9,8 +9,3 @@ output/bpi2m0-alpin%.sqfs.img: output/bpi2m0-alpin%.rootfs.tar.zst bpi2m0-alpine
 	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=))" MULTIBOOT
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
-
-output/bpi2m0-alpin%.sqfs: .deps/bpi2m0-alpin%.built bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh
-	$(E) "SQUASHFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=))"
-	$(Q) mkdir -p output
-	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-sqfs.sh $@
