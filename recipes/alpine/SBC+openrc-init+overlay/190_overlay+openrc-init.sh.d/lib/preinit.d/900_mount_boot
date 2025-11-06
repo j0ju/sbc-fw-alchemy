@@ -1,6 +1,4 @@
 #- ensure active /boot of current running rom is mounted /boot
   if mountpoint /rom/mnt > /dev/null && [ -d /rom/mnt/boot ]; then
     mount -o bind /rom/mnt/boot /boot
-  else
-    mount -o bind /rom/boot /boot
   fi

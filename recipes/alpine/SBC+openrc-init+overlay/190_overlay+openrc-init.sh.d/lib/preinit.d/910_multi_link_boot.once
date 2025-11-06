@@ -1,5 +1,0 @@
-#- if boot mutli image link /boot to /root/mnt/boot
-  if mountpoint /rom/mnt && [ -d /rom/mnt/boot ]; then
-    rm -rf /boot
-    ln -s rom/mnt/boot /boot
-  fi
