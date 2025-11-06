@@ -1,4 +1,0 @@
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
-
-FROM sbc:bpi2m0-alpine-next
-

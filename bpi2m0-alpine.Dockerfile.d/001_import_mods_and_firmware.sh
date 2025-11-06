@@ -25,7 +25,7 @@ PS4='> ${0##*/}: '
   cp regulatory.db.p7s-debian regulatory.db.p7s
 )
 
-#rm -f /target/boot/uboot.egn
 rm -f /target/boot/*.bmp
+rm -f /target/boot/*.egn
 
 chown -R 0:0 /target/boot/*

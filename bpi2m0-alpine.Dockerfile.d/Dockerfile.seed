@@ -1,37 +1,20 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
 
 FROM sbc:bpi2m0-armbian-bookworm AS armbian
-
 FROM sbc:armhf-alpine-3.22
-
-RUN set -eu ;\
-  rm -rf /vanilla /target/boot /target/lib/modules /target/lib/firmware
 
 # populate modules and boot from armbian
 COPY --from=armbian /target/boot /target/boot
-
 COPY --from=armbian /target/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
 COPY --from=armbian /target/lib/modules /target/lib/modules
 COPY --from=armbian /target/lib/firmware /target/lib/firmware
 
-CMD \
-  rm -f /target/etc/resolv.conf ;\
-  cp /etc/resolv.conf /target/etc/resolv.conf ;\
-  busybox mount -o bind /target /target 2> /dev/null || :; \
-  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
-  busybox mount -t runfs tmpfs /target/run 2> /dev/null || :; \
-  busybox mount -t tmpfs tmpfs /target/tmp 2> /dev/null || :; \
-  chmod 1777 /target/tmp ;\
-  ( \
-    find /target/var -type l | \
-      while read d; do \
-        l="$(readlink "$d")" ;\
-        ( cd "${d%/*}" ;\
-          mkdir -p "$l" \
-        ) ;\
-      done \
-  ) ;\
-  [ -x /target/bin/bash ] || \
-    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
-  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
-: # eo CMD
+RECIPE alpine/SBC+openrc-init+overlay
+RECIPE alpine/etckeeper
+RECIPE alpine/ifupdown-ng
+RECIPE alpine/ifupdown-ng.update-executors
+RECIPE alpine/sshd
+RECIPE alpine/chronyd
+RECIPE alpine/cloud-init
+RECIPE alpine/cleanup.unlink-overloaded-busybox-applets

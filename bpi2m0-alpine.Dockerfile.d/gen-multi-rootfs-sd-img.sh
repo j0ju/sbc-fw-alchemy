@@ -5,7 +5,7 @@ umask 022
 
 #---
 MIN_FREE_MB=${MIN_FREE_MB:-128}
-if [ -z "$IMAGE_SIZE_KB_MIN" ]; then
+if [ -z "${IMAGE_SIZE_KB_MIN:-}" ]; then
   IMAGE_SIZE_KB_MIN=$(( 640 * 1024 )) # 640M
   #IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
 fi

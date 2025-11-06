@@ -15,6 +15,9 @@ chroot /target \
     dnsmasq hostapd hostapd-openrc \
     wavemon \
     sudo doas \
+    busybox-mdev-openrc \
+    avahi avahi-openrc avahi-tools \
+    shadow \
 # EO chroot /target apk add
 
 rm -f /target/etc/.git/HEAD.lock

@@ -1,7 +1,7 @@
 # /etc/hosts
 
-127.0.0.1 bpi2m0
-::1 bpi2m0
+127.0.0.1 bpi2m0-alpine
+::1 bpi2m0-alpine
 
 127.0.0.1 localhost.localdomain localhost
 ::1 ip6-localhost ip6-loopback localhost
