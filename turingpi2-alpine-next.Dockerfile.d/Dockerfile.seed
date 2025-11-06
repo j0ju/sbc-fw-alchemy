@@ -2,4 +2,4 @@
 
 FROM sbc:turingpi2-alpine
 
-RECIPE recipes/alpine/keepalived
+RECIPE alpine/keepalived

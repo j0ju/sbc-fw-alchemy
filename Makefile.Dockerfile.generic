@@ -19,7 +19,7 @@ DOCKER_IMAGES_DEPS  := $(DOCKER_IMAGES:%=$(DEPDIR)/%.d)
 DOCKER_IMAGES_PUSH := $(filter-out $(DOCKER_IMAGES_PUSH_IGNORE),$(DOCKER_IMAGES))
 DOCKER_IMAGES_PUSH_FLAGS := $(DOCKER_IMAGES_PUSH:%=$(DEPDIR)/%.pushed)
 
-URLS := $(shell ls -1 *.url 2>/dev/null )
+URLS := $(shell cd sources; ls -1 *.url 2>/dev/null )
 URL_FILES :=  $(patsubst %,input/%,$(URLS:.url=))
 URL_DEPS :=  $(patsubst %,$(DEPDIR)/%.d,$(URLS:.url=))
 
@@ -139,7 +139,7 @@ $(DEPDIR)/%.$(VER).built: $(DEPDIR)/%.built Makefile
 		docker tag $(NAME_PFX)$(NAME):$$TAG $(NAME_PFX)$(NAME):$$TAG.$(VER) ; \
 			date > "$@"
 
-$(DEPDIR)/%.d: %.url
+$(DEPDIR)/%.d: sources/%.url
 	$(E) DEP $(<:.url=)
 	$(Q) set $(SHOPT); ( \
 		DST="input/$(<:.url=)"; DEPS="$<"; \
@@ -154,7 +154,7 @@ $(DEPDIR)/%.d: %.url
 		done; \
 	) > "$@"
 
-input/%: %.url .deps/img-mangler.built
+input/%: sources/%.url .deps/img-mangler.built
 	$(E) "WGET $@ URL: $$(cut -f 1 -d ' ' $<)"
 	$(Q) set $(SHOPT); exec $(SHREDIR); \
 		read URL CKSUM OPTS < $<; \
