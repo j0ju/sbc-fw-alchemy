@@ -1,0 +1,21 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+output/bpi2m0-alpin%.img: \
+	output/bpi2m0-alpin%.rootfs.tar.zst \
+	images/bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh \
+	#
+		$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
+		$(Q) mkdir -p output ;\
+		$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) images/bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh $< $@
+
+output/bpi2m0-alpin%.sqfs.img: \
+	output/bpi2m0-alpin%.rootfs.tar.zst \
+	output/bpi2m0-alpin%.sqfs \
+	images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
+	images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
+	#
+		$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=))" MULTIBOOT
+		$(Q) mkdir -p output
+		$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=)) sh $(SHOPT) images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+
+# vim: ft=make noet sw=2 ts=2

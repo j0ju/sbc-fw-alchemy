@@ -89,13 +89,13 @@ pkg() {
     PKG=
     case "$p" in
       /* )
-        docker exec $C sh /src/img-mangler/alpine-mk-bin-tarball.sh $p "$OUTDIR"
+        docker exec $C sh /src/lib/img-mangler/alpine-mk-bin-tarball.sh $p "$OUTDIR"
         ;;
       * )
         docker exec $C apk add $p
         PKG="$PKG $p $(docker exec $C apk info -R $p | grep =[0-9] | grep -Eo ^[^=]+ | sort -u)"
         for p in $PKG; do
-          docker exec $C sh /src/img-mangler/alpine-mk-pkg-tarball.sh $p "$OUTDIR"
+          docker exec $C sh /src/lib/img-mangler/alpine-mk-pkg-tarball.sh $p "$OUTDIR"
         done
         ;;
     esac

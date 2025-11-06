@@ -1,21 +1,21 @@
 output/%.sqfs: \
 	.deps/%.built \
-	img-mangler/gen-sqfs.sh \
+	lib/img-mangler/gen-sqfs.sh \
 	#
 		$(E) "MK SQUASHFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=))"
 		$(Q) mkdir -p output
 		$(Q) ./bin/img-mangler -p \
 					-e COMPRESSOR=xz \
 					-e BLOCKSIZE=512k \
-         --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) img-mangler/gen-sqfs.sh $@
+         --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) lib/img-mangler/gen-sqfs.sh $@
 
 output/%.erofs: \
 	.deps/%.built \
-	img-mangler/gen-erofs.sh \
+	lib/img-mangler/gen-erofs.sh \
 	#
 		$(E) "MK EROFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=))"
 		$(Q) mkdir -p output
 		$(Q) ./bin/img-mangler -p \
-		  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=)) sh $(SHOPT) img-mangler/gen-erofs.sh $@
+		  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=)) sh $(SHOPT) lib/img-mangler/gen-erofs.sh $@
 
 # vim: ft=Makefile noet sw=2 ts=2

@@ -1,11 +1,11 @@
 # - Makefile -
 # (C) 2019-2025 Joerg Jungermann, GPLv2 see LICENSE
 
-include Makefile.Dockerfile.generic
+include lib/Makefile.Dockerfile.generic
 NAME := sbc
 
 # include SBC specific targets
--include */Makefile.ext
+-include images/*.d/Makefile.ext
 
 # allow local config overrides, like in main Makefile used above
 -include config
@@ -33,18 +33,18 @@ build: $(WORK_FILES)
 	    gz=gzip ;\
 	  $$gz -dc < $< > $@
 
-%.img: %.rar img-mangler/unrar-img.sh
+%.img: %.rar lib/img-mangler/unrar-img.sh
 	$(E) "UNPACK $@ <--- $<"
-	$(Q) ./bin/img-mangler -p sh $(SHOPT) img-mangler/unrar-img.sh $< $@
+	$(Q) ./bin/img-mangler -p sh $(SHOPT) lib/img-mangler/unrar-img.sh $< $@
 
-%.img: %.zip img-mangler/unzip-img.sh
+%.img: %.zip lib/img-mangler/unzip-img.sh
 	$(E) "UNPACK $@ <--- $<"
-	$(Q) ./bin/img-mangler -p sh $(SHOPT) img-mangler/unzip-img.sh $< $@
+	$(Q) ./bin/img-mangler -p sh $(SHOPT) lib/img-mangler/unzip-img.sh $< $@
 
 #--- extract filesystems from image
-%.tar: %.img img-mangler/img-to-tar.sh
+%.tar: %.img lib/img-mangler/img-to-tar.sh
 	$(E) "IMGtoTAR $@ <--- $<"
-	$(Q) ./bin/img-mangler -p -e COMPRESSOR=cat sh $(SHOPT) img-mangler/img-to-tar.sh $< $@
+	$(Q) ./bin/img-mangler -p -e COMPRESSOR=cat sh $(SHOPT) lib/img-mangler/img-to-tar.sh $< $@
 
 # keep all image files, even from intermediate steps no longer needed
 .PRECIOUS: %.img
@@ -52,24 +52,23 @@ build: $(WORK_FILES)
 .PRECIOUS: %.sqfs
 
 #---- import tar files into img-mangler image
-.deps/%.built: input/%.tar ./img-mangler/tar-import.sh
+.deps/%.built: input/%.tar lib/img-mangler/tar-import.sh
 	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar=)) <--- $<"
-	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar=))
+	$(Q) $(SHELL) $(SHOPT) lib/img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar=))
 	$(Q) date +%s > "$@"
 
-.deps/%.built: input/%.tgz ./img-mangler/tar-import.sh
+.deps/%.built: input/%.tgz lib/img-mangler/tar-import.sh
 	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tgz=)) <--- $<"
-	$(Q) $(SHELL) $(SHOPT) ./img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tgz=))
+	$(Q) $(SHELL) $(SHOPT) lib/img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tgz=))
 	$(Q) date +%s > "$@"
 
 #--- export mangled rootfs to tar
-output/%.rootfs.tar.zst: .deps/%.built
+output/%.rootfs.tar.zst: .deps/%.built lib/img-mangler/gen-rootfs-tar.sh
 	$(E) "ROOTFS $@"
 	$(Q) mkdir -p output
-	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) /src/"img-mangler/gen-rootfs-tar.sh" "$@"
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) "/src/lib/img-mangler/gen-rootfs-tar.sh" "$@"
 
 #--- extend clean-local target
-# FIXME
 clean-local: clean-volumes clean-input clean-output
 
 mrproper-local: clean-volumes
@@ -97,7 +96,7 @@ clean-volumes:
 		docker volume inspect $$image > $@ 2>/dev/null || \
 		  docker volume create $$image > $@
 
-.deps/%.workspace: %.Workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
+.deps/%.workspace: images/%.Workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
 	$(E) "WORKSPACE $(<:/workspace.d/prepare.sh=)"
 	$(Q) ./bin/img-mangler -w /workspace --name "make-$$( basename $(@:.workspace=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
 

@@ -18,8 +18,8 @@ FROM sbc:armhf-Alpine-3.22 AS source
 FROM scratch
 COPY --from=source /target/ /
 
-COPY img-mangler/alpine-mk-bin-tarball.sh /src/img-mangler/
-COPY img-mangler/alpine-mk-pkg-tarball.sh /src/img-mangler/
+COPY lib/img-mangler/alpine-mk-bin-tarball.sh /src/lib/img-mangler/
+COPY lib/img-mangler/alpine-mk-pkg-tarball.sh /src/lib/img-mangler/
 
 ENV DST=/
 

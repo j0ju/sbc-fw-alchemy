@@ -8,7 +8,7 @@ REGISTRY =
 DEPDIR              = .deps
 $(shell mkdir -p $(DEPDIR) >/dev/null)
 
-DOCKER_DIRS := $(shell ls -1 *.Dockerfile.d/Dockerfile.seed 2>/dev/null )
+DOCKER_DIRS := $(shell cd images; ls -1 *.Dockerfile.d/Dockerfile.seed 2>/dev/null )
 
 DOCKER_IMAGES :=
 DOCKER_IMAGES += $(DOCKER_DIRS:.Dockerfile.d/Dockerfile.seed=)
@@ -50,7 +50,7 @@ build: dep
 
 force-build:
 	$(E) FORCE BUILD
-	$(Q) rm -f .deps/*.built
+	$(Q) rm -f $(DEPDIR)/*.built
 	$(Q) $(MAKE) build
 
 push:
@@ -60,7 +60,7 @@ depend deps dep: $(DOCKER_IMAGES_DEPS) $(URL_DEPS)
 
 clean-dep:
 	$(E) CLEAN DEP
-	$(Q) rm -f .deps/*.d
+	$(Q) rm -f $(DEPDIR)/*.d
 
 force-dep fd fdep: clean-dep
 	$(E) FORCE DEP
@@ -101,7 +101,7 @@ $(DEPDIR)/%.built: input/%.Dockerfile
 	$(Q) date > $@
 	$(Q) docker image ls $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=)) >> $@
 
-$(DEPDIR)/%.d: input/%.Dockerfile Makefile Makefile.Dockerfile.generic
+$(DEPDIR)/%.d: input/%.Dockerfile Makefile lib/Makefile.Dockerfile.generic
 	$(E) "DEP $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=))"
 	$(Q) set $(SHOPT); \
 		awk '$$1 == "FROM" { print $$2 }' $< | ( \
@@ -154,7 +154,7 @@ $(DEPDIR)/%.d: sources/%.url
 		done; \
 	) > "$@"
 
-input/%: sources/%.url .deps/img-mangler.built
+input/%: sources/%.url $(DEPDIR)/img-mangler.built lib/img-mangler/chksum.sh
 	$(E) "WGET $@ URL: $$(cut -f 1 -d ' ' $<)"
 	$(Q) set $(SHOPT); exec $(SHREDIR); \
 		read URL CKSUM OPTS < $<; \
@@ -162,7 +162,7 @@ input/%: sources/%.url .deps/img-mangler.built
 			rm -f "$@"; \
 		mkdir -p "$$(dirname "$@")"; \
 		wget $(WGETOPT) -c -O "$@" "$$URL"; \
-		if ! $(SHELL) ./img-mangler/chksum.sh "$@" "$$CKSUM" >&2 ; then \
+		if ! $(SHELL) ./lib/img-mangler/chksum.sh "$@" "$$CKSUM" >&2 ; then \
 		  touch "$<" ; \
 			exit 1 ; \
 		fi ; \
@@ -181,10 +181,10 @@ $(DEPDIR)/%.pushed: $(DEPDIR)/%.built
 		: > $@
 
 #--- generate Dockerfiles from template in Dockerfile.d, to use the build/buildx caching layer
-input/%.Dockerfile: %.Dockerfile.d/Dockerfile.seed img-mangler/gen-dockerfile.sh
+input/%.Dockerfile: images/%.Dockerfile.d/Dockerfile.seed lib/img-mangler/gen-dockerfile.sh
 	$(E) DOCKERFILE $@
 	$(Q) mkdir -p "$$(dirname "$@")"
-	$(Q) $(SHELL) $(SHOPT) ./img-mangler/gen-dockerfile.sh $@ $<
+	$(Q) $(SHELL) $(SHOPT) ./lib/img-mangler/gen-dockerfile.sh $@ $<
 
 .PRECIOUS: input/%.Dockerfile
 

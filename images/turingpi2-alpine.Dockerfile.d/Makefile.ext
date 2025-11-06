@@ -3,37 +3,42 @@
 # build turing pi image to get rootfs
 output/turingpi2-alpin%.img: \
   output/turingpi2-alpin%.rootfs.tar.zst \
-  bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh
+  images/bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh \
+  #
 	$(E) "GEN IMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
 	$(Q) mkdir -p output
-	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh $< $@
+	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) images/bpi2m0-alpine.Dockerfile.d/docker-to-sd-card-img.sh $< $@
 
 output/turingpi2-alpin%.sqfs.img: output/turingpi2-alpin%.rootfs.tar.zst \
-  bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
-  bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
-  output/turingpi2-alpin%.sqfs
+  images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
+  images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
+  output/turingpi2-alpin%.sqfs \
+  #
 	$(E) "GEN IMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=))" MULTIBOOT
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p \
 	  -e IMAGE_SIZE_KB_MIN=$$(( 384 * 1024 )) \
 	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=)) \
-	  sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+	  sh $(SHOPT) images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
 
 output/turingpi2-alpin%.erofs.img: output/turingpi2-alpin%.rootfs.tar.zst \
-  bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
-  bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
-  output/turingpi2-alpin%.erofs
+  images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
+  images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
+  output/turingpi2-alpin%.erofs \
+  #
 	$(E) "GEN IMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs.img=))" MULTIBOOT
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler -p \
 	  -e IMAGE_SIZE_KB_MIN=$$(( 384 * 1024 )) \
 	  -e ROFSTYPE=erofs \
 	  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs.img=)) \
-	  sh $(SHOPT) bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+	  sh $(SHOPT) images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
 
 input/artifacts/turingpi2-alpine-bmcd.tar.zst: \
-  turingpi2-alpine.Dockerfile.d/build_bmcd.sh \
-  output/armhf-alpine-3.22.rootfs.tar.zst
-	./bin/img-mangler --name turingpi2-build-bmcd -w /workspace -v sbc-turingpi2-buildroot:/workspace -e HOME=/workspace sh $(SHOPT) /src/$< $@
+  images/turingpi2-alpine.Dockerfile.d/build_bmcd.sh \
+  input/armhf-Alpine-3.22.tgz \
+  #
+	$(E) BUILD $@
+	$(Q) ./bin/img-mangler --name turingpi2-build-bmcd -w /workspace -v sbc-turingpi2-buildroot:/workspace -e HOME=/workspace sh $(SHOPT) /src/$< $@
 
 # vim: ts=4 sw=2 noet

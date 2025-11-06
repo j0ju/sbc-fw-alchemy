@@ -1,1 +1,0 @@
-../rpi-alpine.Dockerfile.d/200_seed_config.sh

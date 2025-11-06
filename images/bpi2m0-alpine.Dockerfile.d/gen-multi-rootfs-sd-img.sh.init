@@ -36,13 +36,22 @@ PS4="${0##*/}[$$]: "
 cd /
 BB=/sbin/busybox
 
+# emergency shell
+trap "exec $BB sh -" EXIT
+
 $BB mountpoint -q /proc || \
   $BB mount -t proc proc /proc
 
+KVER="$($BB uname -r)"
+for i in /CURRENT/lib/modules/$KVER/*.ko*; do
+  [ -r "$i" ] || continue
+  $BB insmod "$i" || echo "E: insmod $i failed, CONTINUEing anyways." 1>&2
+done
+
 if [ -f /CURRENT/root.sqfs ]; then :             # SQUASHFS image, with extracted /boot
-  $BB mount -o loop /CURRENT/root.sqfs /CURRENT
+  $BB mount -o loop -t squashfs /CURRENT/root.sqfs /CURRENT
 elif [ -f /CURRENT/root.erofs ]; then :          # EROFS image with extracted /boot
-  $BB mount -o loop /CURRENT/root.erofs /CURRENT
+  $BB mount -o loop -t erofs /CURRENT/root.erofs /CURRENT
 else :                                           # plain rootfs
   $BB mount -o bind /CURRENT/. /CURRENT
 fi
@@ -62,5 +71,5 @@ if $BB pivot_root /CURRENT/. /CURRENT/mnt; then
 fi
 
 # fall through
-exec $BB ash -
-exec /bin/busybox ash -
+exec $BB sh -
+exec /bin/busybox sh -

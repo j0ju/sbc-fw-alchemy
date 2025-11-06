@@ -22,8 +22,9 @@ fi
 
 # user convenience, allow using, file commandline completion, strip Directory / and Dockerfile.d at the end
 case "$IMAGE" in
-  *.Dockerfile.d/ | *.Dockerfile.d )
+  images/*.Dockerfile.d/ | images/*.Dockerfile.d )
     if [ -d "$IMAGE" ]; then
+      IMAGE="${IMAGE#images/}"
       IMAGE="${IMAGE%/}"
       IMAGE="${IMAGE%.Dockerfile.d}"
       CRIOPTS="$CRIOPTS --name $IMAGE"
@@ -32,6 +33,7 @@ case "$IMAGE" in
 
   *.Workspace.d/ | *.Workspace.d )
     if [ -d "$IMAGE" ]; then
+      IMAGE="${IMAGE#images/}"
       VOLUME="${IMAGE%/}"
       VOLUME="${VOLUME%.Workspace.d}"
       CRIOPTS="$CRIOPTS --name $VOLUME -w /workspace -v sbc-$VOLUME:/workspace -e HOME=/workspace"

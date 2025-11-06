@@ -26,8 +26,8 @@ ENV \
 # instead of /target so DKMS can run
 # /target/part1 /
 # /target/part15 /boot/efi
-COPY img-mangler/merge-to-root.sh /target/mv.sh
-RUN set -ex ; \
+COPY lib/img-mangler/merge-to-root.sh /target/mv.sh
+RUN set -e ; \
   mv /target/part15/* /target/part1/boot/efi ; \
   mv /target /target.old ; \
   mv /target.old/part1 /target ; \
