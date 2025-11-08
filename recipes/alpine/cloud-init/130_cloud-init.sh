@@ -10,7 +10,9 @@ PS4='> ${0##*/}: '
 mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
 
 chroot /target \
-  apk add cloud-init
+  apk add cloud-init sudo doas
+
+rm -f /target/boot/*.template
 
 # copy over config seed
 DST="${DST:-/target}"
