@@ -100,7 +100,9 @@ to_overlay() {
 
 exec_init() {
   PS4="${0}[$$]::exec_init(): "
+  oPS4="$PS4"
   #set -x
+
   trap emergency_console EXIT
   init=/sbin/init
 
@@ -124,9 +126,10 @@ exec_init() {
         exit 1
         ;;
     esac
-    ( PS4="${0}[$$]::$snippet: "
-      . "$snippet"
-    )
+    PS4="${0}[$$]::$snippet: "
+    . "$snippet"
+    PS4="$oPS4"
+
     case "$snippet" in
       *.once ) rm -f "${snippet}" ;;
       /lib/* )
