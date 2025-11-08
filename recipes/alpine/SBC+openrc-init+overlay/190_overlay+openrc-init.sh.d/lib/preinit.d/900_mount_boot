@@ -1,4 +1,27 @@
+err_unknown_config() {
+  set +x
+  echo
+  echo "$PS4" >&2
+  echo "E: unknown configuration, not re-bind-mounting /boot" >&2
+  echo
+  ( set -x
+    mount
+  )
+  ( set -x
+    env
+  ) | sort
+  echo
+  return 0
+}
+
 #- ensure active /boot of current running rom is mounted /boot
   if mountpoint /rom/mnt > /dev/null && [ -d /rom/mnt/boot ]; then
     mount -o bind /rom/mnt/boot /boot
+  elif ROMFS=$(findmnt /rom -o FSTYPE -n); then
+    case "$ROMFS" in
+      ext[234] | f2fs | btrfs ) mount -o bind /rom/boot /boot ;;
+      * ) err_unknown_config ;;
+    esac
+  else
+    err_unknown_config
   fi
