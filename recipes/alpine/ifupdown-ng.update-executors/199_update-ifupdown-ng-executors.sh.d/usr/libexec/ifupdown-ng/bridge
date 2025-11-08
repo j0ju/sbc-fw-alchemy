@@ -312,8 +312,6 @@ pre-up)
 	elif [ "${IF_BRIDGE_VIDS}" -o "${IF_BRIDGE_PVID}" -o "${IF_BRIDGE_ACCESS}" -o "${IF_BRIDGE_ALLOW_UNTAGGED}" ]; then
 		if [ -d "/sys/class/net/$IFACE/master" ]; then
 			configure_trunk_port $IFACE
-		else
-			true
 		fi
 	fi
 	;;
