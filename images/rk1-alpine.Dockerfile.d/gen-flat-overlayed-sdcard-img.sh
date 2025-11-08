@@ -8,7 +8,9 @@ PS4="${0##*/}: "
 
 #---
 MIN_FREE_MB=${MIN_FREE_MB:-128}
-IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
+if [ -z "${IMAGE_SIZE_KB_MIN:-}" ]; then
+  IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
+fi
 
 IMAGE="$2"
 SRC="$1"
@@ -36,7 +38,16 @@ cleanup() {
   local PS4="${0##*/}:cleanup: "
   local rs=$?
   local d
+
+  cd /src
+  if [ $rs = 0 ]; then
+    [ -z "$OWNER" ] || \
+      chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
+  else
+    rm -f "$IMAGE"
+  fi
   cd /
+
   for m in /mnt/part* /mnt; do
     [ ! -d "$m" ] || \
       df -h "$m" | sed -nr -e 's|/dev[^1234567890]+|USAGE /dev/disk|' -e 's|/mnt/?|/| p'
@@ -54,9 +65,7 @@ cleanup() {
       losetup -d "/dev/loop/${d#*loop}" 2> /dev/null || :
     fi
   done
-  if [ ! $rs = 0 ]; then
-    rm -f "$IMAGE"
-  fi
+
   trap '' EXIT
   exit $rs
 }
@@ -81,7 +90,7 @@ EOF
 
 DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
 
-ROOT_DEV="$(echo $DEVS | grep -E -o "[^ ]+p2")"
+ROOT_DEV="$(echo "$DEVS" | grep -E -o "[^ ]+p2$")"
 mkdir -p /mnt/
 
 echo "MKFS $IMAGE"
