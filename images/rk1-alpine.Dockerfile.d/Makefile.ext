@@ -1,10 +1,22 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
-# vim: ts=4 sw=2 noet
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+output/rk1-alpin%.img: \
+	output/rk1-alpin%.rootfs.tar.zst \
+	images/rk1-alpine.Dockerfile.d/gen-flat-overlayed-sdcard-img.sh \
+	#
+		$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
+		$(Q) mkdir -p output
+		$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) images/rk1-alpine.Dockerfile.d/gen-flat-overlayed-sdcard-img.sh $< $@
 
-output/rk1-alpin%.img: output/rk1-alpin%.rootfs.tar.zst images/rk1-alpine.Dockerfile.d/gen-flat-overlayed-sdcard-img.sh
-	$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
-	$(Q) mkdir -p output
-	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) images/rk1-alpine.Dockerfile.d/gen-flat-overlayed-sdcard-img.sh $< $@
+output/rk1-alpin%.sqfs.img: \
+	output/rk1-alpin%.rootfs.tar.zst \
+	output/rk1-alpin%.sqfs \
+	images/rk1-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
+	images/rk1-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
+  #
+		$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=))" MULTIBOOT
+		$(Q) mkdir -p output
+		$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=)) sh $(SHOPT) images/rk1-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+
+# vim: ft=make noet sw=2 ts=2
 

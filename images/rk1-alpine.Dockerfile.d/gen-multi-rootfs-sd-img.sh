@@ -9,11 +9,12 @@ PS4="${0##*/}: "
 #---
 MIN_FREE_MB=${MIN_FREE_MB:-128}
 if [ -z "${IMAGE_SIZE_KB_MIN:-}" ]; then
-  IMAGE_SIZE_KB_MIN=$(( 1024 * 1024 )) # 1G
+  IMAGE_SIZE_KB_MIN=$(( 768 * 1024 ))
 fi
 
 IMAGE="$2"
 SRC="$1"
+ROFSTYPE=${ROFSTYPE:-sqfs}
 
 #--- calculate image size
 DECOMPRESSOR=cat
@@ -85,9 +86,6 @@ sfdisk $IMAGE > /dev/null <<EOF
   1: type=7f start=4
 EOF
 
-[ -z "$OWNER" ] || \
-  chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
-
 DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
 
 ROOT_DEV="$(echo "$DEVS" | grep -E -o "[^ ]+p2$")"
@@ -99,31 +97,39 @@ mount -t ext4 "/dev/mapper/$ROOT_DEV" /mnt
 ROOT_UUID=$( blkid -o value -s UUID "/dev/mapper/$ROOT_DEV" )
 ROOT_CMDLINE="UUID=$ROOT_UUID"
 
-echo "COPY $IMAGE <- $SRC"
-tar xf "$SRC" -C /mnt --xattrs --atime-preserve
+#--- write uboot for sdcard boot
+echo "UBOOT $IMAGE"
+# from /usr/lib/u-boot/platform_install.sh on armbian
+dd if="/target/usr/lib/linux-u-boot-edge-turing-rk1/u-boot-rockchip.bin" of="/dev/${ROOT_DEV%p[0-9]}" bs=32k seek=1 conv=notrunc status=none
+
+#--- prepare rootfs with subdirs
+mkdir -p /mnt/sbin /mnt/proc /mnt/dev
+cp /target.busybox.static /mnt/sbin/busybox
+cp "$0".init /mnt/sbin/init
+ln -s init /mnt/sbin/preinit
+chmod 755 /mnt/sbin/init /mnt/sbin/busybox
+ln -s CURRENT/boot /mnt/boot
+
+GITREV="$( cd /src ; git log HEAD^..HEAD --oneline | awk '$0=$1' )"
+DATE="$( date +%Y-%m-%d-%H:%M )"
+VERSION=$DATE-$GITREV+dirty
+git status --short | grep -q ^ || \
+  VERSION="${VERSION%+dirty}"
+
+ROOTDIR="ROOTFS.$VERSION"
+mkdir -p "/mnt/$ROOTDIR"
+ln -s "$ROOTDIR" /mnt/CURRENT
+
+# use sqfs and extract /boot
+  echo "COPY $IMAGE <- $SRC::/boot"
+  tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs ./boot
+  echo "COPY $IMAGE <- ${SRC%.rootfs.tar.zst}.$ROFSTYPE"
+  cp "${SRC%.rootfs.tar.zst}.$ROFSTYPE" "/mnt/CURRENT/root.$ROFSTYPE"
 
 echo "BOOT PREP cmdline: $ROOT_CMDLINE"
 if [ -f /mnt/boot/armbianEnv.txt ]; then
   sed -i -r -e "/rootdev=/ s/=.*$/=$ROOT_CMDLINE/" /mnt/boot/armbianEnv.txt
 fi
 
-#--- write uboot for sdcard boot
-echo "UBOOT $IMAGE"
-# from /usr/lib/u-boot/platform_install.sh on armbian
-dd if="/target/usr/lib/linux-u-boot-edge-turing-rk1/u-boot-rockchip.bin" of="/dev/${ROOT_DEV%p[0-9]}" bs=32k seek=1 conv=notrunc status=none
-
-# minor fixes to rootfs
-# TODO: find a better place for this
-rm -f /mnt/etc/resolv.conf
-ln -s ../run/resolv.conf /mnt/etc/resolv.conf
-
-chroot /mnt sh -e <<EOF
-  PS4="${0##*/}:chroot: "
-  #set -x
-  cd /etc/.git/.. 2> /dev/null
-  git add .
-  trap "exit 0" EXIT
-  git commit -m "${0} finish"
-EOF
 
 # vim: ts=2 sw=2 ft=sh et
