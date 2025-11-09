@@ -37,8 +37,9 @@ EOF
 
 # TODO: is this still needed?
 # in Alpine 3.22 klogd user seems to be missing
-chroot /target grep ^klogd: /etc/passwd > /dev/null || \
-  chroot /target \
-    adduser -h /dev/null -g klogd -s /sbin/nologin -S -u 103 -G nobody klogd
+if ! chroot /target grep ^klogd: /etc/passwd > /dev/null; then
+  echo "E: klogd user is missing, this should not have happend, ABORT" >&2
+  exit 1
+fi
 
 # vim: set ts=2 sw=2 et
