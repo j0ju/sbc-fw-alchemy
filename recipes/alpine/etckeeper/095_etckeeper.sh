@@ -8,7 +8,7 @@ umask 022
 # preseed git repo in /etc for etckeeper
 cd /target/etc
 rm -rf .git
-git init .
+git init -b main .
 
 git config init.defaultBranch main
 git config user.name root
