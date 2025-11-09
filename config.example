@@ -23,11 +23,11 @@ X6100_MIN_FREE=512
 #WORK_FILES += $(shell lib/tgt.sh amd64-*                img.zst )
 #WORK_FILES += $(shell lib/tgt.sh amd64-EFI-CI-trixie*   img.zst  EFI.iso )
 
-#WORK_FILES += $(shell lib/tgt.sh bpi2m0-alpine*     sqfs.img.zst ) # sqfs img.zst rootfs.tar.zst
-#WORK_FILES += $(shell lib/tgt.sh turingpi2-alpine*  sqfs.img.zst ) # sqfs
-#WORK_FILES += $(shell lib/tgt.sh rk1-alpine*             img.zst )
+#WORK_FILES += $(shell lib/tgt.sh bpi2m0-alpine*     sqfs.img.zst sqfs ) # img.zst rootfs.tar.zst
+#WORK_FILES += $(shell lib/tgt.sh turingpi2-alpine*  sqfs.img.zst sqfs )
+#WORK_FILES += $(shell lib/tgt.sh rk1-alpine*        sqfs.img.zst sqfs )
 
-#WORK_FILES += $(shell lib/tgt.sh rpi-alpine*        sqfs.img.zst )
+#WORK_FILES += $(shell lib/tgt.sh rpi-alpine*        sqfs.img.zst sqfs )
 
 
 # Addtional targets for external resources

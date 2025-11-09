@@ -18,4 +18,6 @@ output/%.erofs: \
 		$(Q) ./bin/img-mangler -p \
 		  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=)) sh $(SHOPT) lib/img-mangler/gen-erofs.sh $@
 
-# vim: ft=Makefile noet sw=2 ts=2
+.PRECIOUS: %.erofs %.sqfs
+
+# vim: ft=make noet sw=2 ts=2
