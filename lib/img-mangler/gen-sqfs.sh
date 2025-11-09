@@ -8,10 +8,11 @@ IMAGE="$1"
 COMPRESSOR="${COMPRESSOR:-zstd}" # xz
 BLOCKSIZE="${BLOCKSIZE:-512k}"   # 256k 512k
 
+for glob in .git .etckeeper "*.apk-*" "*.dpkg-*" "*.ucf-*" "*-"; do
+  find /target/etc/ -name "$glob" -exec rm -rf {} +
+done
+
 rm -f /target/etc/resolv.conf
-find /target/ -name ".git" -exec rm -rf {} +
-rm -f /target/etc/.etckeeper
-find /target/etc/ -name "*.apk-*" -o -name "*.dpkg-*" -o -name "*.ucf-*" -o -name "*-" -delete
 ln -s ../run/resolv.conf /target/etc/resolv.conf
 
 rm -rf /target/run /target/tmp /target/usr/share/doc
@@ -28,8 +29,14 @@ git status --short | grep -q ^ || \
 echo "$VERSION" > /target/boot/build.meta
 
 rm -f "$IMAGE"
-mksquashfs /target "$IMAGE" -b "$BLOCKSIZE" -comp "$COMPRESSOR" -quiet
-
+case "$0" in
+  */gen-sqfs.sh )
+    mksquashfs /target "$IMAGE" -b "$BLOCKSIZE" -comp "$COMPRESSOR" -quiet
+    ;;
+  */gen-erofs.sh )
+    mkfs.erofs "$IMAGE" /target
+    ;;
+esac
 
 [ -z "$OWNER" ] || \
   chown "$OWNER${GROUP:+:$GROUP}" "$IMAGE"
