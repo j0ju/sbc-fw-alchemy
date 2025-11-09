@@ -7,3 +7,13 @@ FROM sbc:img-mangler
 # keep imported build /vanilla rom with original bmcd and tpi
 COPY --from=donor /target/part1                                       /target/boot
 COPY --from=donor /target/part2                                       /target
+
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  busybox mount -o bind /target /target 2> /dev/null || :; \
+  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
+  [ -x /target/bin/bash ] || \
+    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
+: # eo CMD
