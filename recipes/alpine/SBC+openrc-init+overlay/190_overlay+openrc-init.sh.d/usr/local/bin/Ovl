@@ -36,8 +36,11 @@ list_files_collector() ( # use brackets for true forked subshell
     esac
     shift
   done
-  [ -n "$find_dirs" ] || \
-    find_dirs="etc usr/local opt"
+  if [ -z "$find_dirs" ]; then
+    find_dirs="etc usr/local opt srv"
+    find_dirs=$( cd "$OVERLAY_DIR"; ls -d $find_dirs 2> /dev/null || :)
+    find_dirs=$( echo $find_dirs 2> /dev/null || :)
+  fi
 
   cd "$OVERLAY_DIR"
   eval "find $find_dirs $find_opts" | sort -r
