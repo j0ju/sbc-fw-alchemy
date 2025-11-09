@@ -101,29 +101,13 @@ $(DEPDIR)/%.built: input/%.Dockerfile
 	$(Q) date > $@
 	$(Q) docker image ls $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=)) >> $@
 
-$(DEPDIR)/%.d: input/%.Dockerfile Makefile lib/Makefile.Dockerfile.generic
+$(DEPDIR)/%.d: input/%.Dockerfile Makefile lib/Makefile.Dockerfile.generic lib/img-mangler/gen-dockerfile-deps.sh
 	$(E) "DEP $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.Dockerfile=))"
-	$(Q) set $(SHOPT); \
-		awk '$$1 == "FROM" { print $$2 }' $< | ( \
-		  while read image; do \
-			  image_pfx="$${image%%:*}"; \
-			  if [ "$$image_pfx" = "$(NAME_PFX)$(NAME)" ]; then \
-				  echo "$(DEPDIR)/$(patsubst input/%,%,$(<:.Dockerfile=.built)): $(DEPDIR)/$${image##$(NAME):}.built"; \
-			  fi; \
-		  done; \
-		  awk '$$1 ~ "^(ADD|COPY)$$" && $$2 !~ "[*?]" {print $$2}' "$<" | \
-			  grep -v "^[-]-from" | \
-				while read f; do \
-				  if [ -d "$$f" ]; then \
-						find "$$f" -type f | grep -v "/[^/]*[.]sw[a-z]$$" || :; \
-				  else \
-					  echo "$$f"; \
-				  fi; \
-			  done | \
-				  xargs echo "$(DEPDIR)/$(patsubst input/%,%,$(<:.Dockerfile=.built)): "; \
-		  echo "$(patsubst input/%,%,$(<:.Dockerfile=)): $(DEPDIR)/$(patsubst input/%,%,$(<:.Dockerfile=.built))" ; \
-		  echo ".PHONY: $(patsubst input/%,%,$(<:.Dockerfile=.built))" ; \
-	  ) > "$@"
+	$(Q) \
+		set $(SHOPT); \
+		NAME="$(NAME)"; NAME_PFX="$(NAME_PFX)"; DEPDIR="$(DEPDIR)"; \
+		set -- "$<" "$@"; \
+		. lib/img-mangler/gen-dockerfile-deps.sh
 
 # docker file generation versioned
 input/%.$(VER).Dockerfile: input/%.Dockerfile Makefile
@@ -187,6 +171,7 @@ input/%.Dockerfile: images/%.Dockerfile.d/Dockerfile.seed lib/img-mangler/gen-do
 	$(Q) $(SHELL) $(SHOPT) ./lib/img-mangler/gen-dockerfile.sh $@ $<
 
 .PRECIOUS: input/%.Dockerfile
+.PRECIOUS: $(DEPDIR)/%.d
 
 include $(DOCKER_IMAGES_DEPS)
 include $(URL_DEPS)

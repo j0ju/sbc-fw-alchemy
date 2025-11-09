@@ -32,17 +32,22 @@ recipe_list_dirs() {
 recipe_RECIPE_transform() {
   awk '$1 != "RECIPE"' < "$SEEDFILE"
   [ "$MODE" != onestep ] || \
-    recipe_list | \
+    recipe_list | (
+      dirs=
       while read recipe; do
         echo "# RECIPE $recipe"
         path="recipes/$recipe"
         if [ -d "$path" ]; then
-          echo "COPY $path /src/${SEEDDIR}/"
+          dirs="$dirs $path"
         else
           echo "E: this should not happen." >&2
           exit 1
         fi
       done
+      if [ -n "$dirs" ]; then
+        echo "COPY $dirs /src/${SEEDDIR}/"
+      fi
+    )
 }
 
 cat <<EOF
