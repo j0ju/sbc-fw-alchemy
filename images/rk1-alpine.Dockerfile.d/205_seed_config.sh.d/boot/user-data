@@ -16,17 +16,39 @@ runcmd:
     set -ex
 
     # this ensures that cloud init is only running once
-    echo "disabled by /boot/cloud-init/user-data" > /etc/cloud/cloud-init.disabled
-    rc-update | while read svc _ runlevels; do
-      set +x
-      case "$svc" in
-        cloud-* )
-          for lvl in $runlevels; do
-            rc-update del $svc $lvl
-          done
-          ;;
-      esac
-    done
+    ( set +x
+      rc-update | while read svc _ runlevels; do
+        case "$svc" in
+          cloud-* )
+            for lvl in $runlevels; do
+            ( set -x
+              rc-update del $svc $lvl
+            )
+            done
+            ;;
+        esac
+      done
+    )
+    detached_cleanup() {
+      set -x
+      # detach from service cgroup (openrc / systemd) to prevent killing lingering procs
+      if read pid _ < /proc/self/stat && [ -f /sys/fs/cgroup/cgroup.procs ]; then
+        echo $pid > /sys/fs/cgroup/cgroup.procs
+      fi
+
+      # wait until parent finished
+      while [ -d "/proc/$$" ]; do
+        sleep 7
+      done
+
+      cloud-init clean
+      echo "disabled by /boot/cloud-init/user-data" > /etc/cloud/cloud-init.disabled
+      rm -rf /var/lib/cloud
+
+      [ -x /boot/runcmd.ci ] && \
+        exec /boot/runcmd.ci
+    }
+    trap 'rs=$?; detached_cleanup & exit $rs' EXIT
 
     #- fix permission of  ~pi
     echo turing:rk1 | chpasswd
