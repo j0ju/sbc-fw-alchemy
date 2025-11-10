@@ -145,12 +145,13 @@ sync_thread_cleanup() {
 
 find_usb_device() {
   local PS4="${0##*/}::find_usb_device: "
-  for i in $(grep -EH "^Rockchip" /sys/block/*/device/vendor); do
+  for i in $(grep -EH "^" /sys/block/*/device/vendor); do
     dev="${i%/device/vendor:*}"
     dev="${dev#/sys/block/}"
     vendor="${i#*:}"
     case "$vendor" in
-      Rockchip ) USB_DEVICE=/dev/$dev ; break ;;
+      Rockchip ) USB_DEVICE="/dev/$dev" ; break ;;
+      RPi-MSD- ) USB_DEVICE="/dev/$dev" ; break ;;
       * ) dev=; break ;;
       # TODO: add support for Raspberry Pi, etc
     esac
