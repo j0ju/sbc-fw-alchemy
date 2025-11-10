@@ -6,7 +6,7 @@ FROM sbc:amd64-Debian-Bookworm-Cloud-Image
 RUN \
   dpkg --add-architecture amd64 ;\
   apt-get update ;\
-  apt-get install -y grub-efi-amd64-bin/stable grub-efi/stable ;\
+  apt-get install -y grub-efi-amd64-bin grub-efi ;\
 : # eo RUN
 
 CMD \
