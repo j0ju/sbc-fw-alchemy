@@ -67,7 +67,7 @@ recipe_list_sorted_snippets() {
     while read path; do
       cd "$pwd"
       cd "$path"
-      find . -maxdepth 1 -type f -name "[0-9][0-9][0-9]_*"
+      find -L . -maxdepth 1 -type f -name "[0-9][0-9][0-9]_*"
     done | \
       sort -u
 }
