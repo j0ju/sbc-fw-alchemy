@@ -14,6 +14,7 @@ chroot /target \
     libgpiod \
     squashfs-tools \
     rdnssd \
+    pciutils hwdata-pci usbutils hwdata-usb \
 # EO chroot /target apk add
 
 rm -f /target/etc/.git/HEAD.lock
