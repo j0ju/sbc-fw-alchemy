@@ -32,11 +32,13 @@ X6100_MIN_FREE=512
 
 # Addtional targets for external resources
 
-input/rk1-trixie-edge.img:
-	cp ../armbian-build/output/images/Armbian-unofficial_25.11.0-trunk_Turing-rk1_trixie_edge_6.17.4-ci_minimal.img $@
+#input/rk1-trixie-edge.img:
+#	cp ../armbian-build/output/images/Armbian-unofficial_25.11.0-trunk_Turing-rk1_trixie_edge_6.17.4-ci_minimal.img $@
 
-input/bpi2m0-Armbian-25.02-bookworm-minimal.img.xz:
-	cp ../Blobs/bpi2m0-Armbian-25.02-bookworm-minimal.img.xz $@
+#input/bpi2m0-Armbian-25.02-bookworm-minimal.img.xz:
+#	cp ../Blobs/bpi2m0-Armbian-25.02-bookworm-minimal.img.xz $@
 
+#input/amd64-Debian-Trixie-Cloud-Image.img:
+#	cp ../sbc-blobs/amd64-Debian-Trixie-Cloud-Image.img $@
 
 # vim: noet ts=2 sw=2 ft=Makefile
