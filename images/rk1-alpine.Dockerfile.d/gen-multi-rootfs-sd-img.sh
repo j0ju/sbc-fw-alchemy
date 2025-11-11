@@ -100,7 +100,8 @@ ROOT_CMDLINE="UUID=$ROOT_UUID"
 #--- write uboot for sdcard boot
 echo "UBOOT $IMAGE"
 # from /usr/lib/u-boot/platform_install.sh on armbian
-dd if="/target/usr/lib/linux-u-boot-edge-turing-rk1/u-boot-rockchip.bin" of="/dev/${ROOT_DEV%p[0-9]}" bs=32k seek=1 conv=notrunc status=none
+UBOOT_IMG="$(ls "/target/usr/lib/linux-u-boot"-*-"turing-rk1/u-boot-rockchip.bin")"
+dd if="$UBOOT_IMG" of="/dev/${ROOT_DEV%p[0-9]}" bs=32k seek=1 conv=notrunc status=none
 
 #--- prepare rootfs with subdirs
 mkdir -p /mnt/sbin /mnt/proc /mnt/dev
