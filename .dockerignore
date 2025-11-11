@@ -4,6 +4,7 @@
 config
 config.example
 input/*.*
+input/armbian
 output
 
 *.img

@@ -29,3 +29,5 @@ PS4='> ${0##*/}: '
 rm -f /target/boot/*.bmp
 
 chown -R 0:0 /target/boot/*
+
+mknod /target/dev/null c 1 3

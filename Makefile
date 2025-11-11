@@ -4,6 +4,9 @@
 include lib/Makefile.Dockerfile.generic
 NAME := sbc
 
+# include rules for building Armbian images
+include lib/Armbian.Makefile
+
 # include SBC specific targets
 -include images/*.d/Makefile.ext
 
