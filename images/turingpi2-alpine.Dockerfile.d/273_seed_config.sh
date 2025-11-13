@@ -127,5 +127,10 @@ rc-update add mount-ro shutdown
 /usr/local/sbin/update-rc 1> /dev/null
 EOF
 
+rm -f /target/etc/bird.conf
+chmod 0750 /target/etc/bird
+chmod 0640 /target/etc/bird/*
+chroot /target chown -R bird: /etc/bird
+
 ! chroot /target which etckeeper > /dev/null 2>&1 || \
   chroot /target etckeeper commit -m "${0##*/} finish"
