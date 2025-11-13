@@ -11,4 +11,4 @@
 FROM sbc:rpi-rpios-base
 
 # copy 64bit scripts
-COPY rpi64-rpios-svxlink.Dockerfile.d /src/rpi64-rpios-svxlink.Dockerfile.d/
+COPY images/rpi64-rpios-svxlink.Dockerfile.d /src/images/rpi64-rpios-svxlink.Dockerfile.d/

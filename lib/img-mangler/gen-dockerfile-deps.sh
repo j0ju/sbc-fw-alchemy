@@ -43,7 +43,11 @@ fi
           shift
         done
         for d in $dirs; do
-          find "$d" -type f | grep -v "/[^/]*[.]sw[a-z]$" || :
+          if [ -d "$d" ]; then
+            find "$d" -type f | grep -v "/[^/]*[.]sw[a-z]$" || :
+          else
+            echo "$d"
+          fi
         done
         ;;
     esac
@@ -51,10 +55,10 @@ fi
 ) | {
   buildeps=
   filedeps=
-  while read d; do
-    case "$d" in
-      *.built ) buildeps="$buildeps $d" ;;
-      * )       filedeps="$filedeps $d" ;;
+  while read f; do
+    case "$f" in
+      input/* | *.built ) buildeps="$buildeps $f" ;;
+      * )                 filedeps="$filedeps $f" ;;
     esac
   done
   echo "$DEPDIR/$IMAGE.built: $buildeps $filedeps"
