@@ -18,7 +18,9 @@ include lib/Armbian.Makefile
 # override & disable docker push
 DOCKER_IMAGES_PUSH_FLAGS :=
 
-# additional targets
+# default target
+all: build
+
 build: $(WORK_FILES)
 
 #--- extract image from archive

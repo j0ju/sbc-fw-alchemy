@@ -41,8 +41,6 @@ ifeq ($(V), 0)
 	WGETOPT = -q
 endif
 
-all: build
-
 build: dep
 	$(E) BUILD
 	$(Q) set $(SHOPT); [ -z "$(DOCKER_IMAGES)" ] || $(MAKE) $(DOCKER_IMAGES)

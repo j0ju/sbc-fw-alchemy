@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+DOCKERFILE="${1}"
+
 IMAGE="${1}"
 IMAGE="${IMAGE#input/}"
 IMAGE="${IMAGE%.Dockerfile}"
@@ -15,6 +17,7 @@ if [ -n "${2:-}" ]; then
   }
   trap 'atexit' EXIT
   exec > "$2"
+  DEPFILE="$2"
 fi
 
 (
@@ -45,8 +48,20 @@ fi
         ;;
     esac
   done
-) | \
-  xargs echo "$DEPDIR/$IMAGE.built:"
+) | {
+  buildeps=
+  filedeps=
+  while read d; do
+    case "$d" in
+      *.built ) buildeps="$buildeps $d" ;;
+      * )       filedeps="$filedeps $d" ;;
+    esac
+  done
+  echo "$DEPDIR/$IMAGE.built: $buildeps $filedeps"
+  echo "$DOCKERFILE: $filedeps"
+}
 
+echo "$DEPFILE: $DOCKERFILE"
 echo "$IMAGE: $DEPDIR/$IMAGE.built"
 echo ".PHONY: $IMAGE"
+
