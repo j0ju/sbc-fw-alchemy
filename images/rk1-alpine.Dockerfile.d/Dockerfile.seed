@@ -1,14 +1,14 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
-FROM sbc:rk1-armbian-zfs AS donor
+FROM sbc:rk1-armbian AS donor
 FROM sbc:aarch64-alpine-3.22
 
 # keep imported build /vanilla rom with original bmcd and tpi
-COPY --from=donor /boot                                  /target/boot
-COPY --from=donor /lib/modules                           /target/lib/modules
-COPY --from=donor /lib/firmware                          /target/lib/firmware
-COPY --from=donor /usr/lib/linux-u-boot-edge-turing-rk1  /target/usr/lib/linux-u-boot-edge-turing-rk1
+COPY --from=donor /target/boot                                  /target/boot
+COPY --from=donor /target/lib/modules                           /target/lib/modules
+COPY --from=donor /target/lib/firmware                          /target/lib/firmware
+COPY --from=donor /target/usr/lib/linux-u-boot-vendor-turing-rk1  /target/usr/lib/linux-u-boot-vendor-turing-rk1
 
 RUN set -e; umask 022; \
   cp -a /target.busybox.static /target/sbin/busybox.static; \

@@ -103,7 +103,9 @@ rc-update add killprocs shutdown
 rc-update add mount-ro shutdown
 
 ln -s getty /etc/init.d/getty.ttyS0
+ln -s getty /etc/init.d/getty.ttyS9
 rc-update add getty.ttyS0 sysinit
+rc-update add getty.ttyS9 sysinit
 
 /usr/local/sbin/update-rc
 EOF

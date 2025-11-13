@@ -1,7 +1,4 @@
 #!/bin/sh
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
-set -eu
-umask 022
 
 PS4='> ${0##*/}: '
 #set -x
@@ -10,11 +7,7 @@ mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper /target/tmp/cache/vim
 
 chroot /target \
   apk add \
-    rdnssd dnsmasq \
-    libgpiod \
-    squashfs-tools \
-    pciutils hwdata-pci usbutils hwdata-usb \
-    dtc make \
+    zfs zfs-bash-completion zfs-openrc
 # EO chroot /target apk add
 
 rm -f /target/etc/.git/HEAD.lock

@@ -86,7 +86,7 @@ write_files:
         use ipv6-ra
         ipv6-ll yes
 
-        # sync MAC addresses of eth0 and wlan0
+        # sometime the internal interface comes up as either end0 or end1: fix it eth0
         pre-up exec 2> /dev/null; ip link set name eth0 dev end0 || ip link set name eth0 dev end1 || :
 
   #- path: /home/pi/.ssh/authorized_keys
