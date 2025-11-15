@@ -52,6 +52,7 @@ build: $(WORK_FILES)
 	$(Q) ./bin/img-mangler -p -e COMPRESSOR=cat sh $(SHOPT) lib/img-mangler/img-to-tar.sh $< $@
 
 # keep all image files, even from intermediate steps no longer needed
+.PRECIOUS: %.zip
 .PRECIOUS: %.img
 .PRECIOUS: %.xz
 .PRECIOUS: %.sqfs

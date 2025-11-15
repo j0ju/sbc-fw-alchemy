@@ -1,0 +1,22 @@
+# (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+# set base, copy scripts & out-of-tree resources
+FROM sbc:X6100.v1.1.9-BB.v1.1.8
+
+# set environment - all build containers inherit this
+# - ENV - none
+
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  busybox mount -o bind /target /target 2> /dev/null || :; \
+  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
+  [ -x /target/bin/bash ] || \
+    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
+: # eo CMD
+
+# run scripts that do the modifications steps in one layer
+# * moving files around - see # copy scripts & outoftree resources above
+# * adding stuff, etc
