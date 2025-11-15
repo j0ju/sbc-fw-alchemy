@@ -30,6 +30,10 @@ done
 for SUFFIX; do
   for d in $DIRS; do
     ls -1d $d | \
-      sed -e "s|^|${SUFFIX:+output/}|" -e "s|.Dockerfile.d|${SUFFIX:+.$SUFFIX}|"
+      sed \
+        -e "/[.]Workspace.d$/ d" \
+        -e "s|^|${SUFFIX:+output/}|" \
+        -e "s|.Dockerfile.d|${SUFFIX:+.$SUFFIX}|" \
+      #
   done | sed 's|images/||'
 done
