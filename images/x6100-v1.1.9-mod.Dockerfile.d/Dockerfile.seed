@@ -1,9 +1,18 @@
 # (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
+# add old firmwares to build context to extract baseband firmware
+FROM sbc:X6100.v1.1.7-BB.v1.1.6.fixed-CAT as fw-1.1.7
+FROM sbc:X6100.v1.1.8-BB.v1.1.7 AS fw-1.1.8
+
 # set base, copy scripts & out-of-tree resources
 FROM sbc:x6100-v1.1.9-opt-alpine
+
+# copy old basebands to modified firmware
+COPY --from=fw-1.1.8 /target/part2/usr/firmware/X6100_BBFW_V1.1.7_240904001.xgf /target/usr/firmware/
+COPY --from=fw-1.1.7 /target/part2/usr/firmware/X6100_BBFW_V1.1.6_230307001.xgf /target/usr/firmware/
 
 # run scripts that do the modifications steps in one layer
 # * moving files around - see # copy scripts & outoftree resources above
 # * adding stuff, etc
+
