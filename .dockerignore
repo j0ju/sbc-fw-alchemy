@@ -6,6 +6,7 @@ config.example
 input/*.*
 input/armbian
 output
+Makefile.ext
 
 *.img
 *.img.gz
