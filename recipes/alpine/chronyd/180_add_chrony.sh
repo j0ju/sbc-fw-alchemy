@@ -2,6 +2,7 @@
 # - shell environment file for run-parts scripts in this directory
 # (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
+umask 022
 PS4='> ${0##*/}: '
 #set -x
 
@@ -43,6 +44,10 @@ find . ! -type d | \
 
 # update rc-files
 chroot /target rc-update add chronyd default 1> /dev/null
+
+mkdir -p /target/var/lib/chrony
+: > /target/var/lib/chrony/chrony.drift
+chroot /target chown chrony: /var/lib/chrony /var/lib/chrony/chrony.drift
 
 ! chroot /target which etckeeper > /dev/null 2>&1 || \
   chroot /target etckeeper commit "${0##*/} finish"
