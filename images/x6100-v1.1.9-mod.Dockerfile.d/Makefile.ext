@@ -1,0 +1,11 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+output/x6100-%.img: \
+	$(DEPDIR)/x6100-%.built \
+	images/x6100-v1.1.9-mod.Dockerfile.d/gen-plain-sdcard.sh \
+	#
+		$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=))"
+		$(Q) mkdir -p output ;\
+			./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) images/x6100-v1.1.9-mod.Dockerfile.d/gen-plain-sdcard.sh $@
+
+# vim: ft=make noet sw=2 ts=2

@@ -1,0 +1,10 @@
+# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
+X6100_MIN_FREE=3072
+
+#output/x6100-%.img: .deps/x6100-%.built
+#	$(E) "IMG $@"
+#	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) x6100-multiboot.Dockerfile.d/docker-img-to-sdcard.sh --min-free $(X6100_MIN_FREE) $@
+#
+#output/x6100-%.update.img: .deps/x6100-%.built
+#	$(E) "IMG $@"
+#	$(Q) ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.update.img=)) sh $(SHOPT) x6100-multiboot.Dockerfile.d/docker-img-to-sdcard.sh --update --min-free 512 $@
