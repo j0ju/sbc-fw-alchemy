@@ -59,7 +59,7 @@ FROM sbc:armhf-OptAlpine-3.22      AS opt-alpine
 
 # TODO build packages
 
-FROM sbc:x6100-v1.1.9
+FROM sbc:x6100-v1.1.9-Vanilla
 COPY --from=opt-alpine /tarballs /tarballs
 
 # set environment - all build containers inherit this
