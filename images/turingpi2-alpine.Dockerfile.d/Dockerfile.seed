@@ -1,7 +1,7 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
-FROM sbc:turingpi2 AS donor
+FROM sbc:turingpi2-buildroot AS donor
 FROM sbc:armhf-alpine-3.22
 
 COPY --from=donor /target/boot        /target/boot
