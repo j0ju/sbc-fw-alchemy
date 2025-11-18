@@ -1,0 +1,13 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
+# rules to build turing pi image to get rootfs
+input/x6100-buildroot.tar: \
+	images/x6100-buildroot.Workspace.d/prepare.sh  \
+	.deps/x6100-buildroot.workspace \
+
+		$(Q) ./bin/img-mangler -w /workspace --name "make-$$( basename $(@:.tar=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.tar=) ):/workspace sh /src/$< ; : >> $@
+
+#
+# images/turingpi2-buildroot.Workspace.d/linux_defconfig \
+#	images/turingpi2-buildroot.Workspace.d/uboot_defconfig \
+#	images/turingpi2-buildroot.Workspace.d/tp2bmc_defconfig \
