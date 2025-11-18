@@ -1,0 +1,55 @@
+#!/sbin/openrc-run
+
+# Patched version of mdev init script.
+#  * supports kernels where /proc/sys/kernel/hotplug is not present
+#
+# FIXME: upstream? to recipe/alpine/SBC... ?
+
+description="the mdev device manager"
+
+depend() {
+        provide dev
+        need sysfs dev-mount
+        before checkfs fsck
+        keyword -containers -vserver -lxc
+}
+
+_start_service () {
+        ebegin "Starting busybox mdev"
+        mkdir -p /dev
+        if [ -w /proc/sys/kernel/hotplug ]; then
+                echo "/sbin/mdev" > /proc/sys/kernel/hotplug
+        else
+                /sbin/mdev -d -S -f < /dev/null & pid=$!
+                echo $pid > /run/mdev.pid
+        fi
+        eend $?
+}
+
+_start_coldplug () {
+        ebegin "Scanning hardware for mdev"
+        # mdev -s will not create /dev/usb[1-9] devices with recent kernels
+        # so we manually trigger events for usb
+        for i in $(find /sys/devices -name 'usb[0-9]*'); do
+                [ -e $i/uevent ] && echo add > $i/uevent
+        done
+        # trigger the rest of the coldplug
+        mdev -s
+        eend $?
+}
+
+start() {
+        _start_service
+        _start_coldplug
+}
+
+stop() {
+        ebegin "Stopping busybox mdev"
+        if [ -w /proc/sys/kernel/hotplug ]; then
+                echo > /proc/sys/kernel/hotplug
+        else
+                kill $(cat /run/mdev.pid 2> /dev/null) 2> /dev/null
+                rm -f /run/mdev.pid
+        fi
+        eend
+}

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# delete virtual network interfaces due to static/compiled in drivers
+#( set -x
+  if cd /sys/class/net; then
+    for i in *; do
+      [ -d "$i" ] || continue
+      ip link del $i 2> /dev/null || :
+    done
+  fi
+#)
