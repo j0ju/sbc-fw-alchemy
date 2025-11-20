@@ -7,42 +7,44 @@ VER=3.22
 CMD=
 ARCH=armhf
 HELP=
+PKG_ALL=no
 
 usage() {
-  cat <<EOF
-$0: this generates OptAlpine tarballs"
+  cat <<\ \ EOF
+  $0: this generates OptAlpine tarballs"
 
-USAGE:
-  ${0##*/} [OPTS] [OPERATION] -- [ALPINEPACKES]+
+  USAGE:
+    ${0##*/} [OPTS] [OPERATION] -- [ALPINEPACKES]+
 
-OPERATIONS:
-  pkg    - geneate packages for [ALPINEPACKES] in '$OUTDIR'
-         - the generated tarball contains all needed libraries
-           (from ldd) and all package files
-  search - search alpine repositories for packages
-  shell  - shell into the $IMG container
+  OPERATIONS:
+    pkg    - geneate packages for [ALPINEPACKES] in '$OUTDIR'
+           - the generated tarball contains all needed libraries
+             (from ldd) and all package files
+    search - search alpine repositories for packages
+    shell  - shell into the $IMG container
 
-OPTS:
-  --version | -V  -  specify Alpine version
-  --debug   | -d  -  enable debug
-  --arch    | -a  -  specify Alpine architecture
-  --help    | -h  -  display this text
+  OPTS:
+    --version | -V  -  specify Alpine version
+    --debug   | -d  -  enable debug
+    --arch    | -a  -  specify Alpine architecture
+    --help    | -h  -  display this text
+    --all     | -A  -  build tarballs for all default installed packages
 
-EXAMPLES:
-  * OptAlpine pkg bash mc screen minicom
-    This generates tarballs for
-      bash mc screen minicom
-  * OptAlpine pkg /bin/busybox:/opt/alpine/bin/busybox
-    This generates a tarball only containing Alpine's busybox
-    installed to /opt/alpine/bin/busybox
+  EXAMPLES:
+    * OptAlpine pkg bash mc screen minicom
+      This generates tarballs for
+        bash mc screen minicom
+    * OptAlpine pkg /bin/busybox:/opt/alpine/bin/busybox
+      This generates a tarball only containing Alpine's busybox
+      installed to /opt/alpine/bin/busybox
 
-NOTES:
-  * The tarballs can be It can be extracted to the desired system via
-      tar xf TARBALL -C /
-  * this overwrites all files, so check first what you overwrite
-  * there is now package management for uninstalling packages
+  NOTES:
+    * The tarballs can be It can be extracted to the desired system via
+        tar xf TARBALL -C /
+    * this overwrites all files, so check first what you overwrite
+    * there is now package management for uninstalling packages
 
-EOF
+  EOF
   exit 1
 }
 
@@ -55,12 +57,14 @@ while [ ! $# = 0 ]; do
     # for now only armhf is supported, Dockerfiles are needed
     -a | --arch )    ARCH="$2" ; shift ;;
 
+    -A | --all )     PKG_ALL=yes ;;
+
     #
     [!-]* )          break ;;
     -- )             shift; break ;;
   esac
   shift
-done
+  done
 
 IMG="sbc:$ARCH-OptAlpine-$VER"
 OUTDIR="./output/${IMG#*:}"
@@ -68,23 +72,33 @@ OUTDIR="./output/${IMG#*:}"
 if [ "$HELP" = yes ]; then
   usage
   exit 1
-fi
-
-OP="${1:-}"
-[ $# = 0 ] || shift
+  fi
+  OP="${1:-}"
+  [ $# = 0 ] || shift
 
 shell() {
-  docker run -ti --rm "$IMG"
-}
+  local OPT=-ti
+  tty > /dev/null || OPT=
+  docker run $OPT --rm "$IMG" "$@"
+  }
 
-C=
 cleanup() {
   [ -z "$C" ] || \
     docker rm -f "$C" > /dev/null
-}
+  }
+  C=
+
 pkg() {
   trap cleanup EXIT
   C="$(docker run --rm -d "$IMG" tail -f /dev/null)"
+
+  case "${1:-}:$PKG_ALL" in
+    -A:* | --all:* | *:yes )
+      docker exec $C apk update
+      pkg="$(docker exec $C apk info -L)"
+      set -- $pkg
+  esac
+
   for p in "$@"; do
     PKG=
     case "$p" in
@@ -106,19 +120,19 @@ pkg() {
     printf "${f##*/}: "
     docker cp "$C:$f" "$OUTDIR"
   done
-}
+  }
 
 search() {
   trap cleanup EXIT
   C="$(docker run --rm -d "$IMG" tail -f /dev/null)"
   docker exec $C apk update
   docker exec $C apk search "$@"
-}
+  }
 
 case "${OP}" in
   pkg | p )         pkg "$@" ;;
   search | s )      search "$@" ;;
   shell | sh | "" ) shell "$@" ;;
-esac
+  esac
 
-
+# vim: ts=2 sw=2 et foldmethod=indent

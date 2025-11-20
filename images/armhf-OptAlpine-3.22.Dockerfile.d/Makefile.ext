@@ -1,0 +1,4 @@
+.PHONY: armhf-OptAlpine OptAlpine-armhf
+
+armhf-OptAlpine OptAlpine-armhf:
+	bin/OptAlpine pkg -A
