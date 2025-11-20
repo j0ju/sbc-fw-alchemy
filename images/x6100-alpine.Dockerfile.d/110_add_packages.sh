@@ -36,6 +36,17 @@ PKGS="$PKGS
   rdnssd
 " # EO PKGS
 
+PKGS="$PKGS
+  networkmanager
+    networkmanager-wifi
+    networkmanager-bluetooth
+    networkmanager-bash-completion
+    networkmanager-openrc
+    networkmanager-tui
+    networkmanager-cli
+  wireless-tools iw
+" # EO PKGS
+
 # user convinience and debugging extras
 PKGS="$PKGS
   vim
@@ -45,6 +56,9 @@ PKGS="$PKGS
   pv
   squashfs-tools
 "
+
+
+
 chroot /target apk add $PKGS
 
 find /target/etc -name "*.apk-*" -delete
