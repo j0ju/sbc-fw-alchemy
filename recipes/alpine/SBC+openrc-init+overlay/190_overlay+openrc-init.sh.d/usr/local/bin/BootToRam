@@ -58,7 +58,8 @@ stage0() { # stage0 - prepare SQFS and TMPFS and "switch" to "myself" running as
   else
     size_ro="$( du -shkL "$SQFS" | (read k _; echo $k ))"
     size_overlay="$( du -shkL /overlay/upper | (read k _; echo $k ))"
-    size="$(( size_ro + size_overlay * 3 / 2 ))"
+    size_run="$( du -shkL /run | (read k _; echo $k ))"
+    size="$(( size_ro + ( size_overlay + size_run ) * 3 / 2 ))"
     dir="$( findmnt -n -o TARGET --target "$WORKDIR" )"
     mount -o "remount,size=${size}k" "$dir"
     cat "$SQFS" > "$WORKDIR/rom.sqfs"
