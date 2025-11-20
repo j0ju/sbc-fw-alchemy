@@ -1,0 +1,11 @@
+# make agetty quiet
+quiet="no"
+
+# Set the baud rate of the terminal line
+baud="115200"
+
+# set the terminal type
+term_type="vt100"
+
+# extra options to pass to agetty for this port
+getty_options="-L -w -n -l /lib/serial-login.sh"

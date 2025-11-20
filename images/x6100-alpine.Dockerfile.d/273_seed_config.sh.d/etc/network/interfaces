@@ -1,0 +1,31 @@
+# /etc/network/interfaces
+#
+# Basic network config for turinppi2 using ifupdown-ng
+# The config is split into serveral snippets below
+# /etc/network/interfaces.d/
+#
+# * for enabling DSA (distributed switching architecture) to have VLAN and 
+#   Bonding/LACP offloading see
+#     * sw0 - here you can change the MGMT VLAN config
+#       * MGMT VLAN is currently unttaged on ge0/ge1 and mapped to VID 4094
+#         at the end of the VID range
+#     * eth0.DSA - only modify if you know what you are doing
+
+# * for changing mgmt port address and VID see
+#   * mgmt
+#
+# * for changing trunkport VLANs see
+#   * ge0
+#   * ge1
+# * for changing nodeport VLANs see
+#   * node[1..4]
+
+# loopback interface do not change
+auto lo
+iface lo inet loopback
+  address fe80::bc/64
+
+# include dynamic config
+source-directory /etc/network/interfaces.d
+
+# vim: ts=2 sw=2 et foldmethod=indent

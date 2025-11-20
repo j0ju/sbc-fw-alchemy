@@ -1,0 +1,20 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+FROM sbc:x6100-buildroot AS donor
+FROM sbc:armhf-alpine-3.22
+
+COPY --from=donor /target/boot        /target/boot
+COPY --from=donor /target/lib/modules /target/lib/modules
+
+# populate modules and boot from vanilla
+RUN set -e; umask 022; \
+  cp -a /target.busybox.static /target/sbin/busybox.static ;\
+: EO RUN
+
+RECIPE alpine/SBC+openrc-init+overlay
+RECIPE alpine/ifupdown-ng
+RECIPE alpine/ifupdown-ng.update-executors
+RECIPE alpine/sshd
+RECIPE alpine/chronyd
+RECIPE alpine/cleanup.unlink-overloaded-busybox-applets
