@@ -10,8 +10,6 @@ set -x
 #- !!!! /root is volatile, home is moved via img-wangler/IRun
   cd /workspace
 
-  mkdir -p /workspace/x6100
-
   if ! [ -d AetherX6100Buildroot/.git ]; then
     git clone https://github.com/gdyuldin/AetherX6100Buildroot
   fi
@@ -21,8 +19,15 @@ set -x
   fi
 
   ( cd AetherX6100Buildroot
+  #- check out OSS buildroot for x6100
     git submodule init
     git submodule update
+
+  #- patch buildroot config config
+    cp "${0%/*}"/linux_defconfig   br2_external/board/X6100/linux/sun8i-r16-x6100_defconfig
+    #cp "${0%/*}"/uboot_defconfig  br2_external/board/X6100/linux/TO_BE_NAMED??
+    #cp "${0%/*}"/br_defconfig     br2_external/board/X6100/linux/TO_BE_NAMED??
+
     ./br_config.sh
     cd build
     make
