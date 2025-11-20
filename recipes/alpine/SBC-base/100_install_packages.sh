@@ -28,6 +28,8 @@ PKGS=" \
   busybox-openrc busybox-mdev-openrc \
 "
 
+mkdir -p /target/var/lib/apk
+
 # we install these pkgs in advance so -openrc and -bash-completion are installed
 # as recomends automatically for user convinience
   chroot /target apk add bash-completion openrc
