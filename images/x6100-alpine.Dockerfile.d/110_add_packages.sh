@@ -55,6 +55,7 @@ PKGS="$PKGS
   minicom
   pv
   squashfs-tools
+  libgpiod
 "
 
 
