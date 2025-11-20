@@ -1,8 +1,8 @@
 # - /etc/profile -
-export PATH="/bin:/sbin:/usr/bin:/usr/sbin"
-
 [ "$__ETC_PROFILE_READ" = yes ] && return 0
 __ETC_PROFILE_READ=yes
+
+export PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
 case "$-" in
   *i* )

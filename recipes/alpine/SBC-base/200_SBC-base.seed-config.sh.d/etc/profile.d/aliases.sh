@@ -1,6 +1,6 @@
 # - /etc/profile.d/aliases.sh -
 
-alias rL="__ETC_PROFILE_READ=no; . /etc/profile"
+alias rL="__ETC_PROFILE_READ=no; __HOME_PROFILE_READ=no; . /etc/profile; [ -f ~/.profile ] && . ~/.profile"
 alias rS="exec tx"
 alias log="logread -F"
 
