@@ -48,7 +48,7 @@ dd if=/dev/zero bs=1024 count=0 seek=$IMAGE_SIZE_KB of=$IMAGE status=none
 echo "FDISK"
 sfdisk $IMAGE > /dev/null <<EOF
   label: dos
-  2: type=83 start=2048 bootable
+  1: type=83 start=2048 bootable
 EOF
 
 #--- mount image fs
@@ -79,12 +79,12 @@ cleanup() {
 trap cleanup EXIT TERM HUP INT USR1 USR2
 DEVS="$(kpartx -av "$IMAGE" | grep -oE 'loop[^ ]+' | sort -u)"
 
-P2="$(echo $DEVS | grep -E -o "[^ ]+p2")"
+ROOT_DEV="$(echo "$DEVS" | grep -E -o "[^ ]+p1$")"
 mkdir -p /mnt/
 
 echo "MKFS"
-mkfs.ext4 -q -L x6100root /dev/mapper/$P2
-mount -t ext4 /dev/mapper/$P2 /mnt
+mkfs.ext4 -q -L x6100root /dev/mapper/$ROOT_DEV
+mount -t ext4 /dev/mapper/$ROOT_DEV /mnt
 
 #--- copy rootfs
 echo "COPY"
@@ -105,17 +105,19 @@ fi
 
 #--- adapt uboot scripts
 PARTUUID=
-echo "UBOOT generate config"
-eval "$(blkid -o export /dev/mapper/$P2)"
+eval "$(blkid -o export /dev/mapper/$ROOT_DEV)"
 if [ -z "$PARTUUID" ]; then
   echo "E: PARTUUID of data partition not found"
   exit 1
 fi
 if [ -f /mnt/boot/boot.cmd ]; then
+  echo "UBOOT generate config"
   ( cd /mnt/boot
     sed -i -r -e "/setenv[ ]+rootdev / s/rootdev.*/rootdev PARTUUID=$PARTUUID/" boot.cmd
     mkimage -A arm -T script -d boot.cmd boot.scr > /dev/null
   )
+else
+  echo "W: no /boot/boot.cmd found, UBoot will use default boot scheme of platform." >&2
 fi
 
 [ -z "$OWNER" ] || \
