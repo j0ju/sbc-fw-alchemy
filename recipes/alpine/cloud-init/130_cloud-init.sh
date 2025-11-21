@@ -44,7 +44,8 @@ find . ! -type d | \
 chroot /target setup-cloud-init
 chroot /target cloud-init clean
 
-chroot /target etckeeper commit "${0##*/} finish"
+! chroot /target which etckeeper > /dev/null || \
+  chroot /target etckeeper commit "${0##*/} finish"
 
 # FIXME: why? the commit is successful
 rm -f /target/etc/.git/HEAD.lock /target/etc/.git/refs/heads/main.lock
