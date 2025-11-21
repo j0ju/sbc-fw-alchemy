@@ -56,8 +56,16 @@ PKGS="$PKGS
   pv
   squashfs-tools
   libgpiod
-"
+" # EO PKGS
 
+# useful apps
+PKGS="$PKGS
+  podman
+    podman-docker podman-openrc podman-bash-completion
+  podman-compose
+    podman-compose-bash-completion
+  podman-tui
+" # EO PKGS
 
 
 chroot /target apk add $PKGS

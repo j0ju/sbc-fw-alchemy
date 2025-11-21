@@ -59,6 +59,8 @@ cleanup() {
     rm -f "$IMAGE"
   cd /
   for m in /mnt/part* /mnt; do
+    [ ! -d "$m" ] || \
+      df -h "$m" | sed -nr -e 's|/dev[^1234567890]+[0-9]|USAGE /dev/blk0|' -e 's|/mnt/?|/| p'
     umount "$m" 2> /dev/null || :
   done
   for d in $DEVS; do

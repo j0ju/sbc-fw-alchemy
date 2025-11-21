@@ -4,8 +4,9 @@
 FROM sbc:x6100-buildroot AS donor
 FROM sbc:armhf-alpine-3.22
 
-COPY --from=donor /target/boot        /target/boot
-COPY --from=donor /target/lib/modules /target/lib/modules
+COPY --from=donor /target/boot         /target/boot
+COPY --from=donor /target/lib/modules  /target/lib/modules
+COPY --from=donor /target/lib/firmware /target/lib/firmware
 
 # populate modules and boot from vanilla
 RUN set -e; umask 022; \
@@ -17,4 +18,6 @@ RECIPE alpine/ifupdown-ng
 RECIPE alpine/ifupdown-ng.update-executors
 RECIPE alpine/sshd
 RECIPE alpine/chronyd
+#RECIPE alpine/etckeeper
 RECIPE alpine/cleanup.unlink-overloaded-busybox-applets
+RECIPE alpine/cloud-init
