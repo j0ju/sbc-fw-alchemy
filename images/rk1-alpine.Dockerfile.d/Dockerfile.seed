@@ -16,6 +16,9 @@ RUN set -e; umask 022; \
 
 # recipes
 RECIPE alpine/SBC+openrc-init+overlay
+# this is needed for Armbian RK1 vendor kernel
+RECIPE alpine/SBC+NO_UEVENT_HELPER.hotplug-mdev-patch
+
 RECIPE alpine/ifupdown-ng
 RECIPE alpine/ifupdown-ng.update-executors
 RECIPE alpine/sshd
