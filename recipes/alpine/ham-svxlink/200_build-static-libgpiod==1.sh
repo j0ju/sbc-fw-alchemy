@@ -5,7 +5,7 @@
 # * leaves the source for later updates and changes in PREFIX/src
 # * PREFIX is defined in 200_svxlink_config.sh
 
-. ${0%/*}/000_svxlink_config.sh
+. ${0%/*}/000_recipe_svxlink_config.sh
 
 PREFIX=/usr
 NCPU=$(cat /proc/cpuinfo | grep -c ^processor) || NCPU=2
@@ -23,6 +23,8 @@ chroot /target /bin/sh -eu << EOF
   tar xf libgpiod_1.6.3.orig.tar.xz || tar xf libgpiod_1.6.3.orig.tar.xz
   cd libgpiod-1.6.3
 
+  autoupdate
+  aclocal
   autoreconf -f
   automake
   ./configure --prefix=$PREFIX --enable-tools --enable-static --disable-shared

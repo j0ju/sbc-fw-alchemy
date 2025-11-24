@@ -5,7 +5,7 @@
 # * leaves the source for later updates and changes in PREFIX/src
 # * PREFIX is defined in 200_svxlink_config.sh
 
-. ${0%/*}/000_svxlink_config.sh
+. ${0%/*}/000_recipe_svxlink_config.sh
 
 chroot /target /bin/sh -eu << EOF
   PS4="${PS4%: }::chroot: "

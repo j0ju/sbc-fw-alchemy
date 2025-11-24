@@ -8,7 +8,7 @@
 # * it patches the systemd unit so it will not use a log file but the systemd journal
 #   this eases logrotation on SBCs and logshipping (if used)
 
-. ${0%/*}/000_svxlink_config.sh
+. ${0%/*}/000_recipe_svxlink_config.sh
 set -x
 
 umask 022
