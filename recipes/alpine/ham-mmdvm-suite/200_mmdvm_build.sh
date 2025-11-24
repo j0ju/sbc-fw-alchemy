@@ -5,7 +5,7 @@ umask 022
 set -x
 PS4="> ${0##*/}: "
 
-. ${0%/*}/000_mmdvm_config.sh
+. ${0%/*}/000_recipe_mmdvm_config.sh
 
 for repo in $REPOS; do
   project="${repo##*/}"

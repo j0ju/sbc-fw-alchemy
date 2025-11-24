@@ -1,7 +1,7 @@
 #!/bin/sh -eu
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
-. ${0%/*}/000_mmdvm_config.sh
+. ${0%/*}/000_recipe_mmdvm_config.sh
 
 # copy over config seed
 DST="/target"
