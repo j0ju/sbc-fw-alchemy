@@ -136,9 +136,32 @@ ln -s "$ROOTDIR" /mnt/CURRENT
   #git commit -m "${0} finish"
 
 # use sqfs and extract /boot
-  echo "COPY $IMAGE <- $SRC::/boot"
-  tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs ./boot
-  echo "COPY $IMAGE <- ${SRC%.rootfs.tar.zst}.$ROFSTYPE"
-  cp "${SRC%.rootfs.tar.zst}.$ROFSTYPE" "/mnt/CURRENT/root.$ROFSTYPE"
+case "$ROFSTYPE" in
+  sqfs | erofs )
+    echo "COPY $IMAGE <- $SRC::/boot"
+    tar xf "$SRC" -C /mnt/CURRENT --atime-preserve --acls --xattrs ./boot
+    echo "COPY $IMAGE <- ${SRC%.rootfs.tar.zst}.$ROFSTYPE"
+    cp "${SRC%.rootfs.tar.zst}.$ROFSTYPE" "/mnt/CURRENT/root.$ROFSTYPE"
+  ;;
+  * )
+    echo "E: unknown ROFSTYPE=`$ROFSTYPE`" >&2
+    exit 1
+  ;;
+esac
+
+#--- adapt uboot scripts
+PARTUUID=
+echo "UBOOT BOOT PREP PARTUUID=$PARTUUID"
+eval "$(blkid -o export /dev/mapper/$P1)"
+if [ -z "$PARTUUID" ]; then
+  echo "E: PARTUUID of data partition not found"
+  exit 1
+fi
+if [ -f /mnt/boot/boot.cmd ]; then
+  ( cd /mnt/boot
+    sed -i -r -e "/setenv[ ]+rootdev / s/rootdev.*/rootdev PARTUUID=$PARTUUID/" boot.cmd
+    mkimage -A arm -T script -d boot.cmd boot.scr > /dev/null
+  )
+fi
 
 # vim: ts=2 sw=2 ft=sh et
