@@ -105,8 +105,8 @@ fi
 
 #--- adapt uboot scripts
 PARTUUID=
-echo "UBOOT generate config"
 eval "$(blkid -o export /dev/mapper/$P2)"
+echo "UBOOT BOOT PREP PARTUUID=$PARTUUID"
 if [ -z "$PARTUUID" ]; then
   echo "E: PARTUUID of data partition not found"
   exit 1

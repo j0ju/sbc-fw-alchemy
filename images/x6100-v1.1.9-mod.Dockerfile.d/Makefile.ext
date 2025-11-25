@@ -8,4 +8,14 @@ output/x6100-%.img: \
 		$(Q) mkdir -p output ;\
 			./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) images/x6100-v1.1.9-mod.Dockerfile.d/gen-plain-sdcard.sh $@
 
+output/x6100-%.sqfs.img: \
+	output/x6100-%.rootfs.tar.zst \
+	output/x6100-%.sqfs \
+	images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh \
+	images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh.init \
+	#
+		$(E) "GENIMAGE $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=))" MULTIBOOT
+		$(Q) mkdir -p output
+		$(Q) ./bin/img-mangler -p -e ROFSTYPE=sqfs --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs.img=)) sh $(SHOPT) images/bpi2m0-alpine.Dockerfile.d/gen-multi-rootfs-sd-img.sh $< $@
+
 # vim: ft=make noet sw=2 ts=2
