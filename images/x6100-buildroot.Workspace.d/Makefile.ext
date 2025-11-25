@@ -4,6 +4,7 @@
 input/x6100-buildroot.tar: \
 	images/x6100-buildroot.Workspace.d/prepare.sh  \
 	images/x6100-buildroot.Workspace.d/linux_defconfig \
+	images/x6100-buildroot.Workspace.d/uboot_defconfig \
 	.deps/x6100-buildroot.workspace \
 
 		$(Q) ./bin/img-mangler -w /workspace --name "make-$$( basename $(@:.tar=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.tar=) ):/workspace sh /src/$< ; : >> $@

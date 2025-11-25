@@ -25,7 +25,7 @@ set -x
 
   #- patch buildroot config config
     cp "${0%/*}"/linux_defconfig   br2_external/board/X6100/linux/sun8i-r16-x6100_defconfig
-    #cp "${0%/*}"/uboot_defconfig  br2_external/board/X6100/linux/TO_BE_NAMED??
+    cp "${0%/*}"/uboot_defconfig   br2_external/board/X6100/u-boot/sun8i-r16-x6100_defconfig
     #cp "${0%/*}"/br_defconfig     br2_external/board/X6100/linux/TO_BE_NAMED??
 
     ./br_config.sh
