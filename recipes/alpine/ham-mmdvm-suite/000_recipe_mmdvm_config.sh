@@ -2,7 +2,7 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 umask 022
-set -x
+#set -x
 PS4="> ${0##*/}: "
 
 PREFIX=/opt/mmdvm

@@ -2,7 +2,7 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 umask 022
-set -x
+#set -x
 PS4="> ${0##*/}: "
 
 . ${0%/*}/000_recipe_mmdvm_config.sh
@@ -13,7 +13,7 @@ for repo in $REPOS; do
 chroot /target /bin/sh <<EOchroot
   umask 022
   PS4="${PS4%: }::chroot::$project: "
-  set -x
+  #set -x
 
   mkdir -p $PREFIX/bin $PREFIX/src
   cd "$PREFIX/src"
