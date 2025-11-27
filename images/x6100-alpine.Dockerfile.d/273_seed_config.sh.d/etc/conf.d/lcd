@@ -1,0 +1,6 @@
+# config file for /etc/init.d/lcd
+
+# POWER=on     # on, off
+# BRIGHTNESS=5 # 1..10
+LOG=yes        # no, yes
+# LOGVT=13     # no, yes

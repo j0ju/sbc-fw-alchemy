@@ -1,0 +1,69 @@
+#!/sbin/openrc-run
+
+description="set LCD backlight control paramenters"
+
+depend() {
+  need localmount dev logger
+}
+
+# can be overriden in /etc/conf.d/backlight
+POWER="${POWER:-on}"           # on, off
+BRIGHTNESS="${BRIGHTNESS:-3}"  # 1..10
+LOG="${LOG:-no}"               # no, yes
+LOGVT="${LOGVT:-13}"           # 1..MAX_TTY_NO
+
+pidfile=/run/lcd.pid
+
+extra_commands="off on reload log"
+
+start() {
+  ebegin "setting LCD settings"
+
+  rc=1
+  case "$LOG:$POWER" in
+    yes:* )
+      on
+      log
+      ;;
+    no:on )
+      log_stop
+      on
+      ;;
+    * )
+      log_stop
+      off
+      ;;
+  esac
+  rc=0
+  eend $rc
+
+  return $rc
+}
+
+log() {
+  log_stop
+  chvt $LOGVT
+  on
+  busybox logread -F @/dev/tty$LOGVT > /dev/tty$LOGVT < /dev/null & echo $! > "$pidfile"
+}
+
+log_stop() {
+  kill $(cat $pidfile 2> /dev/null) 2> /dev/null
+  rm -f "$pidfile"
+}
+
+reload() {
+  start
+}
+
+off() {
+  log_stop
+  echo 1 > /sys/class/backlight/backlight/bl_power
+}
+
+on() {
+  echo 0 > /sys/class/backlight/backlight/bl_power
+  echo "$(( $BRIGHTNESS % 10 ))" > /sys/class/backlight/backlight/brightness
+}
+
+# vim: ts=2 et sw=2 ft=sh
