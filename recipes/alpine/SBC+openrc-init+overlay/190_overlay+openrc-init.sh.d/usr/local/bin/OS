@@ -91,8 +91,18 @@ update_root() {
   rm -f "$RO/CURRENT"
   ln -s "${NEXT##*/}" "$RO/CURRENT"
 
+  RO_UUID="$(findmnt -o UUID -n /rom/mnt)"
+  RO_PARTUUID="$(findmnt -o PARTUUID -n /rom/mnt)"
+
+  if [ -f "$NEXT/boot/boot.cmd" ]; then
+    echo "I: found /boot/boot.cmd, preparing with PARTUUID=$RO_PARTUUID"
+    ( cd "$NEXT/boot"
+      sed -i -r -e "/setenv[ ]+rootdev / s/rootdev.*/rootdev PARTUUID=$RO_PARTUUID/" "boot.cmd"
+      mkimage -A arm -T script -d "boot.cmd" "boot.scr" > /dev/null
+    )
+  fi
+
   if [ -f "$NEXT/boot/armbianEnv.txt" ]; then
-    RO_UUID="$(findmnt -o UUID -n /rom/mnt)"
     ROOT_CMDLINE="UUID=$RO_UUID"
     echo "I: found /boot/armbianEnv.txt, preparing with UUID=$RO_UUID"
     sed -i -r -e "/rootdev=/ s/=.*$/=$ROOT_CMDLINE/" "$NEXT/boot/armbianEnv.txt"
