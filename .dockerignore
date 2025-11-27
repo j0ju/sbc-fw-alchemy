@@ -1,6 +1,7 @@
 .deps
 .git
 .env
+.venv
 config
 config.example
 input/*.*
