@@ -30,6 +30,7 @@ PKGS="$PKGS
   alsa-tools alsa-utils bluez-alsa
   gsm-tools
   linux-tools-gpio
+  ladspa
   lame
   git
   gcc g++ binutils make
@@ -42,7 +43,6 @@ PKGS="$PKGS
     speexdsp-dev speex-dev popt-dev
     opus-dev opusfile-dev libogg-dev
     jsoncpp-dev lame-dev ladspa-dev libgcrypt-dev librtlsdr-dev
-    ladspa-dev
 "
 
 # install packages for tarballs
