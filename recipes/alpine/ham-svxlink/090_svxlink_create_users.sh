@@ -9,7 +9,7 @@
 
 chroot /target /bin/sh -eu << EOF
   PS4="${PS4%: }::chroot: "
-  set -x
+  #set -x
   umask 022
 
   getent group gpio 2> /dev/null 1>&2 || \

@@ -9,7 +9,7 @@
 #   this eases logrotation on SBCs and logshipping (if used)
 
 . ${0%/*}/000_recipe_svxlink_config.sh
-set -x
+#set -x
 
 umask 022
 

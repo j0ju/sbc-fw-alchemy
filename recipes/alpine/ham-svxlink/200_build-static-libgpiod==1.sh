@@ -12,7 +12,7 @@ NCPU=$(cat /proc/cpuinfo | grep -c ^processor) || NCPU=2
 
 chroot /target /bin/sh -eu << EOF
   PS4="${PS4%: }::chroot: "
-  set -x
+  #set -x
   umask 022
 
   # create prefix
@@ -20,7 +20,9 @@ chroot /target /bin/sh -eu << EOF
   cd "$PREFIX"/src
 
   wget http://deb.debian.org/debian/pool/main/libg/libgpiod/libgpiod_1.6.3.orig.tar.xz
-  tar xf libgpiod_1.6.3.orig.tar.xz || tar xf libgpiod_1.6.3.orig.tar.xz
+  # extract image, it has some strange properties, which fails to set attributes properly on the first run
+  ( tar xf libgpiod_1.6.3.orig.tar.xz ) 2> /dev/null || \
+    tar xf libgpiod_1.6.3.orig.tar.xz
   cd libgpiod-1.6.3
 
   autoupdate

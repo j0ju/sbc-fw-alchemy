@@ -5,14 +5,12 @@
 # * leaves the source for later updates and changes in PREFIX/src
 # * PREFIX is defined in 200_svxlink_config.sh
 
-set -x
-
 . ${0%/*}/000_recipe_svxlink_config.sh
 
 chroot /target /bin/sh -eu << EOF
   umask 022
   PS4="${PS4%: }::chroot: "
-  set -x
+  #set -x
 
   # create prefix
   mkdir -p "$PREFIX"/src
@@ -29,7 +27,7 @@ chroot /target /bin/sh -eu << EOF
     ../svxlink-git/src \
     #
   # build
-  make -j$NCPU all doc
+  make -j$NCPU all
 
   # install
   make install
