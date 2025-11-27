@@ -28,6 +28,7 @@ PKGS="$PKGS
   erofs-utils
   attr
   rsync
+  linuxconsoletools
 "
 
 # network core
@@ -45,6 +46,7 @@ PKGS="$PKGS
     networkmanager-tui
     networkmanager-cli
   wireless-tools iw
+  wavemon
 " # EO PKGS
 
 # user convinience and debugging extras
@@ -67,6 +69,24 @@ PKGS="$PKGS
   podman-tui
 " # EO PKGS
 
+PKGS="$PKGS
+  fbida-fbi
+" # EO PKGS
+
+PKGS="$PKGS
+  alsa-utils alsa-tools
+    alsa-tools-gui
+    alsa-topology-conf
+    alsa-plugins
+    alsa-ucm-conf
+    alsa-utils-openrc
+  alsaconf
+  bluez
+    bluez-alsa bluez-alsa-openrc bluez-alsa-utils
+    bluez-btmgmt bluez-btmon bluez-firmware bluez-hid2hci
+  cmus mpg123 lame
+    cmus-bash-completion
+" # EO PKGS
 
 chroot /target apk add $PKGS
 
