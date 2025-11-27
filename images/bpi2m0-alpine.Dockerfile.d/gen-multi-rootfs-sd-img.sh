@@ -151,8 +151,8 @@ esac
 
 #--- adapt uboot scripts
 PARTUUID=
-echo "UBOOT BOOT PREP PARTUUID=$PARTUUID"
 eval "$(blkid -o export /dev/mapper/$P1)"
+echo "UBOOT BOOT PREP PARTUUID=$PARTUUID"
 if [ -z "$PARTUUID" ]; then
   echo "E: PARTUUID of data partition not found"
   exit 1
