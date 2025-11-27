@@ -1,0 +1,105 @@
+#cloud-config
+---
+fqdn: x6100.local
+hostname: x6100
+manage_etc_hosts: true
+package_update: false
+disable_root: false
+ssh_pwauth: true
+
+users: []
+  #- name: x6100
+  #  gecos: x6100
+  #  primary_group: users
+  #  groups: wheel
+  #  lock_passwd: true
+  #  #plain_text_password: x6100
+
+# this is overridden bei runcmd section in user-data
+runcmd:
+  - |
+    PS4="runcmd: "; set -e; trap `exit $?` EXIT
+    set -ex
+
+    cloudinit_clean() {
+      cloud-init clean
+      rm -rf /var/lib/cloud
+    }
+    cloudinit_disable() (
+      # this ensures that cloud init is only running once
+      set +x
+      rc-update | while read svc _ runlevels; do
+        case "$svc" in
+          cloud-* )
+            for lvl in $runlevels; do
+            ( set -x
+              rc-update del $svc $lvl
+            )
+            done
+            ;;
+        esac
+      done
+      set -x
+      cloudinit_clean
+      echo "cloud-init: disabled by /boot/user-data" | \
+        tee /etc/cloud/cloud-init.disabled
+    )
+
+    detached_cleanup() {
+      # detach from service cgroup (openrc / systemd) to prevent killing lingering procs
+      if read pid _ < /proc/self/stat && [ -f /sys/fs/cgroup/cgroup.procs ]; then
+        echo $pid > /sys/fs/cgroup/cgroup.procs
+      fi
+
+      # wait until parent finished
+      while [ -d "/proc/$$" ]; do
+        sleep 7
+      done
+
+      cloudinit_disable
+
+      [ -x /boot/runcmd.ci ] && \
+        exec /boot/runcmd.ci
+    }
+    trap 'rs=$?; detached_cleanup & sleep 1; exit $rs' EXIT
+
+    #- passwd for root
+    echo root:x6100 | chpasswd
+    passwd -u root
+
+    #- podman - move storage dir away from overlay and enable cgroups
+      rc-update add cgroups sysinit
+      /etc/init.d/cgroups start
+      rm -rf /var/lib/containers
+      mkdir -p /overlay/containers
+      ln -sf /overlay/containers /var/lib/containers
+
+    #- do fstrim on /rom/mnt if avail to release a bit pressure from the FTL
+      if mount -o remount -w /rom/mnt; then
+        fstrim /rom/mnt || :
+        mount -o remount -r /rom/mnt || :
+      fi
+
+    #- ensure network config
+      if ! ifup -a; then
+        cloudinit_clean
+        reboot
+      fi
+      /etc/init.d/lcd reload
+
+    #- start rc.local
+      /etc/init.d/rc.local start
+
+write_files:
+  - path: /etc/conf.d/lcd
+    permissions: '0644'
+    owner: root:root
+    content: |
+      # config file for /etc/init.d/lcd
+
+      # POWER=off      # on, off
+      # BRIGHTNESS=5 # 1..10
+      LOG=yes          # no, yes
+      # LOGVT=13       # 1..MAX_VT
+
+# vim: ts=2 sw=2 et ft=yaml foldmethod=indent

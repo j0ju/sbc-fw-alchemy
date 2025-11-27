@@ -66,7 +66,7 @@ find . ! -type d | \
   done
 
 # pre-seed initial seed credentials
-echo 'root:turing' | chroot /target chpasswd
+echo 'root:x6100' | chroot /target chpasswd
 
 # change home of root to /run - less writes to MMC/flash
 sed -i -re 's|:/root:|:/run:|' /target/etc/passwd
@@ -105,6 +105,7 @@ rc-update add mdev sysinit
 rc-update add hwdrivers sysinit
 rc-update add syslog sysinit
 rc-update add klogd sysinit
+rc-update add lcd sysinit
 
 rc-update add networking default
 rc-update add sshd default
