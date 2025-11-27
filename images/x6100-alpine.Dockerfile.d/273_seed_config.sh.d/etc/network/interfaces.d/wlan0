@@ -1,0 +1,6 @@
+#auto wlan0
+iface wlan0
+  use dhcp
+  use ipv6-ra
+
+  wifi-config-path /etc/wpa_supplicant/$IFACE.conf
