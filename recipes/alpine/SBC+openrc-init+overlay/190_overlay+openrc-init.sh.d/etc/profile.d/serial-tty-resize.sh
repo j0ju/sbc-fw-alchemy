@@ -1,4 +1,5 @@
 TTYResize() {
+        [ -z "$1" ] || export TERM="$1"
         case "$(tty)" in
                 /dev/ttyS[0-9] | /dev/ttyGS[0-9] | /dev/ttyAMA[0-9] )
                         _STTY_=yes
