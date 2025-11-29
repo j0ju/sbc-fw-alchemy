@@ -27,10 +27,11 @@ find . ! -type d | \
       */.placeholder ) continue ;;
     esac
 
-    rm -f "${DST}/$f"
     chmod 0755 "${DST}/${f%/*}"
 
+    rm -f "${DST}/$f"
     mv "$f" "${DST}/$f"
+
     if [ ! -L "${DST}/$f" ]; then
       if [ -x "${DST}/$f" ]; then
         chmod 0755 "${DST}/$f"
@@ -38,5 +39,10 @@ find . ! -type d | \
         chmod 0644 "${DST}/$f"
       fi
     fi
-    echo " * /$f"
+    #echo " * /$f"
   done
+
+for i in shutdown reboot halt poweroff initctl telinit; do
+  rm -f "/target/sbin/$i"
+  ln -s init "/target/sbin/$i"
+done

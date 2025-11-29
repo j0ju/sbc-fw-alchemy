@@ -14,9 +14,12 @@ telinit() { # mimics telinit
 }
 
 case "$$:${0##*/}:${1:-}" in
-  1:*:* )                                                   exec /sbin/openrc-init "$@" ;;
-  *:halt:*  | *:reboot:   | *:shutdown: )                   exec /sbin/openrc-shutdown --${0##*/} now ;;
-  *:halt:-f | *:reboot:-f | *:shutdown:-f | *:poweroff:-f ) exec /bin/busybox ${0##*/} -f ;;
+  1:*:* )                                   exec /sbin/openrc-init "$@" ;;
+
+  *:halt:-f | *:reboot:-f | *:poweroff:-f ) exec /bin/busybox ${0##*/} -f ;;
+  *:halt:*  | *:reboot:*  | *:poweroff:*  ) exec /sbin/openrc-shutdown --${0##*/} "${@:-now}" ;;
+  *:shutdown:* )                            exec /sbin/openrc-shutdown "${@}" ;;
+
   *:init:*  | *:initctl   | *:telinit ) telinit "$@" ;;
   * )
     echo "E: unknown call on multicall binary '$0', EXIT" >&2
