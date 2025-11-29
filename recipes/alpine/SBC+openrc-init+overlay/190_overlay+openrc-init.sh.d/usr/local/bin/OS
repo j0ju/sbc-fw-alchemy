@@ -1,4 +1,6 @@
 #!/bin/sh
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+
 set -eu
 umask 022
 
@@ -49,8 +51,9 @@ update_root() {
 
   NEXT_VERSION=$( cat "$MNT/boot/build.meta" )
   NEXT="$RO/ROOTFS.$NEXT_VERSION"
-  NEXT_SIZE_kb=$( sum=0; du -xshkL "$SQFS" "$MNT/boot" "$MNT/sbin/busybox.static" | { while read i _; do sum=$(( sum + i)); done; echo $sum ; } )
-  NEXT_SIZE_kb=$(( NEXT_SIZE_kb + MIN_FREE_kb ))
+  NEXT_SIZE_boot_kb=$( sum=0; du -xshkL "$MNT/boot" "$MNT/sbin/busybox.static" | { while read i _; do sum=$(( sum + i)); done; echo $sum ; } )
+  NEXT_SIZE_root_kb=$( sum=0; du -xshkL "$SQFS"                                | { while read i _; do sum=$(( sum + i)); done; echo $sum ; } )
+  NEXT_SIZE_kb=$(( NEXT_SIZE_root_kb + NEXT_SIZE_boot_kb + MIN_FREE_kb ))
 
   echo
   echo "I: running image: $RUNNING"
@@ -60,8 +63,12 @@ update_root() {
   echo "I: running version: $RUNNING_VERSION"
   echo "I: new version    : $NEXT_VERSION"
   echo
-  echo "I: free size:   $RO_FREE_kb"
-  echo "I: needed size: $NEXT_SIZE_kb KB (SQFS + /boot)"
+  echo "I: free size:   $RO_FREE_kb KB"
+  echo
+  echo "I: needed size for /: $NEXT_SIZE_root_kb KB"
+  echo "I: needed size for /boot: $NEXT_SIZE_boot_kb KB"
+  echo "I: needed size: $NEXT_SIZE_kb KB"
+  echo
 
   if [ $NEXT_SIZE_kb -gt $RO_FREE_kb ]; then
     echo "E: too less space on device, ABORT" 1>&2
@@ -130,10 +137,98 @@ update_root() {
   #       do FS maintenance?
   }
 
-status() {
-  : # for now
-  /etc/init.d/mmc stat
+cleanup_root() {
+  if ! cd /rom/mnt 2> /dev/null; then
+    echo >&2 "E: could not change to OS image partition, ABORT"
+    exit 1
+  fi
+  status_boot
+  echo
+  echo "CLEANUP"
+
+  act() { echo "I: would delete $*"; }
+  nop() { echo "I: keep  $*"; }
+  case "${1:-}" in
+    --yes | -f | --FORCE | --force )
+      RW="mount -o remount -w '$PWD'; trap 'fstrim $PWD || :; mount -o remount -r $PWD' EXIT; RW="
+      act() { eval "$RW"; ( set -x; rm -rf "$1" ) }
+      #nop() { :; }
+      shift
+      ;;
+  esac
+
+  ls -1d ROOTFS.* 2> /dev/null | \
+    sort -nr | \
+    while read os; do
+      if [ "$CURRENT" = "$os" ]; then
+        nop "$os" "   <--- CURRENT"
+        continue
+      elif [ "$NEXT" = "$os" ]; then
+        nop "$os" "   <--- NEXT BOOT"
+        continue
+      fi
+
+      act "$os"
+    done
   }
+
+status_boot() {
+  local oPWD="$PWD"
+  if ! cd /rom/mnt 2> /dev/null; then
+    echo >&2 "E: could not change to OS image partition, ABORT"
+    cd "$oPWD"
+    return 1
+  fi
+
+  NEXT="$(readlink CURRENT)"
+  CURRENT="$(findmnt /rom -o SOURCE -n)"
+  case "$CURRENT" in
+    */loop[0-9] )
+      CURRENT="$(losetup -n -O BACK-FILE -l "$CURRENT")"
+      CURRENT="${CURRENT%/*}"
+      CURRENT="${CURRENT##*/}"
+      ;;
+    * )
+      echo "E: CURRENT is not of known type '$CURRENT' rootfs, abort" >&2
+      exit 1
+      ;;
+  esac
+
+  local FMT='%-8s %-40s\n'
+  printf "$FMT" SIZE NAME
+  local FMT='%8s %-40s%s\n'
+  du -shkx ROOTFS.* | \
+    sort -nr | \
+    while read size os; do
+			[ -d "$os" ] || continue
+      e=
+      if [ "$CURRENT" = "$os" ]; then
+        e=" <--- CURRENT"
+      elif [ "$NEXT" = "$os" ]; then
+        e=" <--- NEXT BOOT"
+      fi
+      printf "$FMT" "$size" "$os" "$e"
+    done
+
+  echo
+  printf "$FMT" "$(df . -hk --output=avail | (read ; read i; echo $i) )" "--- free / size $(df . -hk --output=size | ( read ; read i; echo $i )) ---" ""
+  echo
+
+  cd "$oPWD"
+}
+
+status_mmc() (
+  . /etc/init.d/mmc
+  [ -r /etc/conf.d/mmc ] || \
+		. /etc/conf.d/mmc
+  status
+  )
+
+status() (
+  status_mmc
+	echo
+	status_boot
+  )
 
 snapshot() {
   echo "E: not implemented, yet."
@@ -141,34 +236,37 @@ snapshot() {
   }
 
 help() {
-cat <<EOF
-${0##*/} ($0)
+cat <<-EOF
+	${0##*/} ($0)
 
-USAGE:
-  ${0##*/} <COMMAND> [OPTIONS]
+	USAGE:
+	${0##*/} <COMMAND> [OPTIONS]
 
-  Commands:
-     update <IMAGE>           - update rootfs with SQFS image
+	Commands:
+	   update <IMAGE>  - update rootfs with SQFS image
+	   cleanup         - collect and cleanup old ROOTFS images
 
-     rw                       - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
-     ro                       - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
-     status                   - mount /mmc & overlay read-write
+	   status          - display status of MMC/eMMC/SD card and boot targets
 
-     snapshot                 - NOT implemented yet - snapshot overlay in /mmc
+	   rw              - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
+	   ro              - mount /mmc & overlay read-only  ( via /etc/init.d/mmc )
+
+	   snapshot        - NOT implemented, yet - snapshot overlay in /mmc
 EOF
 }
 
 CMD="${1:-}"
 shift 2> /dev/null || :
 case "$CMD" in
-  update | up )         update_root "$@" ;;
-  rw | ro )             /etc/init.d/mmc reload ; /etc/init.d/mmc "$CMD" ; status ;;
-  status | stat | st )  status ;;
+  update | up )          update_root "$@" ;;
+  rw | ro )              /etc/init.d/mmc reload ; /etc/init.d/mmc "$CMD" ; status ;;
+  status | stat | st )   status ;;
 
   # TODO:
-  snapshot | snap )    snapshot "$@" ;;
+  snapshot | snap )      snapshot "$@" ;;
+  prune | cleanup )      cleanup_root "$@" ;;
 
-  -h | --help | "" )    help ;;
+  * | -h | --help | "" ) help ;;
 esac
 
 # vim: ts=2 sw=2 et foldmethod=indent ft=sh

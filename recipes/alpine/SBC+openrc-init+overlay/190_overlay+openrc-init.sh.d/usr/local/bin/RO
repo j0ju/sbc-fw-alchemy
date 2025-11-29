@@ -1,6 +1,9 @@
 #!/bin/sh
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
 case "${0##*/}" in
   ro | RO ) /etc/init.d/mmc ro;;
   rw | RW ) /etc/init.d/mmc rw;;
 esac
+
+# vim: ts=2 sw=2 et ft=shell foldmethod=indent

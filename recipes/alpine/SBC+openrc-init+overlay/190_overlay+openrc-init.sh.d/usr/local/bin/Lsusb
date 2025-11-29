@@ -1,4 +1,5 @@
 #!/bin/sh
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 
 FMT='%4s:%-4s %012s %012s %s - %s \n'
 HEAD="VID PID DEV DRIVER PRODUCTNAME MANUFACTURER"
@@ -32,3 +33,4 @@ for d in /sys/bus/usb/devices/*; do
   fi
 done
 
+# vim: ts=2 sw=2 et ft=shell foldmethod=indent
