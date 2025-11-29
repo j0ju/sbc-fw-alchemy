@@ -1,0 +1,12 @@
+#! /sbin/openrc-run
+
+description="kexec for faster reboot"
+depend() {
+  after killprocs savecache mount-ro
+}
+start() {
+  ebegin "kexec-exec: Using kexec for faster reboot"
+  kexec -e
+  ewend $? "kexec-exec No kernel loaded."
+  return 0
+}

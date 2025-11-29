@@ -1,0 +1,7 @@
+# conf for /etc/init.d/kexec-load
+
+# BOOTPART="/boot"
+# KERNEL="vmlinuz-$(uname -r | awk -F \- '{print $NF }')"
+# INITRD="initramfs-$(uname -r | awk -F \- '{print $NF}')"
+# CMDLINE="$(cat /proc/cmdline)"
+# DTB=

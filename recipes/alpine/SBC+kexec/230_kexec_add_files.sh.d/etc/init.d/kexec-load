@@ -1,0 +1,38 @@
+#!/sbin/openrc-run
+
+description="kexec for faster reboot"
+
+# Define defaults
+: "${BOOTPART:=/boot}"
+: "${KERNEL:=vmlinuz-$(uname -r | awk -F \- '{print $NF }')}"
+: "${INITRD:=initramfs-$(uname -r | awk -F \- '{print $NF}')}"
+: "${CMDLINE:=$(cat /proc/cmdline)}"
+: "${DTB:=}"
+
+depend() {
+  need localmount
+}
+
+start() {
+  :
+}
+
+stop() {
+  if ! yesno ${RC_GOINGDOWN}; then
+    einfo "kexec-load: Not rebooting or powering off; not loading kernel"
+    exit
+  fi
+  ebegin "kexec-load: loading kernel for faster reboot"
+
+  OPTS=
+  [ -z "$INITRD" ] || \
+    OPTS="$OPTS --initrd='${BOOTPART}/${INITRD}'"
+  [ -z "$CMDLINE" ] || \
+    OPTS="$OPTS --cmdline='$CMDLINE'"
+  [ -z "$DTB" ] || \
+    OPTS="$OPTS --dtb='$DTB'"
+  fi
+
+  eval "kexec -l $OPTS '${BOOTPART}/${KERNEL}'"
+  ewend $? Failed.
+}
