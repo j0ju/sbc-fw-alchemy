@@ -5,6 +5,9 @@ set -eu
 OVERLAY_DIR=/overlay/upper
 ROM_DIR=/rom
 
+export LC_ALL=C
+export LANG=C
+
 list_files() {
   list_files_collector "$@" | \
     list_files_filter "$@" | \
