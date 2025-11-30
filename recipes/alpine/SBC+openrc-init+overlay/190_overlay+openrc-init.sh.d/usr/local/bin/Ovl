@@ -15,8 +15,11 @@ list_files() {
   }
 
 list_files_collector() ( # use brackets for true forked subshell
+  cd "$OVERLAY_DIR"
+
   find_opts=
   find_dirs=
+  dirs_added=no
   while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
       "!" ) find_opts="$find_opts '!'" ;;
@@ -33,21 +36,28 @@ list_files_collector() ( # use brackets for true forked subshell
       -a | -o ) find_opts="$find_opts $1";;
       -* ) ;;
       * )
-        dir="${1}"
-        [ ! "$1" = / ] || dir="."
-        find_dirs="$find_dirs '${dir#/}'"
+        f="${1}"
+        [ ! "$1" = / ] || f="."
+        dirs_added=yes
+        if [ -e "${f#/}" ]; then
+          find_dirs="${find_dirs} '${f#/}'"
+        else
+          echo "W: '$f' not found in overlay, at all. No file, no dir nor a wipeout file, SKIP" >&2
+        fi
         ;;
     esac
     shift
   done
-  if [ -z "$find_dirs" ]; then
-    find_dirs="etc usr/local opt srv"
-    find_dirs=$( cd "$OVERLAY_DIR"; ls -d $find_dirs 2> /dev/null || :)
+
+  if [ "$dirs_added" = no ]; then
+    #find_dirs="etc usr/local opt srv"
+    find_dirs="." # use / per default
+    find_dirs=$( cd "$OVERLAY_DIR"; ls -1d $find_dirs 2> /dev/null || :)
     find_dirs=$( echo $find_dirs 2> /dev/null || :)
   fi
 
-  cd "$OVERLAY_DIR"
-  eval "find $find_dirs $find_opts" | sort -r
+  [ -z "$find_dirs" ] || \
+    eval "find $find_dirs $find_opts" | sort -r
   )
 
 list_files_filter() {
