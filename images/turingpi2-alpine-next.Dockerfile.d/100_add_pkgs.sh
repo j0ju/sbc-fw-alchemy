@@ -32,6 +32,7 @@ PKGS="$PKGS
     nftables-openrc nftables-vim
   jq
   libgpiod
+  vimdiff
 "
 
 PKGS="$PKGS
