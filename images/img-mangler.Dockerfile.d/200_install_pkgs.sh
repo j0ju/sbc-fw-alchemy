@@ -29,6 +29,7 @@ apt-get install -y --no-install-recommends \
   device-tree-compiler dt-utils \
   sqlite3 sqlite3-tools sqlite-utils \
   inetutils-ping traceroute mtr-tiny bind9-dnsutils \
+  gawk \
 # EO apt-get install
 
 
