@@ -22,7 +22,7 @@ chmod 0755 /target/run
 
 GITREV="$( cd /src ; git log HEAD^..HEAD --oneline | awk '$0=$1' )"
 DATE="$( date +%Y-%m-%d-%H:%M )"
-VERSION=$DATE-$GITREV+dirty
+VERSION="${IMAGE%%.*}-$DATE-$GITREV+dirty"
 git status --short | grep -q ^ || \
   VERSION="${VERSION%+dirty}"
 
