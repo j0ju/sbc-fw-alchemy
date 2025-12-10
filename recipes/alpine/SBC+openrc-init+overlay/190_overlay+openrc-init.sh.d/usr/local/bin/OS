@@ -45,11 +45,13 @@ update_root() {
   NEXT="$(readlink -f /rom/mnt/CURRENT)"
 
   RUNNING_VERSION="$( cat /rom/boot/build.meta )"
+  RUNNING_VERSION="${RUNNING_VERSION##*/}"
   RUNNING="/rom/mnt/ROOTFS.$RUNNING_VERSION"
 
   RO_FREE_kb="$( df -hk /rom/mnt | awk '$0 ~ "^/" { print $4 }' )"
 
   NEXT_VERSION=$( cat "$MNT/boot/build.meta" )
+  NEXT_VERSION="${NEXT_VERSION##*/}"
   NEXT="$RO/ROOTFS.$NEXT_VERSION"
   NEXT_SIZE_boot_kb=$( sum=0; du -xshkL "$MNT/boot" "$MNT/sbin/busybox.static" | { while read i _; do sum=$(( sum + i)); done; echo $sum ; } )
   NEXT_SIZE_root_kb=$( sum=0; du -xshkL "$SQFS"                                | { while read i _; do sum=$(( sum + i)); done; echo $sum ; } )
@@ -115,7 +117,7 @@ update_root() {
     sed -i -r -e "/rootdev=/ s/=.*$/=$ROOT_CMDLINE/" "$NEXT/boot/armbianEnv.txt"
   fi
 
-  NEXT="$(readlink -f /rom/mnt/CURRENT)"
+  NEXT="$(readlink /rom/mnt/CURRENT)"
   echo "I: --> next boot:     $NEXT"
   echo
 
