@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# script to build Armbian/Trixie image with latest kernel using compile.sh
+# see https://github.com/armbian/build
+
+BOARD=rpi4b
+BRANCH=current
+RELEASE=trixie
+
+./compile.sh \
+  BOARD="$BOARD" \
+  BRANCH="$BRANCH" \
+  RELEASE="$RELEASE" \
+  \
+  BUILD_MINIMAL=yes \
+  KERNEL_CONFIGURE=no \
+  INSTALL_HEADERS=yes \
+  ENABLE_EXTENSIONS="cloud-init zfs fs-btrfs-support fs-f2fs-support fs-xfs-support" \
+  #
+
+IMAGE="$( ls -t output/images/*$( echo -n ${BOARD} |  sed -n '1 s/./\U\0/ p' )_${RELEASE}_${BRANCH}*.img )"
