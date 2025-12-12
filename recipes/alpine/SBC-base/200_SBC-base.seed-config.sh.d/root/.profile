@@ -3,7 +3,10 @@
 #- avoid loops
 [ "$__HOME_PROFILE_READ" = yes ] && return 0
 __HOME_PROFILE_READ=yes
-tty > /dev/null && echo "${BASH_SOURCE:-$HOME/.profile}[$$]"
+
+# shell init tracing
+#tty > /dev/null && echo "${BASH_SOURCE:-$HOME/.profile}[$$]"
+#
 #- include /etc/profile to be sure
 [ ! -f /etc/profile ] || . /etc/profile
 
