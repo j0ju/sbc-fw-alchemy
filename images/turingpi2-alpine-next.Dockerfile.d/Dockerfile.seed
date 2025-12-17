@@ -2,4 +2,7 @@
 
 FROM sbc:turingpi2-alpine
 
+COPY input/artifacts/turingpi2-alpine-rkdevelop.tar.zst /
+COPY input/artifacts/turingpi2-alpine-rpiboot.tar.zst /
+
 RECIPE alpine/keepalived

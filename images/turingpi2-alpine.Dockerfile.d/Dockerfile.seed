@@ -9,7 +9,7 @@ COPY --from=donor /target/lib/modules /target/lib/modules
 
 # add pre-build bmcd suite
 COPY input/artifacts/turingpi2-alpine-bmcd.tar.zst /
-COPY input/artifacts/turingpi2-alpine-rkdevelop.tar.zst /
+#COPY input/artifacts/turingpi2-alpine-rkdevelop.tar.zst /
 
 # populate modules and boot from vanilla
 RUN set -e; umask 022; \
