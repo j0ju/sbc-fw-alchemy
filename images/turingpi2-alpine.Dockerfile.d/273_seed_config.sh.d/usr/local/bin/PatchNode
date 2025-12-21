@@ -51,7 +51,7 @@ find_usb_device() {
     case "$vendor" in
       Rockchip | RPi-MSD- ) USB_DEVICE=/dev/$dev ; break ;;
       * ) dev=; break ;;
-      # TODO: add support for Raspberry Pi, etc
+      # TODO: add support for Raspberry Pi CM5 ?
     esac
   done
 }

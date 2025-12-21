@@ -22,8 +22,8 @@ fi
 
 # user convenience, allow using, file commandline completion, strip Directory / and Dockerfile.d at the end
 case "$IMAGE" in
-  images/*.Dockerfile.d/ | images/*.Dockerfile.d )
-    if [ -d "$IMAGE" ]; then
+  images/*.Dockerfile.d/ | images/*.Dockerfile.d | images/* )
+    if [ -d "$IMAGE" ] || [ -d "$IMAGE.Dockerfile.d" ]; then
       IMAGE="${IMAGE#images/}"
       IMAGE="${IMAGE%/}"
       IMAGE="${IMAGE%.Dockerfile.d}"
