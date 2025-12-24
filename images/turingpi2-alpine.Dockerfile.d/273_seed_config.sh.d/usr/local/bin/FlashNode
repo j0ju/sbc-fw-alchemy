@@ -4,11 +4,25 @@ umask 022
 PS4="${0##*/}: "
 #set -x
 
-PATCH_DIRS=
-DO_RESIZE=no
-DO_BOOT=no
-DD_OPTS=
-DD_BS=1M
+#- defaults
+  PATCH_DIRS=
+
+  DO_RESIZE=no
+  DO_BOOT=no
+
+  DD_OPTS=
+  DD_BS=1M
+
+  ROOT_FS=ext4
+  ROOT_SIZE=
+
+  BOOT_FS=vfat
+  BOOT_SIZE=511M
+  BOOT_DIR=boot/firmware
+
+  SBC_TYPE=
+  MOUNT_OPTS=
+  SYNC_THREAD_PID=
 
 usage() {
   echo
@@ -21,10 +35,12 @@ usage() {
   echo "  NODE  1, 2, 3, 4"
   echo
   echo "  OPTIONS:"
-  echo "     --patch <DIR> | -p <DIR>    - run PatchNode with that dir afterwards."
-  echo "     --boot        | -b          - boot node after write (and patch)"
-  echo "     --sparse      | -S          - don't write NULL-blocks"
-  echo "     --help        | -h          - this"
+  echo "     --patch <DIR>  | -p <DIR>  - run PatchNode with that dir afterwards."
+  echo "     --boot         | -b        - boot node after write (and patch)"
+  echo "     --sparse       | -S        - don't write NULL-blocks"
+  echo "     --root-fs <FS> | -F <FS>   - filesystem for root if image is a tarball"
+  echo "                                  (default $ROOT_FS)"
+  echo "     --help         | -h        - this"
   echo
   }
 
@@ -51,6 +67,17 @@ argvparse() {
           echo "E: -p '${2:-}' is not a directory." >&2
           exit 1
         fi
+        shift
+        shift
+        ;;
+      --root-fs | -F )
+        case "${2:-}" in
+          ext[234] | f2fs ) ROOT_FS="$2" ;;
+          * )
+            echo "E: unknown root filesysstem type for $1 = '$2'"
+            exit 69
+            ;;
+        esac
         shift
         shift
         ;;
@@ -93,7 +120,7 @@ detect_pv() {
   local PS4="${0##*/}::detect_pv: "
   PV=
   if which pv > /dev/null; then
-    PV="pv -brat"
+    PV="pv -Kbrat"
   fi
   }
 
@@ -125,6 +152,7 @@ cleanup() {
   CLEANUP_TRAP=:
 
 sync_thread() {
+  CLEANUP_TRAP="sync; sync_thread_cleanup; $CLEANUP_TRAP"
   while :; do
     local PS4="${0##*/}::sync_thread: "
     set +x
@@ -139,8 +167,10 @@ sync_thread() {
 
 sync_thread_cleanup() {
   local PS4="${0##*/}::sync_thread_cleanup: "
-  kill $SYNC_THREAD_PID 2> /dev/null || :
-  echo "I: sync thread killed (PID $SYNC_THREAD_PID)."
+  if [ -n "$SYNC_THREAD_PID" ]; then
+    kill $SYNC_THREAD_PID 2> /dev/null || :
+    echo "I: sync thread killed (PID $SYNC_THREAD_PID)."
+  fi
   }
 
 find_usb_device() {
@@ -150,14 +180,143 @@ find_usb_device() {
     dev="${dev#/sys/block/}"
     vendor="${i#*:}"
     case "$vendor" in
-      Rockchip ) USB_DEVICE="/dev/$dev" ; break ;;
-      RPi-MSD- ) USB_DEVICE="/dev/$dev" ; break ;;
+      Rockchip )
+        USB_DEVICE="/dev/$dev"
+        SBC_TYPE=rk1
+        break
+        ;;
+      RPi-MSD- )
+        USB_DEVICE="/dev/$dev"
+        SBC_TYPE=cm4
+        break
+        ;;
+      # TODO: add support for eg Rpi CM5, Radxa CM5, etc
       * ) dev=; break ;;
-      # TODO: add support for Raspberry Pi, etc
     esac
   done
   }
   USB_DEVICE=
+
+cleanup_extract_tarball() {
+  local PS4="${0##*/}::cleanup_extract_tarball: "
+  #set -x
+  for _ in : :; do
+    for m in $(grep -oE "$TMPDIR[^ ]*" /proc/mounts | sort -r); do
+      umount "$m"
+    done
+  done
+  [ -z "$TMPDIR" ] || \
+    rm -rf "$TMPDIR"
+  }
+
+extract_tarball() {
+  local PS4="${0##*/}::extract_tarball: "
+  TMPDIR="$(mktemp -d)"
+  CLEANUP_TRAP="cleanup_extract_tarball; $CLEANUP_TRAP"
+
+  echo "I: partition $USB_DEVICE"
+  echo "
+    label: dos
+    ,${BOOT_SIZE},c
+    ,${ROOT_SIZE},83
+  " | sfdisk "$USB_DEVICE" 1> /dev/null
+
+  echo "I: wait for partition to be mapped to /dev"
+  BOOT_DEV="$USB_DEVICE"1
+  ROOT_DEV="$USB_DEVICE"2
+  while [ ! -b "$ROOT_DEV" ] || [ ! -b "$BOOT_DEV" ]; do
+    partx -u "$USB_DEVICE"
+    ! tty > /dev/null || echo -n .
+    sleep 1
+  done
+  ! tty > /dev/null || echo .
+
+  wipefs -af 1> /dev/null \
+    "$BOOT_DEV" \
+    "$ROOT_DEV" \
+  # EO wipefs
+
+  echo "I: create filesystems"
+  MOUNT_OPTS=
+  echo "I: create / ($ROOT_FS)"
+  case "$ROOT_FS" in
+    ext[234] )
+      mkfs.$ROOT_FS -m 1 "$ROOT_DEV"
+      ;;
+    f2fs )
+      mkfs.f2fs          "$ROOT_DEV"
+      sync_thread # f2f2 extract stalls after a time, TODO: investigate
+      ;;
+    * )
+      echo "E: unknown or unsupported root filesystem '$ROOT_FS'" >&2
+      exit 69
+      ;;
+  esac > /dev/null
+  ROOT_PARTUUID="$(blkid -s PARTUUID -o value "$ROOT_DEV" )"
+  echo "   PARTUUID=$ROOT_PARTUUID"
+
+  echo "I: create /${BOOT_DIR#/}"
+  case "$BOOT_FS" in
+    vfat ) mkfs.vfat -F32 "$BOOT_DEV" > /dev/null ;;
+    * )
+      echo "E: unknown or unsupported filesystem $BOOT_FS for /$BOOT_DIR" >&2
+      exit 69
+      ;;
+  esac
+  BOOT_PARTUUID="$(blkid -s PARTUUID -o value "$BOOT_DEV" )"
+  echo "   PARTUUID=$BOOT_PARTUUID"
+
+  echo "I: mount /              ($TMPDIR)"
+  mount "$ROOT_DEV" "$TMPDIR" $MOUNT_OPTS
+
+  echo "I: mount /boot/firmware ($TMPDIR/$BOOT_DIR)"
+  mkdir -p "$TMPDIR/$BOOT_DIR"
+  mount "$BOOT_DEV" "$TMPDIR/$BOOT_DIR"
+
+  echo "I: extract tarball"
+  if tty > /dev/null && [ -n "$PV" ]; then
+    $DECOMPRESSOR "$image" | $PV | tar xf - -C "$TMPDIR" --xattrs --atime-preserve
+  else
+    $DECOMPRESSOR "$image" | tar xf - -C "$TMPDIR" --xattrs --atime-preserve
+  fi
+
+  # TODO: BOOT_DIR: boot or boot/firmware, adapt layout
+
+  if [ -f "$TMPDIR/etc/fstab" ]; then
+    echo "I: adapt /etc/fstab"
+    ( FS=$ROOT_FS MNT=/           BLKDEV="PARTUUID=$ROOT_PARTUUID"
+      sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "$TMPDIR/etc/fstab"
+    )
+    ( FS=$BOOT_FS MNT="/${BOOT_DIR#/}" BLKDEV="PARTUUID=$BOOT_PARTUUID"
+      sed -i -r -e 's!^([^[:space:]]+)[[:space:]]+('"$MNT"')[[:space:]]+[^[:space:]]+!'"$BLKDEV"' \2 '"$FS"'!' "$TMPDIR/etc/fstab"
+    )
+  fi
+
+  # adapt config.txt, use PARTUUID, remove rootfstype=
+  if [ -f "$TMPDIR/boot/firmware/cmdline.txt" ]; then
+    echo "I: adapt /boot/firmware/cmdline.txt"
+    ( FS=$ROOT_FS MNT=/           BLKDEV="PARTUUID=$ROOT_PARTUUID"
+      sed -i -r \
+          -e "s|root=[^ ]+ *|root=PARTUUID=$ROOT_PARTUUID |" \
+          -e "s|rootfstype=[^ ]+ *|rootfstype=$ROOT_FS |" \
+          -e "s| +| |g" \
+        "$TMPDIR"/boot/firmware/cmdline.txt
+    )
+  fi
+
+  # adapt armbianEnv.txt, use PARTUUID, update rootdev rootfstype=
+  if [ -f "$TMPDIR/boot/armbianEnv.txt" ]; then
+    echo "I: adapt /boot/armbianEnv.txt"
+    ( FS=$ROOT_FS MNT=/           BLKDEV="PARTUUID=$ROOT_PARTUUID"
+      sed -i -r
+        -e 's/^(rootdev=).*/\1'"$BLKDEV"'/' \
+        -e 's/^(rootfstype=).*/\1'"$FS"'/' \
+      "$TMPDIR/boot/armbianEnv.txt"
+    )
+  fi
+
+  sync
+  }
 
 write_image() {
   local PS4="${0##*/}::write_image: "
@@ -169,15 +328,21 @@ write_image() {
     exit 1
   fi
 
-  CLEANUP_TRAP="sync; sync_thread_cleanup; $CLEANUP_TRAP"
-  sync_thread
-  wipefs -af "$USB_DEVICE"[0-9]* 2> /dev/null || :
-  wipefs -af "$USB_DEVICE" 2> /dev/null
-  if tty > /dev/null && [ -n "$PV" ]; then
-    $DECOMPRESSOR "$image" | $PV | dd bs="$DD_BS" of="$USB_DEVICE" $DD_OPTS
-  else
-    $DECOMPRESSOR "$image" | dd bs="$DD_BS" of="$USB_DEVICE" $DD_OPTS
-  fi
+  case "$image" in
+    *.tar.* ) # tar ball of rootfs
+      extract_tarball
+      ;;
+    * ) # standard dump image to block device
+      wipefs -af "$USB_DEVICE"[0-9]* 2> /dev/null || :
+      wipefs -af "$USB_DEVICE" 2> /dev/null
+      sync_thread
+      if tty > /dev/null && [ -n "$PV" ]; then
+        $DECOMPRESSOR "$image" | $PV | dd bs="$DD_BS" of="$USB_DEVICE" $DD_OPTS
+      else
+        $DECOMPRESSOR "$image" | dd bs="$DD_BS" of="$USB_DEVICE" $DD_OPTS
+      fi
+      ;;
+  esac
   }
 
 : main #
