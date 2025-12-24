@@ -1,0 +1,8 @@
+# /etc/fstab
+PARTUUID=00000000-01 /boot/firmware vfat x-systemd.automount,x-systemd.idle-timeout=31 0 2
+PARTUUID=00000000-02 /              ext4 noatime                                       0 1
+
+proc    /proc       proc     defaults                0 0
+sysfs   /sys        sysfs    nosuid,nodev,noexec     0 0
+tmpfs   /tmp        tmpfs    nosuid,nodev,mode=1777  0 0
+/tmp    /var/tmp    auto     bind                    0 0

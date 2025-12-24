@@ -58,9 +58,9 @@ find /target/etc -name *.dpkg-* -delete
 find /target/etc -name *.apk-* -delete
 find /target/etc -name *.ucf-* -delete
 
-rm -rf /target/run /target/tmp
-mkdir /target/run /target/tmp
-chmod 1777 /target/tmp
+rm -rf /target/run /target/tmp /target/var/tmp
+mkdir  /target/run /target/tmp /target/var/tmp
+chmod 1777 /target/tmp /target/var/tmp
 chmod 0755 /target/run
 
 #- resolv.conf is heavily modified on every docker run ignore it during build, if etckeeper ins installed

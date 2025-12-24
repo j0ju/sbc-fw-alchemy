@@ -1,0 +1,35 @@
+# config.txt for Rasperry Pi - http://rptl.io/configtxt
+
+enable_uart=1
+
+#dtparam=i2c_arm=on
+#dtparam=i2s=on
+#dtparam=spi=on
+#dtparam=audio=on
+
+#camera_auto_detect=1
+#display_auto_detect=1
+
+# Additional overlays and parameters are documented
+# /boot/firmware/overlays/README
+
+# Automatically load initramfs files, if found
+arm_64bit=1
+auto_initramfs=1
+
+# Enable DRM VC4 V3D driver
+dtoverlay=vc4-kms-v3d
+max_framebuffers=2
+disable_fw_kms_setup=1
+disable_overscan=1
+
+# Run as fast as firmware / board allows
+arm_boost=1
+
+[cm4]
+otg_mode=1
+
+[cm5]
+dtoverlay=dwc2,dr_mode=host
+
+[all]

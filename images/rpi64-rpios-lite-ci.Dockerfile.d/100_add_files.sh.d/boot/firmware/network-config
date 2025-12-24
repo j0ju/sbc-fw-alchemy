@@ -1,0 +1,19 @@
+#cloud-config
+
+# single bord computers have normally only one ethernet port
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    default:
+      dhcp4: true
+      dhcp6: false
+      accept-ra: true
+      match:
+        name: e*
+
+      #optional: true
+      #set-name: eth0
+
+      addresses:
+      - fe80::314/64

@@ -1,0 +1,5 @@
+\n - \l \b
+  \S{ID} \S{DEBIAN_VERSION_FULL} \S{VERSION_CODENAME}
+    IPv4: \4
+    IPv6: \6
+

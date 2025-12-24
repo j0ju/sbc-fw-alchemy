@@ -1,0 +1,48 @@
+#cloud-config
+
+hostname: pi
+
+users:
+  - default
+
+# disable
+package_update: false
+package_upgrade: false
+
+runcmd:
+  # do not resize the partitions
+  - |
+    export LC_ALL=C LANG=C
+    read _pid _ < /proc/self/stat
+    PS4='runcmd[$_pid]: '; set -ex; trap `exit $?` EXIT
+    set -x
+    : -- "de-couple my PID from the cgroup of systemd, to prevent being killed by systemd" --
+    echo $$ > /sys/fs/cgroup/cgroup.procs
+    ( read _pid _ < /proc/self/stat
+    #- wait for cloud-init to be finished
+      while : -- "wait for cloud-final to be finished" -- ; do
+        sleep 7
+        ! systemctl status cloud-final.service | grep exited > /dev/null || \
+          break
+      done
+
+    #- run runcmd.ci.sh
+      if [ -r /boot/firmware/runcmd.ci.sh ]; then
+        sh -eu /boot/firmware/runcmd.ci.sh
+      fi
+      for i in /boot/firmware/runcmd.ci.d/[0-9]*; do
+        [ -f "$i" ] || \
+          continue
+        xbit=0
+        ! [ -x "$i" ] || \
+          xbit=1
+        case "$xbit:$i" in
+          0:* | *:*.sh )
+            ( read _pid _ < /proc/self/stat
+              PS4="${PS4%: }::${i##*/}: "
+              . "$i"
+            ) ;;
+          1:* ) "$i" ;;
+        esac
+      done
+    ) &
