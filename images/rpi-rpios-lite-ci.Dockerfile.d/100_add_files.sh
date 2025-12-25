@@ -1,0 +1,1 @@
+../img-mangler.Dockerfile.d/100_add_files.sh
