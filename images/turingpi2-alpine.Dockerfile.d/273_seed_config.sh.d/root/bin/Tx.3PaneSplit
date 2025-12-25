@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Layout: tmux display-message -p '#{window_layout}'
+LAYOUT="ddfd,157x90,0,0[157x15,0,0,0,157x56,0,16,1,157x17,0,73,2]"
+
+NODE="${1:-1}"
+
+tmux rename-window sh
+tmux split-window -v minicom $NODE
+tmux split-window -v
+tmux select-layout "$LAYOUT"
+tmux rotate "$LAYOUT"
+exec logread -F
