@@ -10,4 +10,5 @@ rm -f \
   /target/etc/issue.d/* \
   /target/boot/cmdline.txt \
   /target/boot/config.txt \
+  /target/boot/issue.txt \
 # EO rm -f
