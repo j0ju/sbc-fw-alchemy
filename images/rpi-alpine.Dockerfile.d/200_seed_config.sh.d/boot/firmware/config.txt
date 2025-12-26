@@ -1,19 +1,42 @@
+# config.txt for Rasperry Pi - http://rptl.io/configtxt
+
 [all]
-# Additional overlays and parameters are documented /boot/firmware/overlays/README
+enable_uart=1
+
 #dtparam=i2c_arm=on
 #dtparam=i2s=on
 #dtparam=spi=on
 #dtparam=audio=on
-# Automatically load overlays for detected cameras
-#camera_auto_detect=0
-# Automatically load overlays for detected DSI displays
+
+#camera_auto_detect=1
 #display_auto_detect=1
 
-# Don't have the firmware create an initial video= setting in cmdline.txt.
-# Use the kernel's default instead.
-disable_fw_kms_setup=1
+# Additional overlays and parameters are documented
+# /boot/firmware/overlays/README
 
-# enable HDMI and 3d
+# Automatically load initramfs files, if found
+arm_64bit=1
+auto_initramfs=1
+
+# Enable DRM VC4 V3D driver
+#dtoverlay=vc4-kms-v3d
+#max_framebuffers=2
+disable_fw_kms_setup=1
+disable_overscan=1
+
+# Run as fast as firmware / board allows
+arm_boost=1
+
+[pi3]
+core_freq=250
+
+[pi02]
+core_freq=250
+
+[cm4]
+otg_mode=1
+
+# Enable DRM VC4 V3D driver
 #dtoverlay=vc4-kms-v3d
 #max_framebuffers=2
 
@@ -21,13 +44,10 @@ disable_fw_kms_setup=1
 max_framebuffer=0
 disable_splash=1
 
-auto_initramfs=1
-disable_overscan=1
-arm_boost=1
-enable_uart=1
+[cm5]
+dtoverlay=dwc2,dr_mode=host
 
-[pi3]
-core_freq=250
+[all]
 
-[pi02]
-core_freq=250
+
+
