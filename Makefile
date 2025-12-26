@@ -74,6 +74,11 @@ output/%.rootfs.tar.zst: .deps/%.built lib/img-mangler/gen-rootfs-tar.sh
 	$(Q) mkdir -p output
 	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.zst=)) sh $(SHOPT) "/src/lib/img-mangler/gen-rootfs-tar.sh" "$@"
 
+output/%.rootfs.tar.xz: .deps/%.built lib/img-mangler/gen-rootfs-tar.sh
+	$(E) "ROOTFS $@"
+	$(Q) mkdir -p output
+	$(Q) ./bin/img-mangler --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.rootfs.tar.xz=)) sh $(SHOPT) "/src/lib/img-mangler/gen-rootfs-tar.sh" "$@"
+
 #--- extend clean-local target
 clean-local: clean-volumes clean-input clean-output
 

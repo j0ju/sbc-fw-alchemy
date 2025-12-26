@@ -31,6 +31,11 @@ case "$TAR" in
       COMPRESSOR=pigz || \
       COMPRESSOR=gzip
     ;;
+  *.txz | *.tar.xz )
+    which pixz && \
+      COMPRESSOR=pixz || \
+      COMPRESSOR=xz
+    ;;
   *.zstd | *.zst )
     COMPRESSOR=zstd
     ;;
