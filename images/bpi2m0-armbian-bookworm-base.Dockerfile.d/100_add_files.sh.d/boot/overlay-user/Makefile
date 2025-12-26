@@ -3,7 +3,7 @@
 DTS := $(shell ls -1 *.dts 2>/dev/null )
 DTBO := $(DTS:.dts=.dtbo)
 
-# get current dtb via 
+# get current dtb via
 #  * dtc -I fs -O dts /sys/firmware/devicetree/base
 
 all: build
@@ -24,15 +24,14 @@ enable en: build
 		[ -f "$$o" ] || \
 			continue; \
 		grep > /dev/null -E "^user_overlays=.* $${o%.dtbo} ?" /boot/armbianEnv.txt || \
-  		sed -i -r -e 's/^user_overlays=.*/\0 '"$${o%.dtbo}"'/' /boot/armbianEnv.txt; \
+			sed -i -r -e 's/^user_overlays=.*/\0 '"$${o%.dtbo}"'/' /boot/armbianEnv.txt; \
 	done
 
 %.dtbo: %.dts
 	dtc -I dts -O dtb "$<" > "$@"
 
-# get current dtb 
-RUNNING.dtb: /sys/firmware/devicetree/base                                                                                                            
-	dtc -I fs -O dts "$<" > "$@"               
-
+# get current dtb
+RUNNING.dtb: /sys/firmware/devicetree/base
+	dtc -I fs -O dts "$<" > "$@"
 
 # vim: ts=2 noet sw=2

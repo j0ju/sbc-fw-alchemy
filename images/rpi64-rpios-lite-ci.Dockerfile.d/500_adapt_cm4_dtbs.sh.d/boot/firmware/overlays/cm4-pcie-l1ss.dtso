@@ -1,0 +1,12 @@
+/* when added via  dtoverlay=cm4-pcie-l1ss
+ * can be tested if below
+ * /proc/device-tree/scb/pcie@7d500000/
+ * a file brcm,enable-l1ss exists.
+ */
+
+/dts-v1/;
+/plugin/;
+
+&pcie0 {
+    brcm,enable-l1ss;
+};
