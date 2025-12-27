@@ -23,7 +23,7 @@ PKGS="$PKGS
   make
   dtc
   sntpc
-  strace lsof
+  strace lsof ltrace
   squashfs-tools
   ppp
   dnsmasq dnsmasq-openrc dnsmasq-utils
@@ -33,6 +33,7 @@ PKGS="$PKGS
   jq
   libgpiod
   vimdiff
+  picocom
 "
 
 PKGS="$PKGS
