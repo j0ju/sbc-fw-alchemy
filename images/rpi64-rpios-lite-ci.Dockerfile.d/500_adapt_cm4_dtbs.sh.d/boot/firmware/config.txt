@@ -10,9 +10,6 @@ enable_uart=1
 #camera_auto_detect=1
 #display_auto_detect=1
 
-# Additional overlays and parameters are documented
-# /boot/firmware/overlays/README
-
 # Automatically load initramfs files, if found
 arm_64bit=1
 auto_initramfs=1
@@ -28,6 +25,8 @@ arm_boost=1
 
 [cm4]
 otg_mode=1
+# PCIe quirk
+dtoverlay=cm4-pcie-l1ss
 
 [cm5]
 dtoverlay=dwc2,dr_mode=host
