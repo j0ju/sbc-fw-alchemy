@@ -21,23 +21,24 @@ if [ -z "$IMAGE" ]; then
 fi
 
 # user convenience, allow using, file commandline completion, strip Directory / and Dockerfile.d at the end
+IMAGE="${IMAGE%/}"
 case "$IMAGE" in
-  images/*.Dockerfile.d/ | images/*.Dockerfile.d | images/* )
-    if [ -d "$IMAGE" ] || [ -d "$IMAGE.Dockerfile.d" ]; then
-      IMAGE="${IMAGE#images/}"
-      IMAGE="${IMAGE%/}"
-      IMAGE="${IMAGE%.Dockerfile.d}"
-      CRIOPTS="$CRIOPTS --name $IMAGE"
-    fi
-    ;;
-
-  *.Workspace.d/ | *.Workspace.d )
+  *.Workspace.d )
     if [ -d "$IMAGE" ]; then
       IMAGE="${IMAGE#images/}"
       VOLUME="${IMAGE%/}"
       VOLUME="${VOLUME%.Workspace.d}"
       CRIOPTS="$CRIOPTS --name $VOLUME -w /workspace -v sbc-$VOLUME:/workspace -e HOME=/workspace"
       IMAGE="img-mangler"
+    fi
+    ;;
+
+  images/*.Dockerfile.d | images/* )
+    if [ -d "$IMAGE" ] || [ -d "$IMAGE.Dockerfile.d" ]; then
+      IMAGE="${IMAGE#images/}"
+      IMAGE="${IMAGE%/}"
+      IMAGE="${IMAGE%.Dockerfile.d}"
+      CRIOPTS="$CRIOPTS --name $IMAGE"
     fi
     ;;
 
