@@ -35,7 +35,7 @@ ln -sf firmware/cloud-init /target/boot
 rm -rf \
   /target/lib/modules/*v[68] \
   /target/boot/*v[68] \
-  /target/boot/firmware/initramfs /target/boot/firmware/kernel.img \
+  /target/boot/firmware/initramfs  /target/boot/firmware/kernel.img \
   /target/boot/firmware/initramfs8 /target/boot/firmware/kernel8.img \
 #
 
