@@ -31,9 +31,6 @@ runcmd:
     echo pi:raspberry | chpasswd
     chown -R pi: ~pi
 
-    #- disable OTG getty for now
-    rc-update del getty.ttyGS0
-
     #- podman - move storage dir away from overlay and enable cgroups
     rc-update add cgroups sysinit
     /etc/init.d/cgroups start
