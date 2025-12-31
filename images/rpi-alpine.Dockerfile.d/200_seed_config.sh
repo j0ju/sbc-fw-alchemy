@@ -33,7 +33,13 @@ find . ! -type d | \
 
 # enable basic services
 chroot /target /bin/sh -e > /dev/null <<EOF
-# add some ...
+
+ln -sf getty /etc/init.d/getty.ttyS0
+ln -sf getty /etc/init.d/getty.ttyAMA0
+ln -sf getty /etc/init.d/getty.ttyGS0
+rc-update add getty.ttyS0 sysinit
+rc-update add getty.ttyAMA0 default
+rc-update add getty.ttyGS0 default
 
 /usr/local/sbin/update-rc
 EOF
