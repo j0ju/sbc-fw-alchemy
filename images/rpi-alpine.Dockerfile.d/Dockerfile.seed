@@ -1,5 +1,5 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
-# meta: #onestep
+# meta: onestep
 
 FROM sbc:rpi-rpios-lite-ci AS rpios
 FROM sbc:bpi2m0-alpine
