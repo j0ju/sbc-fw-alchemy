@@ -1,36 +1,53 @@
 # config.txt for Rasperry Pi - http://rptl.io/configtxt
 
-enable_uart=1
+# vim: ft=ini foldmethod=indent sw=2 ts=2 et foldminlines=0
 
-#dtparam=i2c_arm=on
-#dtparam=i2s=on
-#dtparam=spi=on
-#dtparam=audio=on
+[all]
+  enable_uart=1
 
-#camera_auto_detect=1
-#display_auto_detect=1
+  #dtparam=i2c_arm=on
+  #dtparam=i2s=on
+  #dtparam=spi=on
+  #dtparam=audio=on
 
-# Additional overlays and parameters are documented
-# /boot/firmware/overlays/README
+  #camera_auto_detect=1
+  #display_auto_detect=1
 
-# 32bit image
-arm_64bit=0
-# Automatically load initramfs files, if found
-auto_initramfs=1
+  # Additional overlays and parameters are documented
+  # /boot/firmware/overlays/README
 
-# Enable DRM VC4 V3D driver
-dtoverlay=vc4-kms-v3d
-max_framebuffers=2
-disable_fw_kms_setup=1
-disable_overscan=1
+  # Automatically load initramfs files, if found
+  auto_initramfs=1
 
-# Run as fast as firmware / board allows
-arm_boost=1
+  disable_fw_kms_setup=1
+  disable_overscan=1
+
+  # Run as fast as firmware / board allows
+  arm_boost=1
+
+[pi3]
+  core_freq=250
+
+[pi02]
+  core_freq=250
 
 [cm4]
-otg_mode=1
+  arm_64bit=1
+  otg_mode=1
+
+  # PCIe quirk
+  dtoverlay=cm4-pcie-l1ss
+
+  # Enable DRM VC4 V3D driver
+  #dtoverlay=vc4-kms-v3d
+  #max_framebuffers=2
+
+  # disables HDMI
+  max_framebuffer=0
+  disable_splash=1
 
 [cm5]
-dtoverlay=dwc2,dr_mode=host
+  arm_64bit=1
+  dtoverlay=dwc2,dr_mode=host
 
 [all]
