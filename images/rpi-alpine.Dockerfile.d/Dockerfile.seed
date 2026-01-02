@@ -8,7 +8,8 @@ RUN set ex; \
   cd /target ;\
   tar cf /blobs.tar $(ls -1d boot/*2712* boot/firmware/*2712* lib/modules/*2712*)
 
-FROM sbc:bpi2m0-alpine
+#FROM sbc:bpi2m0-alpine
+FROM sbc:bpi2m0-alpine-next
 
 RUN set -eu ;\
   rm -rf /vanilla /target/boot /target/lib/modules /target/lib/firmware

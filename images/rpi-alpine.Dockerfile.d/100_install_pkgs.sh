@@ -6,6 +6,6 @@ set -eu
 mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
 
 chroot /target apk add \
-  raspberrypi-utils btrfs-progs rdnssd
+  raspberrypi-utils btrfs-progs rdnssd rsync
 
 rm -f /target/etc/.git/HEAD.lock
