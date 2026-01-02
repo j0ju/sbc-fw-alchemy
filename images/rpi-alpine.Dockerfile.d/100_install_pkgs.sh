@@ -5,6 +5,7 @@ set -eu
 # add some directories needed for operation
 mkdir -p /target/tmp/cache/apk /target/tmp/cache/etckeeper
 
-chroot /target apk add raspberrypi-utils
+chroot /target apk add \
+  raspberrypi-utils btrfs-progs rdnssd
 
 rm -f /target/etc/.git/HEAD.lock

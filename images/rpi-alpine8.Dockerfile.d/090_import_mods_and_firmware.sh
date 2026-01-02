@@ -33,10 +33,13 @@ ln -sf firmware/cloud-init /target/boot
 
 # remove unused kernels
 rm -rf \
-  /target/lib/modules/*v[67] \
   /target/boot/*v[67] \
+  /target/boot/*2712* \
   /target/boot/firmware/initramfs  /target/boot/firmware/kernel.img \
   /target/boot/firmware/initramfs7 /target/boot/firmware/kernel7.img \
+  /target/boot/firmware/*2712* \
+  /target/lib/modules/*v[67] \
+  /target/lib/modules/*2712* \
 #
 
 chown -R 0:0 /target/boot/*

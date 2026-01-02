@@ -1,13 +1,26 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
-FROM sbc:rpi-rpios-lite-ci AS rpios
+FROM sbc:rpi-rpios-lite-ci   AS rpios
+FROM sbc:rpi64-rpios-lite-ci AS rpios64
+
+RUN set ex; \
+  cd /target ;\
+  tar cf /blobs.tar $(ls -1d boot/*2712* boot/firmware/*2712* lib/modules/*2712*)
+
 FROM sbc:bpi2m0-alpine
 
 RUN set -eu ;\
   rm -rf /vanilla /target/boot /target/lib/modules /target/lib/firmware
 
 # populate modules and boot from armbian
+# rpios kernel
 COPY --from=rpios /target/boot /target/boot
 COPY --from=rpios /target/lib/modules /target/lib/modules
 COPY --from=rpios /target/lib/firmware /target/lib/firmware
+
+# rpios64 kernel
+COPY --from=rpios64 /blobs.tar /
+RUN set -ex ;\
+  tar xf /blobs.tar -C /target ;\
+  rm /blobs.tar
