@@ -1,0 +1,19 @@
+# (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+# This image contains the vanilla raspios
+
+# set base, copy scripts & out-of-tree resources
+FROM sbc:RPI-OS-full.arm64.2025-12-04
+
+# set environment - all build containers inherit this
+# - ENV - none
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  busybox mount -o bind /target /target 2> /dev/null || :; \
+  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
+  [ -x /target/bin/bash ] || \
+    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
+: # eo CMD
