@@ -34,6 +34,7 @@ PKGS="$PKGS
   libgpiod
   vimdiff
   picocom
+  btrfs-progs
 "
 
 PKGS="$PKGS

@@ -5,7 +5,7 @@
 
 #- debugging, if needed
   PS4="${0}[$$]: +"
-  #set -x
+  set -x
 
 #- settings
   OVERLAY=${1:-/overlay}
@@ -96,24 +96,48 @@ mount_ubifs() {
   mount -t ubifs ubi:overlay "$OVERLAY"
 }
 
+mount_btrfs_overlay_subvol() {
+  ROOT_SUBVOL="${ROOTDEV#*[}"
+  ROOT_SUBVOL="${ROOT_SUBVOL%]}"
+  ROOTDEV="${ROOTDEV%[*}"
+  ROOT_OPTS="$( findmnt $ROOTDEV -n -o OPTIONS )"
+  case "$ROOT_SUBVOL" in
+    /rootfs.* ) OVERLAY_SUBVOL="/overlay.${ROOT_SUBVOL#/rootfs.}" ;;
+    * ) OVERLAY_SUBVOL="${ROOT_SUBVOL}.overlay" ;;
+  esac
+  ROOT_OPTS="$( echo "$ROOT_OPTS" | sed -r -e 's/r[ow]|subvol(id)?=[^,]+//g' -e 's/,,+/,/' -e 's/^,//' -e 's/,$//' )"
+
+  for rs in : "die 69 'could not mount btrfs overlay'"; do
+    if mount "$ROOTDEV" "$OVERLAY" -t btrfs -w -o "$ROOT_OPTS,subvol=$OVERLAY_SUBVOL" 2> /dev/null; then
+      break
+    fi
+    mount "$ROOTDEV" "$OVERLAY" -w -t btrfs -o "$ROOT_OPTS,subvol=/"
+    btrfs subvol create "$OVERLAY$OVERLAY_SUBVOL"
+    umount "$OVERLAY"
+    eval "$rs"
+  done
+}
+
 # detect root device
 for rootpath in / /mnt /rom /rom/mnt; do
-  ROOTDEV=$(busybox mountpoint -n $rootpath | cut -f 1 -d " ")
-  case "$ROOTDEV" in
-    UNKNOWN ) continue ;;
-    /dev/loop* ) continue ;;
-  esac
-  break
+  if ROOTDEV=$(findmnt "$rootpath" -o SOURCE -n); then
+    case "$ROOTDEV" in
+      "" | UNKNOWN ) continue ;;
+      /dev/loop* ) continue ;;
+    esac
+    ROOTFS="$(findmnt "${ROOTDEV%[*}" -o FSTYPE -n)"
+    break
+  fi
 done
 
 # determine root device type
-case "$ROOTDEV" in
-  *mmcblk*)   mount_block ;;
-  *ubiblock*) mount_ubifs ;;
+case "$ROOTFS:$ROOTDEV" in
+  btrfs:*"["*"]" ) mount_btrfs_overlay_subvol ;;
+  *:*mmcblk*)      mount_block ;;
+  *:*ubiblock*)    mount_ubifs ;;
   *)
     echo "----- Unrecognized root device $ROOTDEV -----"
     /bin/busybox ash -
     die 69 "Unrecognized root device $ROOTDEV"
     ;;
 esac
-
