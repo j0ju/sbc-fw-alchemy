@@ -5,7 +5,7 @@
 #set -x
 
 SVC_DISABLE="
-  NetworkManager.service NetworkManager-wait-online.service NetworkManager-dispatcher.service dbus-org.freedesktop.nm-dispatcher.service
+  NetworkManager-wait-online.service
   ModemManager.service dbus-org.freedesktop.ModemManager1.service
   avahi-daemon.service avahi-daemon.socket dbus-org.freedesktop.Avahi.service
   triggerhappy.service triggerhappy.socket
