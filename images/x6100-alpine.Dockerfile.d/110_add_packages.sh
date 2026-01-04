@@ -82,8 +82,9 @@ PKGS="$PKGS
     alsa-utils-openrc
   alsaconf
   bluez
+    bluez-openrc bluez-btmgmt bluez-btmon bluez-obexd bluez-firmware bluez-hid2hci
     bluez-alsa bluez-alsa-openrc bluez-alsa-utils
-    bluez-btmgmt bluez-btmon bluez-firmware bluez-hid2hci
+    py3-bluez-pyc py3-bluez
   cmus mpg123 lame
     cmus-bash-completion
 " # EO PKGS
