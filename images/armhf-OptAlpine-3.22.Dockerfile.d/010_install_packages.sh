@@ -17,7 +17,9 @@ REQ_PKGS=" \
 # install a lot of packages that might be of interest
 PKGS=" \
   ncurses ncurses-terminfo ncurses-terminfo-base \
-  wavemon htop procps psmisc usbutils hwids-usb \
+  wavemon htop procps psmisc \
+  usbutils hwids-usb \
+  pciutils hwids-pci \
   e2fsprogs e2fsprogs-extra \
   file libmagic \
   vim vim-common lua5.4 \
@@ -25,6 +27,7 @@ PKGS=" \
   curl wget \
   git tig \
   xxd xz zstd bzip2 pv \
+  tar \
   strace lsof \
   coreutils \
   tmux screen minicom \
