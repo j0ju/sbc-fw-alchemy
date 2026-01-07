@@ -33,5 +33,6 @@ chroot /target \
     ifupdown-ng ifupdown-ng-compat rdnssd \
     fake-hwclock \
     btrfs-progs \
+    pciutils usbutils \
   # EO apt-get
 # EO chroot
