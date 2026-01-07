@@ -31,7 +31,7 @@ PKGS="$PKGS
   nftables
     nftables-openrc nftables-vim
   jq
-  libgpiod
+  libgpiod linux-tools-gpio
   vimdiff
   picocom
   btrfs-progs
@@ -42,6 +42,7 @@ PKGS="$PKGS
 "
 
 PKGS="$PKGS
+  direnv
   python3
     pyc python3-pyc pyc
     python3-pycache-pyc0
@@ -52,6 +53,7 @@ PKGS="$PKGS
     py3-requests-pyc py3-setuptools py3-setuptools-pyc py3-urllib3 py3-urllib3-pyc py3-virtualenv
     py3-virtualenv-pyc py3-yaml py3-yaml-pyc
     py3-pyserial py3-pyserial-pyc
+    py3-libgpiod
 "
 
 # install packages for tarballs
