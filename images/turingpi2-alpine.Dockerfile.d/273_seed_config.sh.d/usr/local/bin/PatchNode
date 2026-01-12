@@ -5,6 +5,17 @@ umask 022
 ASSUME_MSD=n
 BOOT=n
 DO_BOOT_BACKUP=n
+PATCH_DIRS=
+NODE=-
+
+usage() {
+  echo "usage: $0 <OPTIONS> [PATCH_DIRs|...] [NODE]" >&2
+  echo "  --assume-msd     - MSD mode already enabled"
+  echo "  --backup-boot    - backup boot"
+  echo "  --no-backup-boot - do not backup boot"
+  echo "  --boot | -b      - turn node on after write"
+  echo "  --boot-mmc | -B  - turn node on after write, RK1: forcing to boot from emmc"
+}
 
 while [ ! $# = 0 ]; do
   case "${1:-}" in
@@ -14,42 +25,38 @@ while [ ! $# = 0 ]; do
     --no-backup-boot ) DO_BOOT_BACKUP=n ; shift ;;
     --boot | -b )      BOOT=y ; ASSUME_MSD=n ; shift ;;
     --boot-mmc | -B )  BOOT=F ; ASSUME_MSD=n ; shift ;;
-    * | -- ) break ;;
+    [1234] )
+      NODE="$1"
+      shift
+      ;;
+    * )
+      if [ -d "${1:-}" ]; then
+        PATCH_DIRS="$PATCH_DIRS $1"
+        shift
+      else
+        echo "E: '$1' is not a known option or directory, ABORT" >&2
+        echo
+        usage
+        exit 1
+      fi
+      ;;
   esac
 done
 
-PATCH_DIR="${1:-}"
-NODE="${2:-}"
-
-usage() {
-  echo "usage: $0 <OPTIONS> [PATCH_DIR] [NODE]" >&2
-  echo "  --assume-msd     - MSD mode already enabled"
-  echo "  --backup-boot    - backup boot"
-  echo "  --no-backup-boot - do not backup boot"
-  echo "  --boot | -b      - turn node on after write"
-  echo "  --boot-mmc | -B  - turn node on after write, RK1: forcing to boot from emmc"
-}
-
-case "$PATCH_DIR:$NODE" in
+case "$PATCH_DIRS:$NODE" in
   ?*:[1234] ) ;;
   * ) usage ;;
 esac
 
-if ! [ -d "$PATCH_DIR" ]; then
-  echo "E: '$PATCH_DIR' does not exist, ABORT" >&2
-  echo
-  usage
-  exit 1
-fi
-
 find_usb_device() {
   local PS4="${0##*/}::find_usb_device: "
-  for i in $(grep -EH "^(Rockchip|RPi-MSD-)" /sys/block/*/device/vendor); do
+  for i in $(grep -EH "^Rockchip" /sys/block/*/device/vendor); do
     dev="${i%/device/vendor:*}"
     dev="${dev#/sys/block/}"
     vendor="${i#*:}"
     case "$vendor" in
-      Rockchip | RPi-MSD- ) USB_DEVICE=/dev/$dev ; break ;;
+      Rockchip ) USB_DEVICE=/dev/$dev; SBC_TYPE=rk1; break ;;
+      RPi-MSD- ) USB_DEVICE=/dev/$dev; SBC_TYPE=cm4; break ;;
       * ) dev=; break ;;
       # TODO: add support for Raspberry Pi CM5 ?
     esac
@@ -178,4 +185,7 @@ if [ "$BOOT" = y ]; then
 elif [ "$BOOT" = F ]; then
   CLEANUP_TRAP="${CLEANUP_TRAP%[;:]}; [ ! \$rs = 0 ] || RK1-Boot-from-eMMC $NODE"
 fi
-patchNode "$PATCH_DIR" "$NODE"
+for PATCH_DIR in $PATCH_DIRS; do
+  patchNode "$PATCH_DIR" "$NODE"
+  MSD_eMMC_cleanup
+done
