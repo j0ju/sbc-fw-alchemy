@@ -11,6 +11,7 @@ RUN \
 
 CMD \
   rm -f /target/etc/resolv.conf ;\
+  ulimit -n 8192 ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\
   busybox mount -o bind /target /target 2> /dev/null || :; \
   busybox mount -t proc proc /target/proc 2> /dev/null || :; \

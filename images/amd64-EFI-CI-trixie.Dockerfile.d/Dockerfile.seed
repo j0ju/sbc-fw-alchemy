@@ -39,6 +39,7 @@ ENV \
   DST=/
 
 CMD \
+  ulimit -n 8192 ;\
   exec env HOME=/root SHELL=/bin/bash /bin/bash - ;\
 : # eo CMD
 

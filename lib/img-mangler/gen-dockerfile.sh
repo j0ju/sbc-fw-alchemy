@@ -75,7 +75,7 @@ recipe_list_sorted_snippets() {
 onestep() {
   echo "COPY ${SEEDDIR} /src/${SEEDDIR}/"
 
-  echo 'RUN set -eu ;\'
+  echo 'RUN set -eu; ulimit -n 8192; \'
   recipe_list_sorted_snippets | \
     while read i; do
       echo '    /bin/sh -eu '"/src/$SEEDDIR/${i#./}"' ;\'
@@ -105,7 +105,7 @@ singlestep() {
           [ ! -L "$i.d" ] && [ ! -d "$i.d" ] || \
             echo "COPY $i.d/ /src/$SEEDDIR/${file#*/}.d"
         done
-        echo "RUN exec /bin/sh -eu /src/$SEEDDIR/${file#*/}"
+        echo "RUN ulimit -n 8192; exec /bin/sh -eu /src/$SEEDDIR/${file#*/}"
       done
     )
 }
