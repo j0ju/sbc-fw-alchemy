@@ -37,7 +37,7 @@ cleanup() {
   local d
 
   cd /src
-  for m in /mnt/part* /mnt; do
+  for m in /mnt/part* /mnt/boot/firmware /mnt/boot /mnt; do
     umount "$m" 2> /dev/null || :
   done
   for d in ${DEVS:-}; do
