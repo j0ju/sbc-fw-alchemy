@@ -1,0 +1,12 @@
+escape ^Xx
+hardstatus      alwayslastline "%w %-="
+bind x kill
+
+startup_message off
+nethack on # ;)
+vbell   off
+
+sorendition     rW # red on white
+
+bind s  split
+shelltitle      sh

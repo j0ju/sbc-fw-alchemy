@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+  [1234] )
+    # exit with C-y C-q
+    exec picocom -e y -f none -b 115200 "/dev/ttyS$1"
+    # exit with C-x C-x
+    #exec minicom $1
+    # exit with C-x C-x
+    #exec screen -c /root/.screenrc.node -t "node$1" "/dev/ttyS$1" 115200
+    ;;
+  * )
+    echo 'E: argument $1 must of 1,2,3,4. ABORT' >&2
+    exit 1
+    ;;
+esac

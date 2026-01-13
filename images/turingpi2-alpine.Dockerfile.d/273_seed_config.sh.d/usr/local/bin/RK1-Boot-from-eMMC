@@ -23,4 +23,6 @@ chat -V < $DEV > $DEV \
 
 echo > $DEV
 
-exec minicom $NODE
+if tty > /dev/null 2>&1; then
+  exec SN $NODE
+fi
