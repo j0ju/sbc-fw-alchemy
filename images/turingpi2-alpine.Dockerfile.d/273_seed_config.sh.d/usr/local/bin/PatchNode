@@ -7,14 +7,16 @@ BOOT=n
 DO_BOOT_BACKUP=n
 PATCH_DIRS=
 NODE=-
+BOOT_DIR_default=
 
 usage() {
   echo "usage: $0 <OPTIONS> [PATCH_DIRs|...] [NODE]" >&2
-  echo "  --assume-msd     - MSD mode already enabled"
-  echo "  --backup-boot    - backup boot"
-  echo "  --no-backup-boot - do not backup boot"
-  echo "  --boot | -b      - turn node on after write"
-  echo "  --boot-mmc | -B  - turn node on after write, RK1: forcing to boot from emmc"
+  echo "  --assume-msd        - MSD mode already enabled"
+  echo "  --backup-boot       - backup boot"
+  echo "  --no-backup-boot    - do not backup boot"
+  echo "  --boot     | -b     - turn node on after write"
+  echo "  --boot-mmc | -B     - turn node on after write, RK1: forcing to boot from eMMC"
+  echo "  --boot-dir | -bd    - force boot or firmware dir"
 }
 
 while [ ! $# = 0 ]; do
@@ -23,8 +25,9 @@ while [ ! $# = 0 ]; do
     # for Raspberry PI, keep booting from eMMC, so we can re bootstrap
     --backup-boot )    DO_BOOT_BACKUP=y ; shift ;;
     --no-backup-boot ) DO_BOOT_BACKUP=n ; shift ;;
-    --boot | -b )      BOOT=y ; ASSUME_MSD=n ; shift ;;
+    --boot     | -b )  BOOT=y ; ASSUME_MSD=n ; shift ;;
     --boot-mmc | -B )  BOOT=F ; ASSUME_MSD=n ; shift ;;
+    --boot-dir | -bd ) BOOT_DIR_default="$2" ; shift ; shift ;;
     [1234] )
       NODE="$1"
       shift
@@ -111,17 +114,18 @@ patchNode() {
     [ -b "$USB_DEVICE"1 ] || continue
     [ -d "$MSD_DIR/$boot" ] || continue
     if grep "$boot " "$MSD_DIR"/etc/fstab > /dev/null; then
-      echo "I: mount $boot to $MSD_DIR$boot"
-      mount "$USB_DEVICE"1 "$MSD_DIR/$boot"
       break
     fi
     # fall through
-    boot=
+    boot="${BOOT_DIR_default:-}"
   done
   if [ -z "$boot" ]; then
     echo "E: could not if if 1st partitioan is /boot or /boot/firmware, ABORT" >&2
     exit 1
   fi
+  echo "I: mount $boot to $MSD_DIR$boot"
+  mount "$USB_DEVICE"1 "$MSD_DIR/$boot"
+
   BOOT_PART="$USB_DEVICE"1
   BOOT_UUID="$(blkid -o value -s UUID "$BOOT_PART")"
   BOOT_TYPE="$(blkid -o value -s TYPE "$BOOT_PART")"
