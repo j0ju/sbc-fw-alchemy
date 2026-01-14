@@ -9,6 +9,9 @@ set -x
 # TODO: maybe move add "-u $(id -u):$(id -g)" to bin/img-mangler and bin/IRun
 export FORCE_UNSAFE_CONFIGURE=1
 
+# reduce the number of open files, to prevent some progrs closing all 2^32 :/
+ulimit -n 2048
+
 # FIXME: move compiler cache from /root/ to /workspace
 # /root is volatile
 cd /workspace
