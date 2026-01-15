@@ -20,7 +20,7 @@ This takes official cloud-images and does small adoptions for use in specific cl
 
 Ensure `qemu-system-x86_64` is installed as well as UEFI Bioses.
 
-In Debian and Ubuntu-alikes install `qemu-system-x86 omfd qemu-system-gui` and run
+In Debian and Ubuntu-alikes install `qemu-system-x86 ovmf qemu-system-gui` and run
 `qemu-system-x86_64 -m 4096 -display sdl -bios /usr/share/qemu/OVMF.fd -cdrom output/amd64-EFI-CI-trixie.EFI.iso`
 
 This create a local SDL window via X/Wayland with EFI Bios running a generated image.
