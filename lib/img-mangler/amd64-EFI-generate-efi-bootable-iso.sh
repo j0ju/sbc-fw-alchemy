@@ -62,6 +62,7 @@ echo "# empty" > "$DST"/etc/fstab
 mksquashfs "$DST" /iso/live/live.squashfs -comp xz -b 1024k -one-file-system -ef /dev/fd/0 <<EO_MKSQUASHFS
 /busybox.static
 /iso
+/src
 EO_MKSQUASHFS
 
 # generate grub
