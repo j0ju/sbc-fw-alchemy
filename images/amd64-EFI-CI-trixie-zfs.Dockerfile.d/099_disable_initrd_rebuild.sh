@@ -1,0 +1,1 @@
+../amd64-EFI-CI-trixie.Dockerfile.d/099_disable_initrd_rebuild.sh

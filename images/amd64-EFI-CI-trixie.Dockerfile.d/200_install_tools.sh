@@ -4,7 +4,7 @@ PS4='> ${0##*/}: '
 set -eu
 
 . "$SRC/lib.sh"; init
-#set -x
+set -x
 
 chroot "$DST" \
   apt-get install -y \

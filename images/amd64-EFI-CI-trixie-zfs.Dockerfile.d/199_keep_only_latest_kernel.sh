@@ -1,0 +1,1 @@
+../amd64-EFI-CI-trixie.Dockerfile.d/199_keep_only_latest_kernel.sh
