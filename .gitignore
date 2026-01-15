@@ -31,3 +31,5 @@ config
 
 input
 output
+
+images/*-ext-*
