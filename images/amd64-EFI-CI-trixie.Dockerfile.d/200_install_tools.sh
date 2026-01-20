@@ -13,6 +13,7 @@ chroot "$DST" \
     ifupdown-ng ifupdown-ng-compat bird2 fastd \
     gdisk squashfs-tools mtools xorriso \
     grub-efi-amd64-bin grub-efi \
+    diffutils \
     \
   #
 #
