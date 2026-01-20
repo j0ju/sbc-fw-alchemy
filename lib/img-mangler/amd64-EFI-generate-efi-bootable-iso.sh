@@ -6,8 +6,13 @@ set -eu
 OUTPUT="$1"
 LIVE_COMMAND_LINE="boot=live toram ip=frommedia"
 
+COMPRESSION="${COMPRESSION:-zstd}"
+BLOCKSIZE="${BLOCKSIZE:-1024k}"
+
 DST=""$DST""
 cd "$DST" 2> /dev/null || DST=/
+
+umask 022
 
 # get kernel and initrd from rootfs in $DST
 get_kernel_files_names() {
@@ -53,16 +58,44 @@ rm -f \
 rm -rf /iso
 mkdir -p /iso /iso/boot/grub /iso/EFI/BOOT /iso/live
 
+# clean up DST from build
+for f in /etc/hostname /etc/hosts /etc/resolv.conf; do
+  while umount "$DST/$f"; do :; done 2> /dev/null
+  rm "$DST/$f"
+done
+
+cat > "$DST/etc/hostname" <<EOF
+# /etc/hosts
+
+127.0.0.1 localhost.localdomain localhost
+::1 ip6-localhost ip6-loopback localhost
+127.0.0.1 ${OUTPUT#%.*}
+
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+EOF
+
+if [ -L "$DST/etc/system/sysinit.target.wants/systemd-resolved.service" ]; then
+  ln -s /run/systemd/resolve/resolv.conf "$DST/etc/resolv.conf"
+else
+  : > "$DST/etc/resolv.conf"
+fi
+
 # place kernel and initrd
 cp "$DST"/$KERNEL /iso/boot/vmlinuz
 cp "$DST"/$INITRD /iso/boot/initrd.img
 
 # generate squashfs
 echo "# empty" > "$DST"/etc/fstab
-mksquashfs "$DST" /iso/live/live.squashfs -comp xz -b 1024k -one-file-system -ef /dev/fd/0 <<EO_MKSQUASHFS
+mksquashfs "$DST" /iso/live/live.squashfs -comp "$COMPRESSION" -b "$BLOCKSIZE" -one-file-system -ef /dev/fd/0 <<EO_MKSQUASHFS
+/prefetch.deb
 /busybox.static
 /iso
 /src
+.dockerenv
 EO_MKSQUASHFS
 
 # generate grub
@@ -118,7 +151,6 @@ mmd -i /iso/EFI/BOOT/efiboot.img ::EFI/BOOT
 mcopy -i /iso/EFI/BOOT/efiboot.img /iso/EFI/BOOT/BOOTX64.EFI ::EFI/BOOT/BOOTX64.EFI
 
 # generate ISO
-set -x
 xorriso -as mkisofs -V 'EFI_ISO_BOOT' -e EFI/BOOT/efiboot.img -no-emul-boot -o /src/"$OUTPUT" /iso/
 
 [ -z "$OWNER" ] || \
