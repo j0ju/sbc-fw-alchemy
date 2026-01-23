@@ -1,0 +1,49 @@
+table tr:nth-child(even) {
+  background-color: white;
+}
+
+table tr:nth-child(odd) {
+  background-color: beige;
+}
+
+table tr th {
+  text-align: center;
+  vertical-align: top;
+  border-bottom: solid 1px black;
+}
+
+table tr .id {
+  border-right: dotted 1px black;
+}
+
+table tr td {
+  text-align: left;
+  vertical-align: top;
+}
+
+table tr td.id {
+  border-bottom: dotted 1px black;
+}
+
+td.log {
+  color: grey;
+}
+
+p.changes {
+  text-align: center;
+  font-weight: bold;
+  margin-block-end: 0;
+}
+
+p.log {
+  color: grey;
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+
+p.sha256sum {
+  color: grey;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-family: monospace;
+}
