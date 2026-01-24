@@ -3,7 +3,7 @@
 set -eu
 #set -x
 
-VER=3.22
+VER=3.23
 CMD=
 ARCH=armhf
 HELP=
