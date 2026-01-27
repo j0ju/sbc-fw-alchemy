@@ -10,10 +10,12 @@ chroot "$DST" \
   apt-get install -y \
     mc tmux screen vim-nox tcpdump mtr-tiny strace \
     lsof console-setup cifs-utils nfs-common pv ntfs-3g \
-    ifupdown-ng ifupdown-ng-compat bird2 fastd \
+    ifupdown-ng ifupdown-ng-compat fastd \
     gdisk squashfs-tools mtools xorriso \
     grub-efi-amd64-bin grub-efi \
     diffutils \
+    busybox udhcpc make \
+    microcom minicom picocom \
     \
   #
 #

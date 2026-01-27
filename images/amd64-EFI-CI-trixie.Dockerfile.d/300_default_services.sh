@@ -8,7 +8,7 @@ set -x
 
 # don't wait for network, the individual processes have to wait for network
 chroot "$DST" systemctl disable \
-  rpcbind.service \
+  rpcbind.service rpcbind.socket \
   nfs-blkmap.service \
   nfs-client.target \
   nss-lookup.target \
