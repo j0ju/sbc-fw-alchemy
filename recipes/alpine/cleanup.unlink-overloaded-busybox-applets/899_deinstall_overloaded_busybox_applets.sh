@@ -1,6 +1,6 @@
 #!/bin/sh -e
 # - shell environment file for run-parts scripts in this directory
-# (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
 
 PS4='> ${0##*/}: '
 #set -x
@@ -34,12 +34,5 @@ chroot /target /bin/sh -eu << 'EOF'
     done
   done
 EOF
-
-# TODO: is this still needed?
-# in Alpine 3.22 klogd user seems to be missing
-if ! chroot /target grep ^klogd: /etc/passwd > /dev/null; then
-  echo "E: klogd user is missing, this should not have happend, ABORT" >&2
-  exit 1
-fi
 
 # vim: set ts=2 sw=2 et
