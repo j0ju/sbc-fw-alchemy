@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 
 PS4='> ${0##*/}: '
@@ -28,6 +28,7 @@ PS4='> ${0##*/}: '
   ln -s ../../tmp/cache/etckeeper var/cache/etckeeper
   ln -s ../../tmp/lib/dbus var/lib/dbus
   ln -s ../../tmp/lib/rsyslog var/lib/rsyslog
+  ln -s ../tmp/lib/sshd var/empty
   # keep this image during build functioning
 ) # EO ( cd /target/
 ( cd /target/var

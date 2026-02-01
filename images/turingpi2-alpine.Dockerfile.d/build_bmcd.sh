@@ -33,7 +33,7 @@ umask 022
 #- ensure build env
   rm -rf "$ROOT"
   mkdir -p "$ROOT"
-  tar xf /src/input/armhf-Alpine-3.22.tgz -C "$ROOT"
+  tar xf /src/input/armv7-Alpine-3.23.tgz -C "$ROOT"
   rm -f "$ROOT"/etc/resolv.conf
   cat /etc/resolv.conf > "$ROOT"/etc/resolv.conf
   cp -a /dev/* "$ROOT/dev"
