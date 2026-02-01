@@ -19,6 +19,17 @@ load ${devtype} ${devnum}:${distro_bootpart} ${loadaddr} /boot/turing-pi2.itb
 # read hardware version from EEPROM
 tpi_info hw_version tpi_hw_version
 
+# only accept known revisions, and fall back to v2.4.0
+if test "$tpi_hw_version" = "v2.5.0"; then
+  setenv tpi_hw_version "v2.5.0"
+elif test "$tpi_hw_version" = "v2.5.1"; then
+  setenv tpi_hw_version "v2.5.1"
+elif test "$tpi_hw_version" = "v2.5.2"; then
+  setenv tpi_hw_version "v2.5.2"
+else
+  setenv tpi_hw_version "v2.4.0"
+fi
+
 setenv fit_boot_args "${loadaddr}#config-${tpi_hw_version:-v2.4.0}"
 if env exists boot_unlocked; then
     echo "disabling write protection.."
