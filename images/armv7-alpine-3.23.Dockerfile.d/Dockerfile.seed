@@ -1,0 +1,38 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+FROM sbc:armv7-Alpine-3.23 AS busybox-static
+RUN set -eu ;\
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  chroot /target apk add busybox-static
+
+# start /target with fresh armhf alpine
+FROM sbc:armhf-Alpine-3.23
+COPY --from=busybox-static /target/bin/busybox.static /target.busybox.static
+
+CMD \
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  busybox mount -o bind /target /target 2> /dev/null || :; \
+  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
+  busybox mount -t runfs tmpfs /target/run 2> /dev/null || :; \
+  busybox mount -t tmpfs tmpfs /target/tmp 2> /dev/null || :; \
+  chmod 1777 /target/tmp ;\
+  ( \
+    find /target/var -type l | \
+      while read d; do \
+        l="$(readlink "$d")" ;\
+        ( cd "${d%/*}" ;\
+          mkdir -p "$l" \
+        ) ;\
+      done \
+  ) ;\
+  [ -x /target/bin/bash ] || \
+    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
+  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
+: # eo CMD
+
+RECIPE alpine/SBC-base
+RECIPE cleanup.remove-platform-dirs
+RECIPE alpine/cleanup.unlink-overloaded-busybox-applets
