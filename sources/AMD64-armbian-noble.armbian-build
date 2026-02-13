@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# script to build Armbian/Trixie image with latest kernel using compile.sh
+# see https://github.com/armbian/build
+
+BOARD=uefi-x86
+BRANCH=current
+RELEASE=noble
+
+ZFS=
+#ZFS=zfs
+
+./compile.sh \
+  BOARD="$BOARD" \
+  BRANCH="$BRANCH" \
+  RELEASE="$RELEASE" \
+  \
+  BUILD_MINIMAL=yes \
+  KERNEL_CONFIGURE=no \
+  INSTALL_HEADERS=no \
+  \
+  NETWORKING_STACK="systemd-networkd" \
+  ENABLE_EXTENSIONS="cloud-init $ZFS fs-btrfs-support fs-f2fs-support fs-xfs-support" \
+  #
+
+IMAGE="$( ls -t output/images/*$( echo -n ${BOARD} |  sed -n '1 s/./\U\0/ p' )_${RELEASE}_${BRANCH}*.img )"
+
+# TODO: PACKAGE_LIST_ADDITIONAL="vim-nox mc screen wavemon iw wireless-tools wpasupplicant hostapd tcpdump ifupdown-ng ppp wireguard-tools podman podman-compose" \
