@@ -5,7 +5,9 @@ armbian-up: input/armbian/.git/config
 	$(E) GIT PULL "# update  input/armbian <-- https://github.com/armbian/build"
 	cd input/armbian; git pull
 
-.PHONY: armbian-up
+armbian-build-all-images: $(shell ls sources/*.armbian-build 2> /dev/null | sed -r -e "s/^sources/input/" -e 's/[.].*$$/.img/')
+
+.PHONY: armbian-up armbian-build-all-images
 
 # ensure armbian repository
 # https://docs.armbian.com/Developer-Guide_Build-Preparation/#clone-repository
