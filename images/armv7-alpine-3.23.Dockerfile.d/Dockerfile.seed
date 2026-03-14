@@ -8,7 +8,7 @@ RUN set -eu ;\
   chroot /target apk add busybox-static
 
 # start /target with fresh armhf alpine
-FROM sbc:armhf-Alpine-3.23
+FROM sbc:armv7-Alpine-3.23
 COPY --from=busybox-static /target/bin/busybox.static /target.busybox.static
 
 CMD \
