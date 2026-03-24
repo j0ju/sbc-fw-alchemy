@@ -44,6 +44,7 @@ PKGS="$PKGS
   tmux
   screen
   minicom
+  picocom
   pv
 "
 chroot /target apk add $PKGS
