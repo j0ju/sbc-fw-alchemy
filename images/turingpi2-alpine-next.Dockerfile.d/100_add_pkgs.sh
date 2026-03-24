@@ -33,8 +33,10 @@ PKGS="$PKGS
   jq
   libgpiod linux-tools-gpio
   vimdiff
-  picocom
   btrfs-progs
+  socat
+  ser2net
+    ser2net-openrc
 "
 
 PKGS="$PKGS
