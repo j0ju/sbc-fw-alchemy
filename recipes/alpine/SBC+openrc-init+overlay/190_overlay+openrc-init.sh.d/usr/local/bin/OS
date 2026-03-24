@@ -1,8 +1,12 @@
 #!/bin/sh
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2024,2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 
 set -eu
 umask 022
+
+OVERLAY_DIR=/mmc/TP2
+CURRENT=overlay.CURRENT
+SNAPSHOT_PREFIX=SNAP.
 
 update_root() {
   [ -z "${TRACE:-}" ] || set -x
@@ -138,7 +142,6 @@ update_root() {
   # TODO: cleanup old unused ROOTFS? which?
   #       do FS maintenance?
   }
-
 cleanup_root() {
   if ! cd /rom/mnt 2> /dev/null; then
     echo >&2 "E: could not change to OS image partition, ABORT"
@@ -217,24 +220,213 @@ status_boot() {
   echo
 
   cd "$oPWD"
-}
-
-status_mmc() (
+  }
+status_mmc() ( # subshell, new scope!
+  : # this sources openrc initfile as shell fragment
+  : # and overloads status() with the one from the rcfile
+  : # a nd calls it
   . /etc/init.d/mmc
   [ -r /etc/conf.d/mmc ] || \
 		. /etc/conf.d/mmc
   status
   )
-
 status() (
   status_mmc
 	echo
 	status_boot
   )
+status_RO_RW() {
+  : # FIXME: this assumes ro and rw are always first in mount opts
+  STATUS_RO_RW="$(grep -E " /mmc [^ ]+ ro" < /proc/mounts && echo RO || echo RW)"
+  }
 
+snapshot_list() {
+  cd "$OVERLAY_DIR"
+  if ls -d "$SNAPSHOT_PREFIX"* > /dev/null 2>&1; then
+    local FMT="%8s     %s"
+    printf "$FMT\n" "USAGE" "NAME"
+    du -sh "$SNAPSHOT_PREFIX"* | while read usage name; do
+      printf "$FMT\n" "$usage" "${name#$SNAPSHOT_PREFIX}"
+    done
+  else
+    echo "I: no snapshots found."
+  fi
+  }
+snapshot_create() {
+  if [ "$#" = 0 ]; then
+    echo "E: not enough arguments" >&2
+    exit 1
+  fi
+
+  NAME="$1"
+  if [ "$NAME" = -d ]; then
+    NAME="$( date +%Y-%m-%d-%H%M )"
+  fi
+  SNAP_DIR="$OVERLAY_DIR/$SNAPSHOT_PREFIX$NAME"
+  if [ -d "$SNAP_DIR" ]; then
+    echo "E: directory for next snapshot already exists: '$SNAP_DIR', ABORT" >&2
+    exit 1
+  fi
+
+  status_RO_RW
+  [ "$STATUS_RO_RW" = RW ] || \
+    RW
+  mkdir -p "$SNAP_DIR"
+  echo "I: creating snapshot to '$SNAP_DIR'"
+  tar cf - --atime-preserve --xattrs -C /overlay . | tar xf - --atime-preserve --xattrs -C "$SNAP_DIR"
+  echo "Done."
+
+  [ "$STATUS_RO_RW" = RW ] || \
+    RO
+  }
+snapshot_rm() {
+  if [ "$#" = 0 ]; then
+    echo "E: not enough arguments" >&2
+    exit 1
+  fi
+  NAME="$1"
+  SNAP_DIR="$OVERLAY_DIR/$SNAPSHOT_PREFIX$NAME"
+  if [ ! -d "$SNAP_DIR" ]; then
+    echo "E: snapshot does not exist '$NAME' ($SNAP_DIR)" >&2
+    exit 1
+  fi
+
+  status_RO_RW
+  [ "$STATUS_RO_RW" = RW ] || \
+    RW
+  rm -rf "$SNAP_DIR"
+  [ "$STATUS_RO_RW" = RW ] || \
+    RO
+  }
+snapshot_dump() {
+  if ! mountpoint /mmc > /dev/null; then
+    echo "E: MMC is not mounted, ABORT" >&2
+    exit 1
+  fi
+  if [ ! -d "$OVERLAY_DIR" ]; then
+    echo "E: could not change to $OVERLAY_DIR, is /mmc mounted? ABORT" >&2
+    exit 1
+  fi
+  if [ "$#" != 2 ]; then
+    echo "E: invalid number of arguments" >&2
+    exit 1
+  fi
+
+  NAME="$1"
+  TAR="$2"
+
+  SNAP_DIR="$OVERLAY_DIR/$SNAPSHOT_PREFIX$NAME"
+  dump "$SNAP_DIR" "$TAR"
+  }
+snapshot_rollback() {
+  if [ "$#" = 0 ]; then
+    echo "E: not enough arguments" >&2
+    exit 1
+  fi
+  if ! mountpoint /mmc > /dev/null; then
+    echo "E: MMC is not mounted, ABORT" >&2
+    exit 1
+  fi
+  if ! cd "$OVERLAY_DIR"; then
+    echo "E: could not change to $OVERLAY_DIR, is /mmc mounted? ABORT" >&2
+    exit 1
+  fi
+
+  CURRENT="overlay.CURRENT"
+  NEXT="overlay.NEXT"
+  PREV="$SNAPSHOT_PREFIX"PREVIOUS
+  SNAP="$SNAPSHOT_PREFIX""$1"
+
+  if ! [ -d "$SNAP" ]; then
+    echo "E: snapshot '$1' does not exist, ABORT" >&2
+    exit 1
+  fi
+
+  # TODO: error handling and sanity checks
+  status_RO_RW
+  [ "$STATUS_RO_RW" = RW ] || \
+    RW
+
+  rm -rf "$NEXT"
+  mkdir -p "$NEXT"
+
+  echo "I: preparing next overlay to $NEXT from $SNAP"
+  tar cf - --atime-preserve --xattrs -C "$SNAP" . | \
+    tar xf - --atime-preserve --xattrs -C "$NEXT"
+
+  rm -rf "$PREV"
+
+  CURRENT_OVL_PATH="$( findmnt /overlay -o SOURCE -n )"
+  # /dev/mmcblk0p2[/TP2/overlay.v0] --> /TP2/overlay.v0
+  # NOTE: suffix //deleted if directory has been removed
+  CURRENT_OVL_PATH="${CURRENT_OVL_PATH%]}"
+  CURRENT_OVL_PATH="${CURRENT_OVL_PATH#*[}"
+  case "$CURRENT_OVL_PATH" in
+    *//deleted ) # multi rollback?
+      mv "$CURRENT" "$PREV"
+      ;;
+    * )
+      mv "/mmc/${CURRENT_OVL_PATH#/mmc/}" "$PREV"
+      ;;
+  esac
+  echo "I: moved current overlay to $PREV"
+
+  mv "$NEXT" "$CURRENT"
+  echo "I: moved next overlay to $CURRENT"
+
+  # TODO: this is not atomic, error handling
+  rm -rf /mmc/overlay
+  # NOTE: this assumes that OVERLAY_DIR is always below /mmc
+  ln -s "${OVERLAY_DIR#/mmc/}/$CURRENT" /mmc/overlay
+  echo "I: next boot: ensure link /mmc/overlay -> '${OVERLAY_DIR#/mmc/}/$CURRENT'"
+
+  [ "$STATUS_RO_RW" = RW ] || \
+    RO
+  }
 snapshot() {
-  echo "E: not implemented, yet."
-  exit 69
+  CMD="${1:-}"
+  shift 2> /dev/null || :
+  if ! mountpoint /mmc > /dev/null; then
+    echo "E: MMC is not mounted, ABORT" >&2
+    exit 1
+  fi
+  if [ ! -d "$OVERLAY_DIR" ]; then
+    echo "E: could not change to $OVERLAY_DIR, is /mmc mounted? ABORT" >&2
+    exit 1
+  fi
+  case "$CMD" in
+    list | ls | li | l ) snapshot_list "$@" ;;
+    create | cr | c )    snapshot_create "$@" ;;
+    rm )                 snapshot_rm "$@" ;;
+    dump )               snapshot_dump "$@" ;;
+    rollback | rb )      snapshot_rollback "$@" ;;
+    #
+    * | -h | --help | "" ) help ;;
+  esac
+  }
+
+dump() {
+  if [ "$#" != 2 ]; then
+    echo "E: invalid number of arguments" >&2
+    exit 1
+  fi
+
+  SNAP_DIR="$1"
+  TAR="$2"
+  if [ ! -d "$SNAP_DIR" ]; then
+    echo "E: could not change to $SNAP_DIR, ABORT" >&2
+    exit 1
+  fi
+
+  COMPRESSOR=cat
+  case "$TAR" in
+    *.zstd | *.zst ) COMPRESSOR=zstd ;;
+    *.gz ) COMPRESSOR=gzip ;;
+    *.xz ) COMPRESSOR=xz ;;
+    *.bz2 ) COMPRESSOR=bzip2 ;;
+  esac
+
+  tar cf - --atime-preserve --xattrs -C "$SNAP_DIR" . | $COMPRESSOR > "$TAR"
   }
 
 help() {
@@ -246,27 +438,47 @@ cat <<-EOF
 
 	Commands:
 	   update <IMAGE>  - update rootfs with SQFS image
-	   cleanup         - collect and cleanup old ROOTFS images
+
+	   cleanup
+     prune     [-f]  - collect and cleanup old ROOTFS image
 
 	   status          - display status of MMC/eMMC/SD card and boot targets
 
 	   rw              - mount /mmc & overlay read-write ( via /etc/init.d/mmc )
 	   ro              - mount /mmc & overlay read-only  ( via /etc/init.d/mmc )
 
-	   snapshot        - NOT implemented, yet - snapshot overlay in /mmc
+	   snapshot list <NAME>     - list snapshots
+	   snapshot create <NAME>   - snapshot current overlay to
+                                $OVERLAY_DIR/$SNAPSHOT_PREFIX.<NAME>
+                                if NAME is -d `YYYY-MM-DD-hhmm` will be used
+                                snapshot name.
+     snapshot rm <NAME>       - removes a snapshot
+
+     snapshot rollback <NAME> - rollback to snapshot
+                       * moves $OVERLAY_DIR/overlay.CURRENT
+                         to $OVERLAY_DIR/$SNAPSHOT_PREFIX.PREVIOUS (overwriting!)
+                       * copies $OVERLAY_DIR/$SNAPSHOT_PREFIX.<NAME> to $OVERLAY_DIR/overlay.CURRENT
+                       * ensure overlay symlinks to overlay.CURRENT
+
+     snapshot dump <NAME> <TAR> - snapshot to tarball
+
+     dump <TAR>               - current overlay to a tarball
 EOF
+echo
 }
 
 CMD="${1:-}"
 shift 2> /dev/null || :
 case "$CMD" in
   update | up )          update_root "$@" ;;
+  prune | cleanup )      cleanup_root "$@" ;;
+
   rw | ro )              /etc/init.d/mmc reload ; /etc/init.d/mmc "$CMD" ; status ;;
   status | stat | st )   status ;;
 
   # TODO:
-  snapshot | snap )      snapshot "$@" ;;
-  prune | cleanup )      cleanup_root "$@" ;;
+  snapshot | snap | sn | s ) snapshot "$@" ;;
+  dump )                     dump /overlay "$@" ;;
 
   * | -h | --help | "" ) help ;;
 esac
