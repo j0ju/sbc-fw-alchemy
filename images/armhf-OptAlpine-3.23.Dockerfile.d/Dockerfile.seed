@@ -21,7 +21,7 @@ COPY --from=source /target/ /
 COPY lib/img-mangler/alpine-mk-bin-tarball.sh /src/lib/img-mangler/
 COPY lib/img-mangler/alpine-mk-pkg-tarball.sh /src/lib/img-mangler/
 
-ENV DST=/
+ENV ABUILD_ALLOW_ROOT=1 DST=/
 
 CMD /bin/bash
 
