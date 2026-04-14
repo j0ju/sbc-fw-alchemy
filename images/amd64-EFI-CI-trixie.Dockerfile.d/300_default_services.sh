@@ -31,3 +31,12 @@ chroot "$DST" rm -f \
   /etc/init.d/fastd \
   /etc/init.d/rsync \
 #
+
+# - we use ifupdown-ng, we don't need snippets of bridge-utils
+# - remove live-config from startup services
+rm -rf \
+  /etc/systemd/system/basic.target.wants/live-config.service \
+  /etc/network/if-*.d/bridge \
+# EOrm-rf
+
+systemctl disable dnsmasq || :

@@ -1,0 +1,10 @@
+# (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+output/amd64-EFI-CI-%.img: .deps/amd64-EFI-CI-%.built lib/img-mangler/amd64-EFI-generate-image.sh
+	$(E) "IMG $@"
+	$(Q) mkdir -p output ;\
+		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.img=)) sh $(SHOPT) /src/lib/img-mangler/amd64-EFI-generate-image.sh $@
+
+output/amd64-EFI-CI-%.EFI.iso: .deps/amd64-EFI-CI-%.built lib/img-mangler/amd64-EFI-generate-efi-bootable-iso.sh
+	$(E) "IMG $@"
+	$(Q) mkdir -p output ;\
+		   ./bin/img-mangler -p --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.EFI.iso=)) sh $(SHOPT) /src/lib/img-mangler/amd64-EFI-generate-efi-bootable-iso.sh $@

@@ -2,4 +2,3 @@
 # meta: onestep
 
 FROM sbc:amd64-EFI-CI-trixie
-
