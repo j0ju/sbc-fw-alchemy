@@ -2,3 +2,5 @@
 # meta: onestep
 
 FROM sbc:amd64-EFI-CI-trixie-zfs
+
+COPY input/artifacts/doca-host_3.2.2-035000-25.10-debian13_amd64.deb /
