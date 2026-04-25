@@ -1,6 +1,6 @@
 [user]
   name = root
-  email = root@tipi
+  email = root@
 [alias]
   ci = commit
   l = log --oneline
