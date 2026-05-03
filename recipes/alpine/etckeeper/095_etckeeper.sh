@@ -25,6 +25,7 @@ tee > /dev/null .gitignore <<-EOF
 	*-
 	*~
 	*.O
+	*.sw[a-z]
 	resolv.conf
 EOF
 
@@ -37,3 +38,5 @@ chroot /target apk add --no-cache etckeeper etckeeper-bash-completion
 
 # FIXME: why? the commit is successful
 rm -f /target/etc/.git/HEAD.lock /target/etc/.git/refs/heads/main.lock
+
+# vim: noet sw=0 ts=2 ft=shell
