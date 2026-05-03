@@ -269,10 +269,6 @@ extract_tarball() {
   echo "I: mount /              ($TMPDIR)"
   mount "$ROOT_DEV" "$TMPDIR" $MOUNT_OPTS
 
-  echo "I: mount /boot/firmware ($TMPDIR/$BOOT_DIR)"
-  mkdir -p "$TMPDIR/$BOOT_DIR"
-  mount "$BOOT_DEV" "$TMPDIR/$BOOT_DIR"
-
   echo "I: extract tarball"
   if tty > /dev/null && [ -n "$PV" ]; then
     $DECOMPRESSOR "$image" | $PV | tar xf - -C "$TMPDIR" --xattrs --atime-preserve
@@ -314,6 +310,14 @@ extract_tarball() {
       "$TMPDIR/boot/armbianEnv.txt"
     )
   fi
+
+  ( cd "$TMPDIR/$BOOT_DIR"
+    echo "I: mount & sync /boot/firmware ($TMPDIR/$BOOT_DIR)"
+    mount "$BOOT_DEV" "$TMPDIR/$BOOT_DIR"
+    tar cf - . | ( cd "$TMPDIR/$BOOT_DIR"
+      tar xf -
+    )
+  )
 
   sync
   }
