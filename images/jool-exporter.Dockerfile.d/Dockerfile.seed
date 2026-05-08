@@ -1,0 +1,5 @@
+# (C) 2024-2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+FROM python:3.14.4-alpine3.23
+
