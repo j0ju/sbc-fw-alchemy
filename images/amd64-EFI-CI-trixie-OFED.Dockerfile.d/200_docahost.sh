@@ -14,10 +14,18 @@ PKG="${PKG##*/}"
 
 sudo dpkg -i "$PKG"
 
-sudo apt-get update
-#sudo apt-get -y install doca-runtime
-sudo apt-get -y install doca-basic rshim
-#sudo apt-get -y install doca-networking
+apt-get update
+
+#apt-get -y install doca-runtime
+#apt-get -y install doca-networking
+
+apt-get -y install \
+  doca-basic \
+  doca-installer \
+  mlnx-ofed-kernel-dkms \
+  rshim \
+  mft mft-mlx5 mft-nvredfish kernel-mft-dkms \
+#
 
 # add some benchmarking tools
 export DEBIAN_FRONTEND=noninteractive
@@ -25,8 +33,7 @@ apt-get install -y \
   iperf iperf3 \
 # EO apt-get
 
-systemctl disable openibd opensmd ibacm || :
-systemctl enable rshimd || :
+systemctl disable openibd opensmd ibacm rshimd || :
 
 apt-get clean
 dpkg -P doca-host
