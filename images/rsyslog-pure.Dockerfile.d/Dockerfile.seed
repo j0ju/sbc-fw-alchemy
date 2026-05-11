@@ -2,8 +2,66 @@
 # meta: #onestep
 
 # this will create a very minimalistic rsyslog container
+
 # see
-#   IRun images/rsyslog-fwd-pure.Dockerfile.d/ busybox find / -xdev
+# # docker image ls
+  #    sbc:rsyslog-pure                                                   25f3a2c6647b        4.1MB             0B
+
+# # IRun images/rsyslog-pure.Dockerfile.d/ busybox find / -xdev
+  #    /bin
+  #    /sbin
+  #    /var/lib
+  #    /var/lib/rsyslog
+  #    /var/run
+  #    /dev
+  #    /entrypoint.sh
+  #    /sys
+  #    /tmp
+  #    /lib/ld-musl-aarch64.so.1
+  #    /proc
+  #    /etc/mtab
+  #    /etc/group
+  #    /etc/resolv.conf
+  #    /etc/rsyslog.conf
+  #    /etc/hostname
+  #    /etc/hosts
+  #    /etc/passwd
+  #    /run
+  #    /usr/bin/busybox
+  #    /usr/bin/sh
+  #    /usr/sbin
+  #    /usr/sbin/rsyslogd
+  #    /usr/lib
+  #    /usr/lib/libfastjson.so.4.3.0
+  #    /usr/lib/libuuid.so.1
+  #    /usr/lib/libuuid.so.1.3.0
+  #    /usr/lib/libestr.so.0.0.0
+  #    /usr/lib/libfastjson.so.4
+  #    /usr/lib/libz.so.1
+  #    /usr/lib/rsyslog
+  #    /usr/lib/rsyslog/immark.so
+  #    /usr/lib/rsyslog/lmzlibw.so
+  #    /usr/lib/rsyslog/omprog.so
+  #    /usr/lib/rsyslog/imklog.so
+  #    /usr/lib/rsyslog/fmhash.so
+  #    /usr/lib/rsyslog/lmtcpsrv.so
+  #    /usr/lib/rsyslog/mmleefparse.so
+  #    /usr/lib/rsyslog/omstdout.so
+  #    /usr/lib/rsyslog/lmnetstrms.so
+  #    /usr/lib/rsyslog/ommail.so
+  #    /usr/lib/rsyslog/lmregexp.so
+  #    /usr/lib/rsyslog/lmtcpclt.so
+  #    /usr/lib/rsyslog/lmnet.so
+  #    /usr/lib/rsyslog/imtcp.so
+  #    /usr/lib/rsyslog/impstats.so
+  #    /usr/lib/rsyslog/lmnsd_ptcp.so
+  #    /usr/lib/rsyslog/imudp.so
+  #    /usr/lib/rsyslog/imfile.so
+  #    /usr/lib/rsyslog/mmexternal.so
+  #    /usr/lib/rsyslog/imuxsock.so
+  #    /usr/lib/rsyslog/imptcp.so
+  #    /usr/lib/libestr.so.0
+  #    /usr/lib/libz.so.1.3.2
 
 # use alpine install rsyslog
 
@@ -36,7 +94,7 @@ RUN  set -eux ;\
   ln -s tmp run ;\
   ln -s /run var/run ;\
   tar xzf /rsyslog.pkg.tar.gz -C /scratch ;\
-  rm -rf etc/logrotate.d etc/rsyslog* ;\
+  rm -rf etc/logrotate.d etc/rsyslog* usr/etc ;\
   cp -a /bin/busybox /scratch/bin/busybox ;\
   grep -E "^(root|adm)" /etc/passwd > /scratch/etc/passwd ;\
   grep -E "^(root|adm)" /etc/group > /scratch/etc/group ;\

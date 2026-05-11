@@ -1,9 +1,16 @@
 #!/bin/sh
-set -e
 
-if [ "$1" = "-" ]; then
+set -eu
+PS4="${0##*/}: "
+
+if [ "${1:-}" = "-" ]; then
+  set -x
   /bin/busybox --install -s /bin
   exec /bin/ash -
+elif [ -n "${1:-}" ]; then
+  set -x
+  "$@"
+  exit $?
 fi
 
 if [ -n "$UNIFIED_RSYSLOG_REMOTE" ]; then
@@ -24,7 +31,8 @@ fi
 # Q: other options to add via environment
 
 # small thumbscrews
-rm -f /bin/sh # remove shell
+/bin/busybox rm -f /bin/sh # remove shell
 export PATH=
 
+set -x
 exec /usr/sbin/rsyslogd -n
