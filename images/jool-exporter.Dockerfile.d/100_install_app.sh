@@ -8,3 +8,5 @@ set -x
 pip install virtualenv
 virtualenv /app
 /app/bin/pip install jool-exporter
+
+rm -rf /src /opt /media /srv /home /mnt

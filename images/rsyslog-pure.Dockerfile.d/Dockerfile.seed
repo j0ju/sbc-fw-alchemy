@@ -1,0 +1,54 @@
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
+# meta: #onestep
+
+# this will create a very minimalistic rsyslog container
+# see
+#   IRun images/rsyslog-fwd-pure.Dockerfile.d/ busybox find / -xdev
+
+# use alpine install rsyslog
+
+FROM alpine:3.23 AS donor
+
+ADD lib/img-mangler/alpine-mk-pkg-tarball.sh /
+RUN  set -eux ;\
+  umask 022 ;\
+  apk add rsyslog ;\
+  sh /alpine-mk-pkg-tarball.sh rsyslog / ;\
+  mkdir -p /scratch/usr/bin /scratch/usr/etc /scratch/var/lib/rsyslog ;\
+: # EO RUN
+
+# create new rootfs /scratch
+#   extract relevant files
+#     bin
+#     lib
+#     /bin/sh via busybox, delete for shellcode sandbox ;)
+
+COPY images/rsyslog-pure.Dockerfile.d/entrypoint.sh /scratch/entrypoint.sh
+
+RUN  set -eux ;\
+  cd /scratch ;\
+  mkdir tmp ;\
+  chmod 177 tmp ;\
+  chmod 0755 /scratch/entrypoint.sh ;\
+  ln -s usr/bin bin ;\
+  ln -s bin sbin ;\
+  ln -s bin /usr/sbin ;\
+  ln -s tmp run ;\
+  ln -s /run var/run ;\
+  tar xzf /rsyslog.pkg.tar.gz -C /scratch ;\
+  rm -rf etc/logrotate.d etc/rsyslog* ;\
+  cp -a /bin/busybox /scratch/bin/busybox ;\
+  grep -E "^(root|adm)" /etc/passwd > /scratch/etc/passwd ;\
+  grep -E "^(root|adm)" /etc/group > /scratch/etc/group ;\
+  ln -s busybox /scratch/bin/sh ;\
+: # EO RUN
+
+COPY images/rsyslog-pure.Dockerfile.d/rsyslog.conf /scratch/etc/rsyslog.conf
+
+# copy prepared rootfs to empty container
+
+FROM scratch
+
+COPY --from=donor /scratch /
+
+ENTRYPOINT [ "/entrypoint.sh" ]
