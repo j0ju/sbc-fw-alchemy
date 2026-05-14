@@ -81,7 +81,7 @@ RUN  set -eux ;\
 #     lib
 #     /bin/sh via busybox, delete for shellcode sandbox ;)
 
-COPY images/rsyslog-pure.Dockerfile.d/entrypoint.sh /scratch/entrypoint.sh
+COPY images/app-rsyslog-pure.Dockerfile.d/entrypoint.sh /scratch/entrypoint.sh
 
 RUN  set -eux ;\
   cd /scratch ;\
@@ -101,7 +101,7 @@ RUN  set -eux ;\
   ln -s busybox /scratch/bin/sh ;\
 : # EO RUN
 
-COPY images/rsyslog-pure.Dockerfile.d/rsyslog.conf /scratch/etc/rsyslog.conf
+COPY images/app-rsyslog-pure.Dockerfile.d/rsyslog.conf /scratch/etc/rsyslog.conf
 
 # copy prepared rootfs to empty container
 
