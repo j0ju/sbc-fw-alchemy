@@ -21,9 +21,10 @@ output/%.erofs: \
 input/artifacts/%.deb: input/%.deb
 	$(Q) \
 		mkdir -p input/artifacts ;\
-		mv $< $@ ;\
-		f="$@"; f="$${f#input/}" ;\
-			ln -s "$$f" input
+		if mv $< $@; then \
+			f="$@"; f="$${f#input/}" ;\
+			ln -s "$$f" input ;\
+	  fi
 
 .PRECIOUS: %.erofs %.sqfs
 
