@@ -30,10 +30,12 @@ apt-get -y install \
 # add some benchmarking tools
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -y \
-  iperf iperf3 \
+  iperf iperf3 frr \
 # EO apt-get
 
-systemctl disable openibd opensmd ibacm rshimd || :
+for svc in openibd opensmd ibacm rshimd iperf iperf3 frr; do
+  systemctl disable $svc || :
+done
 
 apt-get clean
 dpkg -P doca-host
