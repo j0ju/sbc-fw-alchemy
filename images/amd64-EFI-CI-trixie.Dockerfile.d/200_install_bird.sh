@@ -16,4 +16,6 @@ apt-get update
 
 apt-get install -y \
   bird3 \
+
+systemctl disable bird3
 #

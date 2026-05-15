@@ -15,6 +15,7 @@ chroot "$DST" systemctl disable \
   rsync.service \
   bird.service \
   apparmor.service \
+  dnsmasq \
 #
 
 chroot "$DST" systemctl mask \
@@ -38,5 +39,3 @@ rm -rf \
   /etc/systemd/system/basic.target.wants/live-config.service \
   /etc/network/if-*.d/bridge \
 # EOrm-rf
-
-systemctl disable dnsmasq || :

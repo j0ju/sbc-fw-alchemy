@@ -19,6 +19,7 @@ chroot "$DST" \
     usbutils pciutils \
       libusb-1.0-0 \
     ifstat dnsmasq \
+    ipmitool \
   #
-#
-#  ipmitool \
+
+mkdir -p "$DST"/etc/network/interfaces.d
