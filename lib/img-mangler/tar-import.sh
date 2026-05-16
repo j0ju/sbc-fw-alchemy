@@ -15,13 +15,16 @@ esac
 CONTAINER="$(docker run --rm -d sbc:img-mangler tail -f /dev/null)"
 trap "docker rm -f $CONTAINER > /dev/null" EXIT HUP INT QUIT PIPE KILL TERM
 
-DECOMPRESSOR=cat
+DECOMPRESSOR="pv -brat"
+which pv > /dev/null || DECOMPRESSOR=cat
+tty > /dev/null || DECOMPRESSOR=cat
 
 docker exec "$CONTAINER" mkdir -p /target
 case "$IN" in
   *.zst | *.zstd ) DECOMPRESSOR="zstd -cd" ;;
-  *.gz | *.tgz ) DECOMPRESSOR="gzip -cd" ;;
-  *.xz | *.txz ) DECOMPRESSOR="xz -cd" ;;
+  *.gz  | *.tgz  ) DECOMPRESSOR="gzip -cd" ;;
+  *.xz  | *.txz  ) DECOMPRESSOR="xz -cd" ;;
+  *.bz2 | *.tbz2 ) DECOMPRESSOR="bzip2 -cd" ;;
 esac
 
 $DECOMPRESSOR < "$IN" | \
