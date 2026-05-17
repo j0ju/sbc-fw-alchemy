@@ -6,7 +6,7 @@ To change kenrel config steps inside of the container:
  * build image
  * test
  * `make linux-update-defconfig` (BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE=...)
- * `cp /workspace/bmc-firmware/tp2bmc/board/tp2bmc/linux_defconfig /src/turingpi2-buildroot.Workspace.d/linux_defconfig`
+ * `cp /workspace/bmc-firmware/tp2bmc/board/tp2bmc/linux_defconfig /src/images/turingpi2-buildroot.Workspace.d/linux_defconfig`
 
 To change buildroots pakcage config
 From https://buildroot.org/downloads/manual/customize-configuration.txt :
