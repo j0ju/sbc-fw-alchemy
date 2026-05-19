@@ -1,4 +1,4 @@
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
 
 output/rpi-alpin%.img: \
 	output/rpi-alpin%.rootfs.tar.zst \

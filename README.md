@@ -18,23 +18,28 @@
  * integrates some more helper utils from Alpine into stock images
 
 ## Currently developed devices
- * Raspberry Pi OS 64bit (32bit is on the TODO list) (BCM)
+ * Raspberry Pi Pi3/4 CM4/5 OS 64bit/32bit tested with Waveshare CM4IO /& Turing Pi2
  * Bananapi M2 Zero with Armbian (Sunxi H2/H3)
- * Turinpi 2 (2.4 only for now, 2.5.x untested)
+ * Turinpi 2 (2.4, 2.5)
  * Xiegu 6100 (Sunxi H3)
- * AMD64 Cloud images
+ * AMD64 Cloud images for use as live, rescue or installer using cloud-init for PXE boot or as EFI bootable ISO/CD/DVD
+ * Bluefield 2 DOCA
+ * Leeche NanoKVM
 
  More can be integrated by providing the needed `.url` files and coding the needed
  `YourSBCwithImage.Dockerfile.d` directories.
 
 ## `Don't`s
  No warranty, I will not be responsible for what ever you do with these generated images.
- They might break your device,it might eletrocute you, be warned. Act safe and sane.
+ They might break your device, it might eletrocute you, be warned. Act safe and sane.
+ This is your responsiility.
 
- I advise not distributing images generated this way, they contain copyrighted material.
- In case of images integrating ZFS, there license clashes between GPL and CDDL. Oracle might sue you.
-
- Only transmit in frequency ranges you are allowed to transmit, check for a clean HF of your device.
+ I advise not distributing images generated this way, they might contain copyrighted material or incopatible licenses espcially with SBCs.
+ Don't ask.
+ eg.
+  * In case of images integrating ZFS/ DOCA, the might be license clashes between GPL, CDDL, ..... Oracle might sue you.
+  * SBCs, RPI, Bluefield ...
+ For ham operators: Only transmit in frequency ranges you are allowed to transmit, check for a clean HF of your device.
 
 # Quickstart
 
@@ -65,7 +70,15 @@
 
 ## Docker
 
- General usage
+ For testing, inspection of blobs. It will create docker container with the imported userland
+ (using with qemu(+Resetta Tested: OS Rancher Desktop) if needed)
+
+ * IRun <IMG>, where image is
+   * a name of an generated image or
+   * imported source
+   * directory images/NAME
+
+ General usage for building
 
  * `make` - generates all Docker images
  * `make url` - Downloads all SDCard and update images
@@ -74,8 +87,10 @@
 #### tl:dr Workflow
 
  * Archiv -> Image -> TarDump -> Dockerimage --> ... modding --> desired state of /target in image
- * Dockerimage `Name` --> `name.sdcard.img`
- * Dockerimage `Name` --> `name.update.img`
+ * usually something like
+   * Image `Name` --> `name.bin`
+   * Image `Name` --> `name.EFI.iso`
+   * Image `Name` --> `name.sdcard.img`
 
 ### `./config` and `./config.example`
  `./config` is a preseed for different settings:
@@ -105,10 +120,9 @@
 
  * `img-mangler` - enter the mangling docker container with the source tree mounted in /src
  * `binfmt-helper` - this install qemu-user-static and some binfmt signatures to enable running arm code on your workstation for development
- * `rpi-write-rootfs`
- * `sunxi-write-rootfs`
  * `OptAlpine` - script to generate tarballs of Alpine packages to be
    "installed"/extraced to the rootfs for testing or extension purposes.
+   This is usefull for buildroot/yocta/.../glibc-base random IoT device for further inspection/extension/hacking ...
    The shared objects/libraries are relocated so extraced blobs do not
    interfere with installed libraries (in case of glibc).
 
