@@ -2,14 +2,14 @@
 # meta: onestep
 
 # set base, copy scripts & out-of-tree resources
-FROM debian:bookworm-slim AS busybox-static
+FROM debian:trixie-slim AS busybox-static
 
 RUN set -ex;\
   apt-get update; \
   apt-get install -y busybox-static ;\
   : #
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 COPY --from=busybox-static /bin/busybox /busybox.static
 

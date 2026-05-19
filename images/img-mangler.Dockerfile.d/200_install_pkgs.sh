@@ -4,7 +4,7 @@
 PS4='> ${0##*/}: '
 #set -x
 
-apt-get update 
+apt-get update
 apt-get install -y --no-install-recommends \
   debootstrap \
   fdisk gdisk kpartx \
@@ -30,6 +30,9 @@ apt-get install -y --no-install-recommends \
   sqlite3 sqlite3-tools sqlite-utils \
   inetutils-ping traceroute mtr-tiny bind9-dnsutils \
   gawk \
+  rshim \
+  lzma \
+  7zip 7zip-rar \
 # EO apt-get install
 
 
