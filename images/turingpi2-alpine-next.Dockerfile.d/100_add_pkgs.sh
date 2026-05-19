@@ -37,6 +37,10 @@ PKGS="$PKGS
   socat
   ser2net
     ser2net-openrc
+  i2c-tools
+  btrfs-progs
+  libevdev-tools
+  linux-tools-gpio
 "
 
 PKGS="$PKGS
