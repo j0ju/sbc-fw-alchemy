@@ -19,7 +19,7 @@ fi
 
 while [ -n "$1" ]; do # eval until the first unknown argument
   case "$1" in
-    -it | -ti | -i | -t )
+    -it | -ti | -i | -t | -d )
       OPTS="$OPTS $1"
       shift
       ;;
