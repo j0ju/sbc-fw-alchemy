@@ -1,0 +1,14 @@
+# (C) 2025-26 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+# start /target with fresh armhf alpine
+FROM sbc:img-mangler
+
+COPY input/artifacts/rshim-4-img-mangler.deb /
+
+RUN set -eux ;\
+  apt-get update ;\
+  dpkg -i /rshim-4-img-mangler.deb || :; \
+  apt-get install -f -y ;\
+  rm -f /rshim-4-img-mangler.deb ;\
+: # EO CMD

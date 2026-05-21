@@ -1,0 +1,26 @@
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
+
+# get build host compatible rshim, supporting arm64/amd64 build hosts
+# TODO:
+#   * reduce dependency for this tarrget
+#
+input/artifacts/rshim-4-img-mangler.deb: \
+  images/bluefield-img-mangler.Dockerfile.d/rshim-4-img-mangler.sh \
+  input/doca-host_3.2.2-035000-25.10-debian13_amd64.deb \
+  input/doca-host_3.2.2-035000-25.10-debian13_arm64.deb \
+  #
+	$(E) BUILD $@
+	$(Q) ./bin/img-mangler --name rhsim-4-img-mangler sh $(SHOPT) /src/$< $@
+
+.deps/%.built: \
+	input/%.bfb \
+	images/bluefield-img-mangler.Dockerfile.d/bfb-import.sh \
+	.deps/bluefield-img-mangler.built \
+#
+	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.bfb=)) <--- $<"
+	$(Q) $(SHELL) $(SHOPT) images/bluefield-img-mangler.Dockerfile.d/bfb-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.bfb=))
+	$(Q) date +%s > "$@"
+
+.PRECIOUS: .bfb
+
+# vim: ts=2 sw=2 noet ft=make
