@@ -32,6 +32,7 @@ update_udc() {
 }
 
 setup_configuration() {
+    modprobe usb_f_acm 2> /dev/null || :
     mount -t configfs none /sys/kernel/config > /dev/null 2>&1
     mkdir -p $usb_gadget
     if cd $usb_gadget; then
