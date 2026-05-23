@@ -1,1 +1,42 @@
-SYSLOGD_OPTS="-L -R 127.0.0.1:514 -C128 -S -t"
+# config for busybox's syslogd
+#
+# standart for local logging into a memory buffer,
+# you can read via the command `logread`
+# you have log without disk persistence
+#
+# Motivation:
+#   * no care about size and logrotation
+#     so you can switch the SBC rootfs into readonly
+#     one service less to care for
+#   * less flash wear out
+SYSLOGD_OPTS="-C128 -S -t"
+
+# for remote logging via rsyslog
+#  * overview/adapt /etc/rsyslogd.conf
+#  * enable service via update-rc
+#SYSLOGD_OPTS="-L -R 127.0.0.1:514 -C128 -S -t"
+
+# for disk persistence see busybox help
+
+# # busybox syslogd --help
+# BusyBox v1.37.0 (2025-12-16 14:19:28 UTC) multi-call binary.
+#
+# Usage: syslogd [OPTIONS]
+#
+# System logging utility
+#
+#         -n              Run in foreground
+#         -R HOST[:PORT]  Log to HOST:PORT (default PORT:514)
+#         -L              Log locally and via network (default is network only if -R)
+#         -C[size_kb]     Log to shared mem buffer (use logread to read it)
+#         -K              Log to kernel printk buffer (use dmesg to read it)
+#         -O FILE         Log to FILE (default: /var/log/messages, stdout if -)
+#         -s SIZE         Max size (KB) before rotation (default 200KB, 0=off)
+#         -b N            N rotated logs to keep (default 1, max 99, 0=purge)
+#         -l N            Log only messages more urgent than prio N (1-8)
+#         -S              Smaller output
+#         -t              Strip client-generated timestamps
+#         -D              Drop duplicates
+#         -f FILE         Use FILE as config (default:/etc/syslog.conf)
+#
+# vim: ft=shell
