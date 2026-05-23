@@ -4,6 +4,7 @@ set -eu
 
 OVERLAY_DIR=/overlay/upper
 ROM_DIR=/rom
+ETCKEEPER_EXCLUDES="etc/.git | etc/.git/* | etc/.etckeeper"
 
 export LC_ALL=C
 export LANG=C
@@ -23,7 +24,7 @@ list_files_collector() ( # use brackets for true forked subshell
   while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
       "!" ) find_opts="$find_opts '!'" ;;
-      -type | -t )
+      --type | -t )
         shift
         case "${1:-}" in
           f | d ) find_opts="$find_opts -type '$1'"
@@ -33,8 +34,13 @@ list_files_collector() ( # use brackets for true forked subshell
         shift
         find_opts="$find_opts -name '$1'"
         ;;
-      -a | -o ) find_opts="$find_opts $1";;
+      -a | -o )
+        find_opts="$find_opts $1"
+        ;;
+
+      --help | -h | -[?] ) help return 69 ;;
       -* ) ;;
+
       * )
         f="${1}"
         [ ! "$1" = / ] || f="."
@@ -61,16 +67,18 @@ list_files_collector() ( # use brackets for true forked subshell
   )
 
 list_files_filter() {
-  ETCKEEPER_EXCLUDES="etc/.git | etc/.git/* | etc/.etckeeper"
   select_modified=
   select_obsolete=
   select_new=
+  select_deleted=
   while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
+      --help | -h | -[?] ) return  69 ;; # NOP with help
       --etckeeper | -E ) ETCKEEPER_EXCLUDES="" ;;
-      --mod ) select_modified=yes ;;
+      --mod | --diff ) select_modified=yes ;;
       --new ) select_new=yes ;;
-      --obsolete | --obs | --cleanup ) select_obsolete=yes ;;
+      --obsolete | --obs | --gc ) select_obsolete=yes ;;
+      --deleted | --del ) select_deleted=yes ;;
     esac
     shift
   done
@@ -149,6 +157,7 @@ list_files_filter() {
 
     case "$select_modified:$stat:$kind" in
       yes:M??:F ) ;;
+      yes:?D?:* ) ;;
       yes:* ) continue ;;
     esac
 
@@ -162,43 +171,109 @@ list_files_filter() {
       yes:* ) continue ;;
     esac
 
+    case "$select_deleted:$stat" in
+      yes:?D?) ;;
+      yes:* ) continue ;;
+    esac
+
     echo "$stat  $kind  $f"
   done
   }
 
+list_files_do_list() {
+  echo "  $1   $2   $3"
+  }
+
+list_files_do_diff() {
+  old="$ROM_DIR/$3"
+  new="$OVERLAY_DIR/$3"
+  # new files
+  if [ -f "$new" ] || [ -L "$new" ]; then
+    if [ ! -f "$old" ] && [ ! -L "$old" ]; then
+      old=/dev/null
+    fi
+  # files delete from rootfs but present $ROM_DIR
+  elif [ "$1" = ".D." ]; then
+      new=/dev/null
+  fi
+  diff --no-dereference -ua "$old" "$new" || :
+  }
+list_files_do_garbage_collection() {
+  case "$NOP:$1:$2" in
+    *:...:D ) rmdir "$OVERLAY_DIR/$3" 2>/dev/null || : ;;
+    #
+    yes:...:? )
+      list_files_do_list "$1" "$2" "$3"
+      echo "'$3': would delete from overlay"
+      ;;
+    no:...:? )  ( set -x; rm -f "$OVERLAY_DIR/$3" ) ;;
+  esac
+  }
+
 list_files_action() {
-  do_diff=no
-  do_cleanup=no
-  simulate=yes
+  MODE=list
+  NOP=yes
   while [ ! $# = 0 ]; do # command line passing carefully
     case "${1:-}" in
-      --cleanup ) do_cleanup=yes ;;
-      --diff ) do_diff=yes ;;
-      --yes ) simulate=no ;;
+      --help | -h | -[?] ) return 69 ;; # NOP with help
+      --gc ) MODE=gc ;;
+      --diff ) MODE=diff ;;
+      --yes ) NOP=no ;;
     esac
     shift
   done
   while read i; do
     set -- $i
-    if [ "$do_diff" = yes ]; then
-      o="$ROM_DIR/$3"
-      [ -f "$o" ] || o=/dev/null
-      diff -ua "$o" "$OVERLAY_DIR/$3" || :
-    elif [ "$do_cleanup" = yes ]; then
-
-      case "$simulate:$1:$2" in
-        *:...:D ) rmdir "$OVERLAY_DIR/$3" 2>/dev/null || : ;;
-        #
-        yes:...:? ) echo "'$3': would delete from overlay" ;;
-        no:...:? )  ( set -x; rm -f "$OVERLAY_DIR/$3" ) ;;
-      esac
-    else
-      echo "  $1   $2   $3"
-    fi
+    # STAT  KIND  FILE
+    case "$MODE" in
+      list ) list_files_do_list "$1" "$2" "$3" ;;
+      diff ) list_files_do_diff "$1" "$2" "$3" ;;
+      gc   ) list_files_do_garbage_collection "$1" "$2" "$3" ;;
+      * ) echo "E: list_files_action(): this should not have happended, ABORT" >&2 ;;
+    esac
   done
   }
 
-help() { echo "E: not implemented, yet" >&2; exit 69; }
+help() {
+  echo "
+    ${0##*/} [OPTIONS] [DIR] [DIR] ...
+
+      Tool to inspect, diff or garbage collect changes to rootfs by comparing
+      $OVERLAY_DIR with $ROM_DIR.
+
+    Options:
+      Filters:
+        --type TYPE | -t TYPE   select file types (see find)
+                                  l links
+                                  d dirs
+                                  f files
+        --name GLOB | -n GLOB   select files based on a glob
+        -a | -o                 logical AND and OR for above filters (compare to find)
+        --deleted | --del       select files deleted in overlay, not existing
+                                in '$ROM_DIR' anymore
+        --obsolete | --obs      select files which have the same
+                                  * data
+                                  * metadata (modes, owner)
+                                also select files deleted in '$ROM_DIR'
+                                (see --del, eg after OS upgrade cleanup)
+        --mod                   select modified files (content or metadata changes)
+        --new                   select files only in '$OVERLAY_DIR'
+
+      Filter options:
+        --etckeeper | -E        Normally files below etckeeper files
+                                are ignored, this can be overriden
+          '$ETCKEEPER_EXCLUDES'
+
+      Actions:
+        --diff                 unified diff, selects modified files
+        --gc                   remove obsolete files in overlay
+                               (to do anything harmful, use --yes, default is NOP)
+
+        * default action is 'list', just to display attributes
+
+    " >&2
+  exit 69
+  }
 
 SCRIPT="$0"
 list_files "$@"

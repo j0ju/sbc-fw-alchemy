@@ -440,7 +440,7 @@ cat <<-EOF
 	   update <IMAGE>  - update rootfs with SQFS image
 
 	   cleanup
-     prune     [-f]  - collect and cleanup old ROOTFS image
+	   prune     [-f]  - collect and cleanup old ROOTFS image
 
 	   status          - display status of MMC/eMMC/SD card and boot targets
 
@@ -448,21 +448,23 @@ cat <<-EOF
 	   ro              - mount /mmc & overlay read-only  ( via /etc/init.d/mmc )
 
 	   snapshot list <NAME>     - list snapshots
+	   list <NAME>
+
 	   snapshot create <NAME>   - snapshot current overlay to
-                                $OVERLAY_DIR/$SNAPSHOT_PREFIX.<NAME>
-                                if NAME is -d `YYYY-MM-DD-hhmm` will be used
-                                snapshot name.
-     snapshot rm <NAME>       - removes a snapshot
+	                              $OVERLAY_DIR/$SNAPSHOT_PREFIX.<NAME>
+	                              if NAME is -d 'YYYY-MM-DD-hhmm' will be used
+	                              snapshot name.
+	   snapshot rm <NAME>       - removes a snapshot
 
-     snapshot rollback <NAME> - rollback to snapshot
-                       * moves $OVERLAY_DIR/overlay.CURRENT
-                         to $OVERLAY_DIR/$SNAPSHOT_PREFIX.PREVIOUS (overwriting!)
-                       * copies $OVERLAY_DIR/$SNAPSHOT_PREFIX.<NAME> to $OVERLAY_DIR/overlay.CURRENT
-                       * ensure overlay symlinks to overlay.CURRENT
+	   snapshot rollback <NAME> - rollback to snapshot
+	                     * moves $OVERLAY_DIR/overlay.CURRENT
+	                       to $OVERLAY_DIR/$SNAPSHOT_PREFIX.PREVIOUS (overwriting!)
+	                     * copies $OVERLAY_DIR/$SNAPSHOT_PREFIX.<NAME> to $OVERLAY_DIR/overlay.CURRENT
+	                     * ensure overlay symlinks to overlay.CURRENT
 
-     snapshot dump <NAME> <TAR> - snapshot to tarball
+	   snapshot dump <NAME> <TAR> - snapshot to tarball
 
-     dump <TAR>               - current overlay to a tarball
+	   dump <TAR>               - current overlay to a tarball
 EOF
 echo
 }
@@ -478,6 +480,7 @@ case "$CMD" in
 
   # TODO:
   snapshot | snap | sn | s ) snapshot "$@" ;;
+  list | ls )                snapshot list "$@" ;;
   dump )                     dump /overlay "$@" ;;
 
   * | -h | --help | "" ) help ;;
