@@ -13,6 +13,7 @@ cleanup() {
     [ -z "$OWNER" ] || \
       chown "$OWNER${GROUP:+:$GROUP}" "$TAR"
   fi
+  trap "" EXIT
   exit $rs
 }
 trap cleanup EXIT TERM HUP INT USR1 USR2 ABRT
@@ -32,7 +33,7 @@ case "$TAR" in
       COMPRESSOR=gzip
     ;;
   *.txz | *.tar.xz )
-    which pixz && \
+    which pixz > /dev/null && \
       COMPRESSOR=pixz || \
       COMPRESSOR=xz
     ;;
