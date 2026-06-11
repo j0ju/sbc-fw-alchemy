@@ -1,0 +1,13 @@
+# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# meta: #onestep
+
+FROM sbc:armv7-alpine-3.23
+
+#RECIPE alpine/SBC+openrc-init+overlay
+#RECIPE alpine/etckeeper
+#RECIPE alpine/ifupdown-ng
+#RECIPE alpine/ifupdown-ng.update-executors
+RECIPE alpine/sshd
+RECIPE alpine/chronyd
+#RECIPE alpine/cloud-init
+RECIPE alpine/cleanup.unlink-overloaded-busybox-applets

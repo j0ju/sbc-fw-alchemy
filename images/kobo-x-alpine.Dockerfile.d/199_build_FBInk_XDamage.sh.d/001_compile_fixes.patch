@@ -1,0 +1,23 @@
+diff --git a/Makefile b/Makefile
+index a6b6126..6607431 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,3 +1,3 @@
+ all:
+-	(cd FBInk; make shared KINDLE=1)
+-	gcc -LFBInk/Release/ -IFBInk main.c -o fbink_xdamage -lX11 -lXext -lXdamage -lXfixes -lfbink
++	$(MAKE) -C FBInk shared KOBO=1 CC=gcc CXX=g++
++	gcc -O2 -LFBInk/Release/ -IFBInk main.c -o fbink_xdamage -lX11 -lXext -lXdamage -lXfixes -lfbink
+diff --git a/main.c b/main.c
+index 50f96b2..232ec2c 100644
+--- a/main.c
++++ b/main.c
+@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
+             // accumulate rectangle
+             printf("Got event! type:%i\n", event.type);
+             devent = (XDamageNotifyEvent*)&event;
+-            printf ("Damage notification in window %d\n", devent->drawable);
++            printf ("Damage notification in window %ld\n", devent->drawable);
+             XDamageSubtract(display, devent->damage, None, None);
+ 
+             printf ("Accumulating rectangle x=%d, y=%d, w=%d, h=%d\n",
