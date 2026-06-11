@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2022-2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2022-2026 Joerg Jungermann, GPLv2 see LICENSE
 
 #- lib for mangling
 
