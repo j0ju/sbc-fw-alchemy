@@ -1,4 +1,5 @@
 #!/bin/sh
+# (C) 2026 Joerg Jungermann, GPLv2 see LICENSE
 
 BUILD_ARCH=$( dpkg-architecture -q DEB_HOST_ARCH )
 dpkg-deb -x /src/input/doca*$BUILD_ARCH*.deb /tmp

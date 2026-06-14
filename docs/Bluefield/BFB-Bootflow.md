@@ -1,5 +1,11 @@
 # BFB: dump-initramfs-v0 - initramfs-bootflow
 
+This documents what happens on OS level when you boot an image via
+`bfb-install` or `cat doca.bfb > /dev/rshim/boot`.
+
+The detailed process upon to here is documented here:
+https://docs.nvidia.com/networking/display/bluefieldbsp4132/appendix---bluefield-boot-flow-and-bfb-format
+
 ## /bfb/dump-initramfs-v0
 
 * init == systemd / dracut

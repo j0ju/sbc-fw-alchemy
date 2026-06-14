@@ -1,8 +1,9 @@
 # (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
 
 # get build host compatible rshim, supporting arm64/amd64 build hosts
+# the rshim pkg of NVidia/Mellanox contains bfb tools to extract and package bfbs
 # TODO:
-#   * reduce dependency for this tarrget
+#   * reduce arch-dependent dependencies for this target
 #
 input/artifacts/rshim-4-img-mangler.deb: \
   images/bluefield-img-mangler.Dockerfile.d/rshim-4-img-mangler.sh \
@@ -20,6 +21,21 @@ input/artifacts/rshim-4-img-mangler.deb: \
 	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.bfb=)) <--- $<"
 	$(Q) $(SHELL) $(SHOPT) images/bluefield-img-mangler.Dockerfile.d/bfb-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.bfb=))
 	$(Q) date +%s > "$@"
+
+output/bluefield-doca-%.vmlinuz: \
+	$(DEPDIR)/bluefield-doca-%.built \
+#
+	$(E) "VMLINUZ $@"
+	$(Q) mkdir -p output
+	$(Q) ./bin/IRun $(patsubst output/%,%,$(@:.vmlinuz=)) < /dev/null zcat /target/boot/vmlinuz | xz -6e --check=crc32 > $@ || rm -f $@
+
+output/bluefield-doca-%.initramfs.xz: \
+	images/bluefield-img-mangler.Dockerfile.d/gen-initramfs.sh \
+	$(DEPDIR)/bluefield-doca-%.built \
+#
+	$(E) "INITRAMFS $@"
+	$(Q) mkdir -p output
+	$(Q) ./bin/IRun $(patsubst output/%,%,$(@:.initramfs.xz=)) < /dev/null sh $(SHOPT) /src/$< /src/$@ || rm -f $@
 
 .PRECIOUS: .bfb
 
