@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2023-2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2023-2026 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 #set -x
 
@@ -45,4 +45,8 @@ case "$IMAGE" in
   *.tgz.url ) IMAGE="${IMAGE%.tgz.url}" ;;
 esac
 
-exec img-mangler $CRIOPTS -ti --image sbc:"$IMAGE" "$@"
+if tty > /dev/null || tty > /dev/null <&1; then
+  CRIOPTS="-ti $CRIOPTS"
+fi
+
+exec img-mangler $CRIOPTS --image sbc:"$IMAGE" "$@"
