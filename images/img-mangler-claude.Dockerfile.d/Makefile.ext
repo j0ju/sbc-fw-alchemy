@@ -1,0 +1,33 @@
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
+
+output/%.sqfs: \
+	.deps/%.built \
+	lib/img-mangler/gen-sqfs.sh \
+	#
+		$(E) "MK SQUASHFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=))"
+		$(Q) mkdir -p output
+		$(Q) ./bin/img-mangler -p \
+					-e COMPRESSOR=xz \
+					-e BLOCKSIZE=512k \
+         --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.sqfs=)) sh $(SHOPT) lib/img-mangler/gen-sqfs.sh $@
+
+output/%.erofs: \
+	.deps/%.built \
+	lib/img-mangler/gen-erofs.sh \
+	#
+		$(E) "MK EROFS $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=))"
+		$(Q) mkdir -p output
+		$(Q) ./bin/img-mangler -p \
+		  --image $(NAME_PFX)$(NAME):$(patsubst output/%,%,$(@:.erofs=)) sh $(SHOPT) lib/img-mangler/gen-erofs.sh $@
+
+input/artifacts/%.deb: input/%.deb
+	$(Q) \
+		mkdir -p input/artifacts ;\
+		if mv $< $@; then \
+			f="$@"; f="$${f#input/}" ;\
+			ln -s "$$f" input ;\
+	  fi
+
+.PRECIOUS: %.erofs %.sqfs
+
+# vim: ft=make noet sw=2 ts=2

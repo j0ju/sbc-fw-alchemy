@@ -1,0 +1,4 @@
+#!/bin/sh
+PS4="$0[$$]: "
+set -x
+curl -fsSL https://claude.ai/install.sh | pv -brat | bash

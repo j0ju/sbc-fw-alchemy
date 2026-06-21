@@ -33,6 +33,8 @@ apt-get install -y --no-install-recommends \
   rshim \
   lzma \
   7zip 7zip-rar \
+  wget curl \
+  pv \
 # EO apt-get install
 
 
