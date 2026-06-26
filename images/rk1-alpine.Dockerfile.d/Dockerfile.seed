@@ -2,7 +2,7 @@
 # meta: onestep
 
 FROM sbc:rk1-armbian AS donor
-FROM sbc:aarch64-alpine-3.22
+FROM sbc:aarch64-alpine-3.23
 
 # keep imported build /vanilla rom with original bmcd and tpi
 COPY --from=donor /target/boot                                  /target/boot
