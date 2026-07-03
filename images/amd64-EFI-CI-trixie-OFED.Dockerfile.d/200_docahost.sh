@@ -33,7 +33,7 @@ apt-get install -y \
   iperf iperf3 frr \
 # EO apt-get
 
-for svc in openibd opensmd ibacm rshimd iperf iperf3 frr; do
+for svc in openibd opensmd ibacm rshim iperf iperf3 frr; do
   systemctl disable $svc || :
 done
 

@@ -15,7 +15,7 @@ chroot "$DST" systemctl disable \
   rsync.service \
   bird.service \
   apparmor.service \
-  dnsmasq \
+  dnsmasq.service \
 #
 
 chroot "$DST" systemctl mask \
