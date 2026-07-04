@@ -1,0 +1,6 @@
+# (C) 2024-2026 Joerg Jungermann, GPLv2 see LICENSE
+# TODO: disabled until 3.24 is veriefied to be working
+#.PHONY: armhf-OptAlpine OptAlpine-armhf
+
+#armhf-OptAlpine OptAlpine-armhf:
+#	bin/OptAlpine pkg -A

@@ -13,7 +13,7 @@
 #
 
 # set source, copy in files and patches
-FROM sbc:armhf-Alpine-3.23 AS source
+FROM sbc:armhf-Alpine-3.24 AS source
 
 FROM scratch
 COPY --from=source /target/ /
