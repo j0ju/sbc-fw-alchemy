@@ -1,0 +1,11 @@
+i386-pc
+i386-pc.0
+x86_64-efi
+x86_64-efi.0
+arm64-efi
+arm64-efi.0
+
+locale
+fonts
+
+grub.cfg

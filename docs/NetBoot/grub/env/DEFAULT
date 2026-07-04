@@ -1,0 +1,10 @@
+# GRUB Environment Block
+#   default, is probed last
+#
+#default=local-grub2
+#fallthrough=local-grub2
+cloudinit=live
+#
+wait=3
+#
+# END
