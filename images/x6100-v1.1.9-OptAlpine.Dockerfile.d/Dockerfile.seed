@@ -2,7 +2,7 @@
 # meta: onestep
 
 # set base, copy scripts & out-of-tree resources
-FROM sbc:armhf-OptAlpine-3.22      AS opt-alpine
+FROM sbc:armhf-OptAlpine-3.23      AS opt-alpine
 
   ENV BINPKG " \
     /bin/busybox:/opt/alpine/bin/busybox \

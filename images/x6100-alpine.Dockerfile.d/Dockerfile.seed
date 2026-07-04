@@ -2,7 +2,7 @@
 # meta: onestep
 
 FROM sbc:x6100-buildroot AS donor
-FROM sbc:armhf-alpine-3.22
+FROM sbc:armhf-alpine-3.23
 
 COPY --from=donor /target/boot         /target/boot
 COPY --from=donor /target/lib/modules  /target/lib/modules
