@@ -2,7 +2,7 @@
 # meta: onestep
 
 FROM sbc:turingpi2-buildroot AS donor
-FROM sbc:armv7-alpine-3.23
+FROM sbc:armv7-alpine-3.24
 
 COPY --from=donor /target/boot        /target/boot
 COPY --from=donor /target/lib/modules /target/lib/modules

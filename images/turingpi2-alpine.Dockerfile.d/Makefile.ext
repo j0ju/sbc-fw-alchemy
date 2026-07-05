@@ -36,21 +36,21 @@ output/turingpi2-alpin%.erofs.img: output/turingpi2-alpin%.rootfs.tar.zst \
 
 input/artifacts/turingpi2-alpine-bmcd.tar.zst: \
   images/turingpi2-alpine.Dockerfile.d/build_bmcd.sh \
-  input/armhf-Alpine-3.23.tgz \
+  input/armhf-Alpine-3.24.tgz \
   #
 	$(E) BUILD $@
 	$(Q) ./bin/img-mangler --name turingpi2-build-bmcd -w /workspace -v sbc-turingpi2-buildroot:/workspace -e HOME=/workspace sh $(SHOPT) /src/$< $@
 
 input/artifacts/turingpi2-alpine-rkdevelop.tar.zst: \
   images/turingpi2-alpine.Dockerfile.d/build_rkdevelop.sh \
-  input/armhf-Alpine-3.23.tgz \
+  input/armhf-Alpine-3.24.tgz \
   #
 	$(E) BUILD $@
 	$(Q) ./bin/img-mangler --name turingpi2-build-rkdevelop -w /workspace -v sbc-turingpi2-buildroot:/workspace -e HOME=/workspace sh $(SHOPT) /src/$< $@
 
 input/artifacts/turingpi2-alpine-rpiboot.tar.zst: \
   images/turingpi2-alpine.Dockerfile.d/build_rpiboot.sh \
-  input/armhf-Alpine-3.23.tgz \
+  input/armhf-Alpine-3.24.tgz \
   #
 	$(E) BUILD $@
 	$(Q) ./bin/img-mangler --name turingpi2-build-rpiboot -w /workspace -v sbc-turingpi2-buildroot:/workspace -e HOME=/workspace sh $(SHOPT) /src/$< $@

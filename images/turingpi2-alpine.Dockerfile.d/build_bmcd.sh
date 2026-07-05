@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 umask 022
 
@@ -33,7 +33,7 @@ umask 022
 #- ensure build env
   rm -rf "$ROOT"
   mkdir -p "$ROOT"
-  tar xf /src/input/armv7-Alpine-3.23.tgz -C "$ROOT"
+  tar xf /src/input/armv7-Alpine-3.24.tgz -C "$ROOT"
   rm -f "$ROOT"/etc/resolv.conf
   cat /etc/resolv.conf > "$ROOT"/etc/resolv.conf
   cp -a /dev/* "$ROOT/dev"

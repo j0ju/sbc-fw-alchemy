@@ -2,7 +2,7 @@
 # meta: onestep
 
 FROM sbc:bpi2m0-armbian-bookworm AS armbian
-FROM sbc:armhf-alpine-3.23
+FROM sbc:armhf-alpine-3.24
 
 # populate modules and boot from armbian
 COPY --from=armbian /target/boot /target/boot

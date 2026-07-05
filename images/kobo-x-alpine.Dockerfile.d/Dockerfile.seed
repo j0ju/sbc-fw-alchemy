@@ -1,7 +1,7 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: #onestep
 
-FROM sbc:armv7-alpine-3.23
+FROM sbc:armv7-alpine-3.24
 
 #RECIPE alpine/SBC+openrc-init+overlay
 #RECIPE alpine/etckeeper
