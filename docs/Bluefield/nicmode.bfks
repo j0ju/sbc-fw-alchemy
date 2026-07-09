@@ -1,0 +1,35 @@
+#!/bin/sh
+# this file is fetched and executed dumping the contents below into
+# /etc/bf.cfg for seeding installation parameters
+exec tail -n +4 <"$0"  >/etc/bf.cfg
+# bf.cfg - for nicmode
+
+ubuntu_PASSWORD='$1$wwbhJp.N$x1hAPP6qMARW6HgcSx63s0'
+WITH_NIC_FW_UPDATE=yes
+
+# update ATF/UEFI (needed for PXE installs only)
+UPDATE_ATF_UEFI=yes
+
+BOOT0=OOB-IPV4
+BOOT1=DISK
+
+bfb_modify_os()
+{
+  rm  -f /mnt/etc/netplan/60-mlnx.yaml
+
+  ln -sf /dev/null /mnt/etc/systemd/system/mlnx_snap.service
+  : > /mnt/etc/mlnx_snap/spdk_rpc_init.conf
+
+  mlxconfig -y -d /dev/mst/mt41686_pciconf0 reset
+  sleep 7
+
+	# NIC mode
+  mlxconfig -y -d /dev/mst/mt41686_pciconf0 s
+	  INTERNAL_CPU_PAGE_SUPPLIER=1 \
+	  INTERNAL_CPU_ESWITCH_MANAGER=1 \
+	  INTERNAL_CPU_IB_VPORT0=1 \
+	  INTERNAL_CPU_OFFLOAD_ENGINE=1 \
+	#
+}
+
+# vim: ts=2 sw=0 et ft=shell

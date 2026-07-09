@@ -9,11 +9,19 @@ https://docs.nvidia.com/networking/display/bluefieldbsp4132/appendix---bluefield
 ## /bfb/dump-initramfs-v0
 
 * init == systemd / dracut
-* /etc/systemd/system/initrd.target.wants/install-ubuntu.service
-  SYMLINK -->  
-  /usr/lib/systemd/system/install-ubuntu.service
-* /scripts/initrd-install 
-* /ubuntu/install.sh
+* `/etc/systemd/system/initrd.target.wants/install-ubuntu.service`
+  SYMLINK -->
+  `/usr/lib/systemd/system/install-ubuntu.service`
+* `/scripts/initrd-install`
+* `/ubuntu/install.sh`
+
+### The special case of `mlxbf_gige` for the `oob_net0` interface
+
+This module has a hidden dependency. It uses the MDIO subsystem, this gets automatically loaded.
+Unfortunatly there might be no driver providing this during coldplug then this might stall udev and thus the network setup of dracut inside of the initrd.
+The needed modules are
+ * BF2 - gpio-mlxbf2
+ * BF3 - gpio-mlxbf3
 
 
 ## /usr/lib/systemd/system/install-ubuntu.service
