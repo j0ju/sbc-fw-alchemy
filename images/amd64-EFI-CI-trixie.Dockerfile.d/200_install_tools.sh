@@ -1,5 +1,5 @@
 #!/bin/sh -eu
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025-2026 Joerg Jungermann, GPLv2 see LICENSE
 PS4='> ${0##*/}: '
 set -eu
 
@@ -11,7 +11,7 @@ chroot "$DST" \
     mc tmux screen vim-nox tcpdump mtr-tiny strace \
     lsof console-setup cifs-utils nfs-common pv ntfs-3g \
     ifupdown-ng ifupdown-ng-compat fastd bridge-utils \
-    gdisk squashfs-tools mtools xorriso \
+    gdisk squashfs-tools mtools xorriso kpartx \
     grub-efi-amd64-bin grub-efi \
     diffutils \
     busybox udhcpc make \
