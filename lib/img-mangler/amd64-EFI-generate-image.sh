@@ -1,16 +1,19 @@
 #!/bin/sh
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 umask 022
 
 #---
 EFI_SIZE_k=102400
 MIN_FREE_k=524288
-FS=ext4
+FS="${FS:-ext4}"
+
+PFX=/target
+[ -d /target ] || PFX=
 
 #--- calculate minimal image size based on EFI_SIZE_k and MIN_FREE_k
 #    MIN_FREE_k is the minimal amount of space free in the rootfs
-USAGE_k="$(du -sk /target | { read kb _; echo $kb; })"
+USAGE_k="$(du -xsk $PFX/ | { read kb _; echo $kb; })"
 IMAGE_SIZE_k="$(( ((USAGE_k + MIN_FREE_k) / MIN_FREE_k + 1) * MIN_FREE_k ))"
 
 IMAGE="$1"
@@ -65,21 +68,21 @@ mkdir -p /mnt/boot/efi
 mount -t vfat "$EFI_DEV" /mnt/boot/efi
 
 #--- cleanup rootfs
-chroot /target apt-get clean
+chroot $PFX/ apt-get clean
 rm -f \
-    /target/var/lib/apt/lists/*.* \
-    /target/var/lib/apt/lists/partial/* \
-    /target/var/cache/apt/archives/*.* \
-    /target/var/cache/apt/archives/partial/*.* \
+    $PFX/var/lib/apt/lists/*.* \
+    $PFX/var/lib/apt/lists/partial/* \
+    $PFX/var/cache/apt/archives/*.* \
+    $PFX/var/cache/apt/archives/partial/*.* \
 # EO rm -f
 
 #--- copy rootfs
 echo "COPY"
 
-rm -rf /target/sys /target/proc /target/tmp /target/run /target/var/tmp
-mkdir -p /target/sys /target/proc /target/tmp /target/run /target/var/tmp
-chmod 1777 /target/tmp /target/var/tmp
-tar cf - --numeric-owner --acls --xattrs -C /target . | tar xf - -C /mnt --numeric-owner --acls --xattrs
+tar cf - --one-file-system --numeric-owner --acls --xattrs -C $PFX/ . | tar xf - -C /mnt --numeric-owner --acls --xattrs
+rm -rf /mnt/sys /mnt/proc /mnt/tmp /mnt/run /mnt/var/tmp
+mkdir -p /mnt/sys /mnt/proc /mnt/tmp /mnt/run /mnt/var/tmp
+chmod 1777 /mnt/tmp /mnt/var/tmp
 
 #--- ensure needed environment for bootloader installation
 mount --bind /sys /mnt/sys
