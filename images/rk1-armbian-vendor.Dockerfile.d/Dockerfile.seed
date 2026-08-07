@@ -1,4 +1,4 @@
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
 FROM sbc:RK1-armbian-vendor AS donor
@@ -10,11 +10,14 @@ COPY --from=donor /target/part2                                       /target
 
 CMD \
   rm -f /target/etc/resolv.conf ;\
-  ulimit -n 8192 ;\
+  ulimit -n 1024 ;\
   cp /etc/resolv.conf /target/etc/resolv.conf ;\
   busybox mount -o bind /target /target 2> /dev/null || :; \
   busybox mount -t proc proc /target/proc 2> /dev/null || :; \
   [ -x /target/bin/bash ] || \
-    exec env HOME=/root SHELL=/bin/bash chroot /target /bin/sh - ;\
+    exec env HOME=/root SHELL=/bin/sh chroot /target /bin/sh - ;\
   exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
 : # eo CMD
+
+RECIPE armbian/base
+RECIPE armbian/zfs~backports
