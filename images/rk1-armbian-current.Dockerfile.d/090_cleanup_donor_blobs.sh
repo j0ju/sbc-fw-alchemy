@@ -8,7 +8,7 @@ PS4='> ${0##*/}: '
 
 # TODO filter only needed modules, that makes sense on a RK1
 # TODO filter only needed firmware, that makes sense on a RK1
-( cd /target/lib/firmware
+( cd $DST/lib/firmware
   rm -rf \
     intel iwlwifi-* \
     ap6210 ap6275p ath* dvb* RTL* rt* mediatek meson mt* nvram_ap6* rkwifi \
@@ -26,8 +26,6 @@ PS4='> ${0##*/}: '
 )
 
 #rm -f /target/boot/uboot.egn
-rm -f /target/boot/*.bmp
+rm -f $DST/boot/*.bmp
 
-chown -R 0:0 /target/boot/*
-
-mknod /target/dev/null c 1 3
+chown -R 0:0 $DST/boot/*
