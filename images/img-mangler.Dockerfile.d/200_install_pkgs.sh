@@ -35,6 +35,7 @@ apt-get install -y --no-install-recommends \
   7zip 7zip-rar \
   wget curl \
   pv \
+  equivs skopeo \
 # EO apt-get install
 
 
