@@ -1,1 +1,0 @@
-../amd64-EFI-CI-trixie.Dockerfile.d/900_re-enable_initrd_rebuild.sh

@@ -48,3 +48,7 @@ CMD \
 # * moving files around - see # copy scripts & outoftree resources above
 # * adding stuff, etc
 #-
+
+RECIPE armbian/etckeeper
+RECIPE armbian/cross-reduce-upgdate-initrd+grub
+RECIPE armbian/kernel-keep-latest
