@@ -54,6 +54,7 @@ rm -rf \
   /target/etc/etc/machine-id \
   /target/etc/ssh/ssh_host_*key* \
   /target/var/cache/debconf/*-old \
+  /target/var/cache/apt/archives/*.deb \
   /target/var/lib/dpkg/*-old \
   /target/var/lib/sgml-base/*.old \
   /target/var/lib/ucf/*.[0-9] \
