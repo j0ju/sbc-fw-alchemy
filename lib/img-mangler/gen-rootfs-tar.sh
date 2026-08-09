@@ -46,35 +46,42 @@ case "$TAR" in
     ;;
 esac
 
-#--- cleanup rootfs
-[ ! -f /target/lib/cleanup-rootfs.sh ] || \
-  chroot /target sh /lib/cleanup-rootfs.sh 1> /dev/null
-rm -rf \
-  /target/etc/*- \
-  /target/etc/etc/machine-id \
-  /target/etc/ssh/ssh_host_*key* \
-  /target/var/cache/debconf/*-old \
-  /target/var/cache/apt/archives/*.deb \
-  /target/var/lib/dpkg/*-old \
-  /target/var/lib/sgml-base/*.old \
-  /target/var/lib/ucf/*.[0-9] \
-  /target/boot/*.old \
-  /target/*.old \
-# EO rm -rf
-find /target/etc -name *.dpkg-* -delete
-find /target/etc -name *.apk-* -delete
-find /target/etc -name *.ucf-* -delete
+DST=/target
+if ! [ -d "$DST" ]; then
+  DST=
+  echo "  DST=${DST:-/} - untested codepath"
+fi
 
-rm -rf /target/run /target/tmp /target/var/tmp
-mkdir  /target/run /target/tmp /target/var/tmp
-chmod 1777 /target/tmp /target/var/tmp
-chmod 0755 /target/run
+#--- cleanup rootfs
+[ ! -f $DST/lib/cleanup-rootfs.sh ] || \
+  chroot $DST sh /lib/cleanup-rootfs.sh 1> /dev/null
+rm -rf \
+  $DST/etc/*- \
+  $DST/etc/etc/machine-id \
+  $DST/etc/ssh/ssh_host_*key* \
+  $DST/var/cache/debconf/*-old \
+  $DST/var/cache/apt/archives/*.deb \
+  $DST/var/lib/apt/lists/*.*[PR]* \
+  $DST/var/lib/dpkg/*-old \
+  $DST/var/lib/sgml-base/*.old \
+  $DST/var/lib/ucf/*.[0-9] \
+  $DST/boot/*.old \
+  $DST/*.old \
+# EO rm -rf
+find $DST/etc -name *.dpkg-* -delete
+find $DST/etc -name *.apk-* -delete
+find $DST/etc -name *.ucf-* -delete
+
+rm -rf $DST/run $DST/tmp $DST/var/tmp
+mkdir  $DST/run $DST/tmp $DST/var/tmp
+chmod 1777 $DST/tmp $DST/var/tmp
+chmod 0755 $DST/run
 
 #- resolv.conf is heavily modified on every docker run ignore it during build, if etckeeper ins installed
-[ ! -f /target/etc/.gitignore ] || \
-  sed -i -e "/^resolv.conf$/ d" /target/etc/.gitignore
+[ ! -f $DST/etc/.gitignore ] || \
+  sed -i -e "/^resolv.conf$/ d" $DST/etc/.gitignore
 
 #--- gen tar to STDOUT
-tar cf - -I "$COMPRESSOR" -C /target . --xattrs > "$TAR"
+tar cf - --one-file-system -I "$COMPRESSOR" -C $DST . --xattrs --acls > "$TAR"
 
 # vim: ts=2 sw=2 foldmethod=indent
