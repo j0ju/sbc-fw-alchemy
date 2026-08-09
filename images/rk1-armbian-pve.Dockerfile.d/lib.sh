@@ -1,0 +1,1 @@
+../img-mangler.Dockerfile.d/lib.sh
