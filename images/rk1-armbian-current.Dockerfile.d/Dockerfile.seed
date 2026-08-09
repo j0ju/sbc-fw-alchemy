@@ -1,23 +1,34 @@
 # (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
-# meta: #onestep
+# meta: onestep
 
 FROM sbc:RK1-armbian-current AS donor
 FROM sbc:img-mangler
 
+ENV DST=/target
+
 # keep imported build /vanilla rom with original bmcd and tpi
-COPY --from=donor /target/part1                                       /target/boot
-COPY --from=donor /target/part2                                       /target
+COPY --from=donor $DST/part1                                       $DST/boot
+COPY --from=donor $DST/part2                                       $DST
+
+RUN set -eu; \
+  umask 022; \
+  rm -f $DST/etc/resolv.conf ;\
+  cp /etc/resolv.conf $DST/etc/resolv.conf ;\
+  mkdir -p $DST/dev/pts ;\
+  cp -a /dev/null /dev/zero /dev/*random /dev/tty $DST/dev ;\
+: # EO run
 
 CMD \
-  rm -f /target/etc/resolv.conf ;\
+  rm -f $DST/etc/resolv.conf ;\
   ulimit -n 1024 ;\
-  cp /etc/resolv.conf /target/etc/resolv.conf ;\
-  busybox mount -o bind /target /target 2> /dev/null || :; \
-  busybox mount -t proc proc /target/proc 2> /dev/null || :; \
-  [ -x /target/bin/bash ] || \
-    exec env HOME=/root SHELL=/bin/sh chroot /target /bin/sh - ;\
-  exec env HOME=/root SHELL=/bin/bash chroot /target /bin/bash - ;\
+  cp /etc/resolv.conf $DST/etc/resolv.conf ;\
+  busybox mount -o bind $DST $DST 2> /dev/null || :; \
+  busybox mount -t proc proc $DST/proc 2> /dev/null || :; \
+  [ -x $DST/bin/bash ] || \
+    exec env HOME=/root SHELL=/bin/sh chroot $DST /bin/sh - ;\
+  exec env HOME=/root SHELL=/bin/bash chroot $DST /bin/bash - ;\
 : # eo CMD
 
+RECIPE armbian/etckeeper
 RECIPE armbian/base
 RECIPE armbian/zfs~backports

@@ -1,5 +1,5 @@
 #!/bin/sh -eu
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 PS4='> ${0##*/}: '
 set -eu
 
@@ -9,6 +9,7 @@ cat > /target/etc/initramfs-tools/modules <<EOF
 ext4
 btrfs
 f2fs
+xfs
 zfs
 squashfs
 loop

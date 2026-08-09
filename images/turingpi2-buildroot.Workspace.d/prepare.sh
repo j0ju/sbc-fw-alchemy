@@ -10,7 +10,7 @@ set -x
 export FORCE_UNSAFE_CONFIGURE=1
 
 # reduce the number of open files, to prevent some progrs closing all 2^32 :/
-ulimit -n 2048
+ulimit -n 1024
 
 # FIXME: move compiler cache from /root/ to /workspace
 # /root is volatile

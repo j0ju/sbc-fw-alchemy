@@ -1,8 +1,9 @@
-#!/bin/sh -eu
+#!/bin/sh
 # (C) 2023-2026 Joerg Jungermann, GPLv2 see LICENSE
 
+set -eu
+
 . "$SRC/lib.sh"; # do not call init, here yet
-set -x
 
 chroot "$DST" apt-get update
 chroot "$DST" apt-get install --no-install-recommends -y git tig
@@ -35,5 +36,5 @@ EOF
 # add ssmtp to prevent exim installed
 chroot "$DST" apt-get install -y --no-install-recommends etckeeper
 
-# vim: noet sw=0 ts=2 ft=shell
+# vim: noet sw=0 ts=2
 

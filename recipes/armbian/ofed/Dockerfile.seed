@@ -1,4 +1,4 @@
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 # meta: #onestep
 
 FROM sbc:rk1-armbian

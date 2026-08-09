@@ -1,5 +1,5 @@
 #!/bin/sh
-# (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2025,2026 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
 umask 022
 
@@ -29,5 +29,3 @@ PS4='> ${0##*/}: '
 rm -f $DST/boot/*.bmp
 
 chown -R 0:0 $DST/boot/*
-
-mknod $DST/dev/null c 1 3
