@@ -6,4 +6,4 @@ PS4='> ${0##*/}: '
 #set -x
 
 # remove any platform specific blobs
-rm -rf /target/boot /target/lib/modules /target/lib/firmware
+rm -rf "${DST}/boot" "${DST}/lib/modules" "${DST}/lib/firmware"

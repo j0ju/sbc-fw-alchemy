@@ -28,24 +28,24 @@ PKGS=" \
   busybox-openrc busybox-mdev-openrc \
 "
 
-mkdir -p /target/var/lib/apk
+mkdir -p ${DST}/var/lib/apk
 
 # we install these pkgs in advance so -openrc and -bash-completion are installed
 # as recomends automatically for user convinience
-  chroot /target apk add bash-completion openrc
+chroot ${DST:-/} apk add bash-completion openrc
 
 # install packages for tarballs
-  chroot /target apk add $PKGS
+chroot ${DST:-/} apk add $PKGS
 
 # FIXME: in Alpine 3.22/3.23 klogd user seems to be missing, although referenced in init script
 # TODO:  is this still needed?
-if ! chroot /target grep ^klogd: /etc/group > /dev/null; then
-  chroot /target addgroup -S klogd
+if ! grep ^klogd: ${DST}/etc/group > /dev/null; then
+  chroot ${DST:-/} addgroup -S klogd
 fi
-if ! chroot /target grep ^klogd: /etc/passwd > /dev/null; then
-  chroot /target adduser -S -D -H -h /dev/null -G klogd -g klogd -s /sbin/nologin klogd
+if ! grep ^klogd: ${DST}/etc/passwd > /dev/null; then
+  chroot ${DST:-/} adduser -S -D -H -h /dev/null -G klogd -g klogd -s /sbin/nologin klogd
 fi
-if ! chroot /target grep ^klogd: /etc/passwd > /dev/null; then
+if ! grep ^klogd: ${DST}/etc/passwd > /dev/null; then
   echo "E: klogd user is missing, this should not have happend, ABORT" >&2
   exit 1
 fi

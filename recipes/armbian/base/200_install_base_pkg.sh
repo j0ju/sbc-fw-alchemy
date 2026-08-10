@@ -4,10 +4,10 @@
 . "$SRC/lib.sh"; init
 #set -x
 
-chroot /target \
+chroot ${DST:-/} \
   apt-get update
 
-chroot /target \
+chroot ${DST:-/} \
   apt-get install -y \
     vim-nox mc \
     tmux \

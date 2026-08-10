@@ -4,7 +4,7 @@
 #set -x
 . "$SRC/lib.sh"; init
 
-cd /target/etc/pam.d/
+cd $DST/etc/pam.d/
 
 sed -i -e "/pam_motd/ s/^/# /" \
   sshd login

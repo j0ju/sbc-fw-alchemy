@@ -4,7 +4,7 @@ PS4='> ${0##*/}: '
 set -eu
 . "$SRC/lib.sh"; init
 
-chroot /target apt-get install -t trixie-backports -y \
+chroot "${DST:-/}" apt-get install -t trixie-backports -y \
   zfs-dkms zfs-initramfs
 
 # vim: ts=2 sw=2 et

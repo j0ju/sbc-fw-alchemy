@@ -4,6 +4,6 @@ PS4='> ${0##*/}: '
 set -eu
 . "$SRC/lib.sh"; init
 
-chroot /target apt-get update
+chroot ${DST:-/} apt-get update
 
 # vim: ts=2 sw=2 et

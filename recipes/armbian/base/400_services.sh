@@ -4,7 +4,7 @@
 . "$SRC/lib.sh"; init
 #set -x
 
-chroot /target \
+chroot "${DST:-/}" \
   systemctl disable \
     NetworkManager.service  NetworkManager-wait-online.service   NetworkManager-dispatcher.service \
     ModemManager.service \
@@ -22,7 +22,7 @@ chroot /target \
     armbian-firstrun armbian-hardware-monitor armbian-ramlog armbian-zram-config \
   #
 
-chroot /target \
+chroot "${DST:-/}" \
   systemctl mask \
     systemd-networkd-wait-online.service \
     wpa_supplicant.service \
@@ -30,12 +30,12 @@ chroot /target \
     armbian-firstrun armbian-hardware-monitor armbian-ramlog armbian-zram-config \
   #
 
-chroot /target \
+chroot "${DST:-/}" \
   apt-get install -y \
     systemd-resolved systemd-timesyncd
   #
 
-chroot /target \
+chroot "${DST:-/}" \
   systemctl enable \
     ssh.service \
     systemd-networkd \

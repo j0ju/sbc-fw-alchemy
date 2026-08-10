@@ -8,6 +8,6 @@ PS4='> ${0##*/}: '
 umask 022
 
 # prepare a local minimal /dev and resolv.conf
-cp -a /dev/* /target/dev
-rm -f /target/etc/resolv.conf
-cp /etc/resolv.conf /target/etc/resolv.conf
+cp -a /dev/* ${DST}/dev
+rm -f ${DST}/etc/resolv.conf
+cp /etc/resolv.conf ${DST}/etc/resolv.conf

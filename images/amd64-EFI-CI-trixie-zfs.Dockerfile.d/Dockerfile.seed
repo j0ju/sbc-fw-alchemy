@@ -5,4 +5,4 @@ FROM sbc:amd64-EFI-CI-trixie
 
 RECIPE armbian/cross-reduce-upgdate-initrd+grub
 RECIPE armbian/kernel-keep-latest
-RECIPE armbian/zfs
+RECIPE armbian/zfs~backports

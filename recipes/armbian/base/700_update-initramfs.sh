@@ -5,7 +5,7 @@ set -eu
 
 . "$SRC/lib.sh"; init
 
-cat > /target/etc/initramfs-tools/modules <<EOF
+cat > $DST/etc/initramfs-tools/modules <<EOF
 ext4
 btrfs
 f2fs
@@ -15,7 +15,7 @@ squashfs
 loop
 EOF
 
-KVER="$(cd /target/lib/modules/; ls [0-9]* -d | head -n 1)"
-chroot /target update-initramfs -k$KVER -u
+KVER="$(cd $DST/lib/modules/; ls [0-9]* -d | head -n 1)"
+chroot ${DST:-/} update-initramfs -k$KVER -u
 
 # vim: ts=2 sw=2 et

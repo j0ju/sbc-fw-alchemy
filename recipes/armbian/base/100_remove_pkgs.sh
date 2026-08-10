@@ -4,7 +4,7 @@
 . "$SRC/lib.sh"; init
 #set -x
 
-chroot /target \
+chroot ${DST:-/} \
   dpkg -P \
     vim-tiny \
     nano \

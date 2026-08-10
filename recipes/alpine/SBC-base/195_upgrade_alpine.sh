@@ -6,5 +6,4 @@ PS4='> ${0##*/}: '
 #set -x
 
 # install packages for tarballs
-  chroot /target apk upgrade
-
+chroot "${DST:-}" apk upgrade

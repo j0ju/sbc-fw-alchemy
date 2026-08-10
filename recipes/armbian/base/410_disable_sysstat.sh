@@ -6,10 +6,10 @@
 
 sed -i -r \
     -e 's/^([0-9])/#\1/' \
-  /target/etc/cron.d/sysstat
+  $DST/etc/cron.d/sysstat
 
 DISABLE=
 DISABLE="$DISABLE sysstat-collect.service sysstat-collect.timer"
 
-chroot /target systemctl disable $DISABLE
-chroot /target systemctl mask $DISABLE
+chroot ${DST:-/} systemctl disable $DISABLE
+chroot ${DST:-/} systemctl mask $DISABLE
