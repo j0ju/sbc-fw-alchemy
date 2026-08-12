@@ -18,11 +18,14 @@ apt-get update
 
 #apt-get -y install doca-runtime
 #apt-get -y install doca-networking
+# we need this to compile any package with dkms.
+apt-get -y install linux-headers-generic
 
 apt-get -y install \
   doca-basic \
   doca-installer \
   mlnx-ofed-kernel-dkms \
+  mlnx-nvme-dkms \
   rshim \
   mft mft-mlx5 mft-nvredfish kernel-mft-dkms \
 #
