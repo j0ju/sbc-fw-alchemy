@@ -51,7 +51,7 @@ PKGS="$PKGS
 PKGS="$PKGS
   sox
   groff doxygen graphviz
-  alsa-tools alsa-utils bluez-alsa
+  alsa-tools alsa-utils bluez-alsa alsa-utils-openrc bluez-alsa bluez-alsa-openrc
   gsm-tools
   linux-tools-gpio
   lame
@@ -64,7 +64,7 @@ PKGS="$PKGS
 
   linux-headers
     libmd-dev libsamplerate-dev i2c-tools-dev
-    libsigc++-dev alsa-lib-dev alsa-tools-dev
+    libsigc++-dev alsa-lib-dev
     gsm-dev curl-dev tcl-dev
     speexdsp-dev speex-dev popt-dev
     opus-dev opusfile-dev libogg-dev

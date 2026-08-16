@@ -1,14 +1,15 @@
 # (C) 2025 Joerg Jungermann, GPLv2 see LICENSE
 # meta: onestep
 
-FROM sbc:bpi2m0-armbian-bookworm AS armbian
-FROM sbc:armhf-alpine-3.24
+#FROM sbc:bpi2m0-armbian-bookworm AS armbian
+FROM sbc:BPI2M0-trixie AS armbian
+FROM sbc:armv7-alpine-3.24
 
 # populate modules and boot from armbian
-COPY --from=armbian /target/boot /target/boot
-COPY --from=armbian /target/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
-COPY --from=armbian /target/lib/modules /target/lib/modules
-COPY --from=armbian /target/lib/firmware /target/lib/firmware
+COPY --from=armbian /target/part1 /target/boot
+COPY --from=armbian /target/part2/usr/lib/linux-u-boot-current-bananapim2zero/u-boot-sunxi-with-spl.bin /target/boot/uboot.img
+COPY --from=armbian /target/part2/lib/modules /target/lib/modules
+COPY --from=armbian /target/part2/lib/firmware /target/lib/firmware
 
 RECIPE alpine/SBC+openrc-init+overlay
 RECIPE alpine/etckeeper
