@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# script to build Armbian/Trixie image with latest kernel using compile.sh
+# see https://github.com/armbian/build
+
+BOARD=bananapim2zero
+BRANCH=current
+RELEASE=trixie
+
+./compile.sh \
+  BOARD="$BOARD" \
+  BRANCH="$BRANCH" \
+  RELEASE="$RELEASE" \
+  \
+  BUILD_DESKTOP=no \
+  BUILD_MINIMAL=yes \
+  KERNEL_CONFIGURE=no \
+  INSTALL_HEADERS=no \
+  ENABLE_EXTENSIONS="cloud-init fs-f2fs-support" \
+  # zfs
+
+IMAGE="$( ls -t output/images/*$( echo -n ${BOARD} |  sed -n '1 s/./\U\0/ p' )_${RELEASE}_${BRANCH}*.img )"
