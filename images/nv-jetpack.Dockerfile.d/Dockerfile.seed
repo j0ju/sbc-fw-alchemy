@@ -1,0 +1,19 @@
+# (C) 2026 Joerg Jungermann, GPLv2 see LICENSE
+# meta: onestep
+
+FROM sbc:NVidia-Tegra-Jetson-Linux-39.2.1.BSP AS drivers
+FROM sbc:NVidia-Tegra-Jetson-Linux-39.2.1.rootfs
+
+COPY --from=drivers /target/Linux_for_Tegra/ /Linux_for_Tegra/
+
+RUN set -ex; \
+  rm -rf /Linux_for_Tegra/rootfs ;\
+  mv /target /Linux_for_Tegra/rootfs ;\
+  ln -s /Linux_for_Tegra/rootfs /target ;\
+:;\
+  echo DISTRIB_RELEASE=2404 > /etc/lsb-release ;: "fake lsb-release for L4t" ;\
+  apt-get update; apt-get install -y sudo ;\
+  cd /Linux_for_Tegra ;\
+  ./tools/l4t_flash_prerequisites.sh ;\
+  ./apply_binaries.sh ;\
+: #
