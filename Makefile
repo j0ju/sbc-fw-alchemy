@@ -69,7 +69,7 @@ build: $(WORK_FILES)
 	$(Q) date +%s > "$@"
 
 .deps/%.built: input/%.tar.bz2 lib/img-mangler/tar-import.sh
-	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tgz=)) <--- $<"
+	$(E) "IMPORT $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar.bz2=)) <--- $<"
 	$(Q) $(SHELL) $(SHOPT) lib/img-mangler/tar-import.sh $< $(NAME_PFX)$(NAME):$(patsubst input/%,%,$(<:.tar.bz2=))
 	$(Q) date +%s > "$@"
 
