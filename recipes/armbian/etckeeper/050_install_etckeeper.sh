@@ -31,6 +31,7 @@ tee > /dev/null "$DST/etc/.gitignore" <<EOF
 *~
 *.O
 *.sw[a-z]
+*.lock
 EOF
 
 # add ssmtp to prevent exim installed
