@@ -1,0 +1,11 @@
+# /etc/ssh/sshd_config
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+UsePAM no
+
+AllowAgentForwarding yes
+AllowTcpForwarding yes
+X11Forwarding no
+
+Subsystem       sftp    internal-sftp

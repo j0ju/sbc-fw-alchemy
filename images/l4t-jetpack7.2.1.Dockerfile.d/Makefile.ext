@@ -1,0 +1,22 @@
+# (C) 2026 Joerg Jungermann, GPLv2 see LICENSE
+
+output/l4t-%.vmlinuz: \
+	$(DEPDIR)/l4t-%.built \
+#
+	$(E) "VMLINUZ $@"
+	$(Q) \
+	  mkdir -p output ;\
+	  ./bin/IRun $(patsubst output/%,%,$(@:.vmlinuz=)) < /dev/null cat /target/boot/vmlinuz | xz -6e --check=crc32 > $@ || rm -f $@ ;\
+	  chmod 0644 $@
+
+output/l4t-%.initramfs.xz: \
+	images/bluefield-img-mangler.Dockerfile.d/gen-initramfs.sh \
+	$(DEPDIR)/l4t-%.built \
+#
+	$(E) "INITRAMFS $@"
+	$(Q) \
+	  mkdir -p output ;\
+	  ./bin/IRun $(patsubst output/%,%,$(@:.initramfs.xz=)) < /dev/null sh $(SHOPT) /src/$< /src/$@ || rm -f $@ ;\
+	  chmod 0644 $@
+
+# vim: ts=2 sw=2 noet ft=make

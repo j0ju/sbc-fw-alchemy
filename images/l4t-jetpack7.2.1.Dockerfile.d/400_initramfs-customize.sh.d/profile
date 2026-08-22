@@ -1,0 +1,4 @@
+# /ect/profile
+export PATH=/sbin:/bin:/usr/local/sbin:/usr/local/bin
+PS1='\u@\h:\w\$ '
+alias log="kill $LOGREAD_PID 2> /dev/null; busybox logread; busybox logread -f & LOGREAD_PID=$!"

@@ -1,0 +1,3 @@
+# /etc/inittab
+::respawn:/bin/getty -L -w -n -l /lib/serial-login.sh 115200 ttyTCU0 screen
+::respawn:/bin/getty -L -w -n -l /lib/serial-login.sh 115200 ttyTHS1 screen
