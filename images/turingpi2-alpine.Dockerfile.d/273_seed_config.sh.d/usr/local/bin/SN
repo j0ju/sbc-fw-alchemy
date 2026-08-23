@@ -2,7 +2,7 @@
 set -eu
 
 case "${1:-}" in
-  [1234] )
+  [01234] )
     # exit with C-y C-q
     exec picocom -e y -f none -b 115200 "/dev/ttyS$1"
     # exit with C-x C-x
