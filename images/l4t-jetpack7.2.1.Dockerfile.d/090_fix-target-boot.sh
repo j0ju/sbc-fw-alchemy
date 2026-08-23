@@ -9,7 +9,8 @@ set -x # DEBUG
 # Jetpack 7.2.1
 KVER="6.8.12-1021-tegra"
 
-mv "$DST/boot/Image" "$DST/boot/vmlinuz-$KVER"
+xz -6e --check=crc32 < "$DST/boot/Image" > "$DST/boot/vmlinuz-$KVER"
+rm -f "$DST/boot/Image"
 ln -s "vmlinuz-$KVER" "$DST/boot/vmlinuz"
 ln -s "vmlinuz-$KVER" "$DST/boot/Image"
 

@@ -35,6 +35,7 @@ process_bash_reboot () {
   }
 
 PS4="${0}[$$]: "
+date -s "`date -r /nv-init-int.sh`"
 
 load_network_drv() {
   local PS4="${PS4%%:*}::load_network_drv: "
@@ -68,7 +69,7 @@ net_hw_init() {
     sleep 1
   done
 
-  dhclient -d eth0 & DHCLIENT=$!
+  /sbin/dhclient -d eth0 & DHCLIENT=$!
   /sbin/udevd & UDEV=$!
 
   # wait for defailt route

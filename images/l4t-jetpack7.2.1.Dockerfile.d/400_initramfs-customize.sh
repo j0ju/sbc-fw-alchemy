@@ -76,6 +76,7 @@ extract_bin_from /target \
   /sbin/mkfs.ext4 /sbin/fsck.ext4 /sbin/tune2fs \
   /sbin/mkfs.btrfs /bin/btrfs \
   /sbin/mkfs.vfat /sbin/fsck.vfat \
+  /bin/rsync \
   #
 
 # prepare udevd
@@ -92,3 +93,8 @@ cp "$FSDIR"/sshd_config "$DST/etc/ssh"
 
 # prepare usbutils pciutils
 mkdir -p "$DST/usr/share/misc"
+
+# regenerate /target/boot/initrd - have a bit more advanced debug environment
+( cd /initramfs
+  find . | cpio --create --format=newc --quiet | zstd
+) > /target/boot/initrd
