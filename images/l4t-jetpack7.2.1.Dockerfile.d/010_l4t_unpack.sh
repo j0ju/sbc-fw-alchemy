@@ -20,4 +20,7 @@ cd /Linux_for_Tegra
 # patch missing eeprom for Turing RK1
 sed -i -e 's/cvb_eeprom_read_size = <0x100>/cvb_eeprom_read_size = <0x0>/g' ./bootloader/generic/BCT/tegra234-mb2-bct-misc-p3767-0000.dts
 
+# dsa is not supported anymore
+sed -i -e  '/ssh-keygen -t dsa/ d' ./tools/ota_tools/version_upgrade/ota_make_recovery_img_dtb.sh
+
 ./apply_binaries.sh

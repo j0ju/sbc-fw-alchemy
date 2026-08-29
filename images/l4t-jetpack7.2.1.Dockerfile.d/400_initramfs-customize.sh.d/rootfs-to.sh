@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# shell script to 
+# shell script to
 #  + extract tarball to block device
 #  * install grub
-#  * update efi 
+#  * update efi
 #  * regenerate initramfs
 
 set -eu
@@ -15,7 +15,7 @@ set -x
 
   ROOT_DIR=/mnt
 
-  FS_default=btrfs
+  FS_default=ext4 # btrfs
   FS="${FS:-$FS_default}"
 
   ROOT_SUBVOL="rootfs.$(date +%Y%m%d.%H%M)"
@@ -24,7 +24,7 @@ set -x
   ROOT_DS="$ROOT_POOL/rootfs/$(date +%Y%m%d.%H%M)"
 
   ROOT_SIZE=
-  BOOT_SIZE=384M
+  BOOT_SIZE=256M
   EFI_SIZE=128M
 
   MOUNT_OPTS_ext4=relatime
@@ -53,21 +53,31 @@ set -x
     exit $rs
   }
 
+  # try to wipe via discard/trim
   blkdiscard -f "$TARGET_DEV" 2> /dev/null || :
+  # fallback via wipefs
   wipefs -af "$TARGET_DEV$PART_SEP"* 2> /dev/null || :
   wipefs -af "$TARGET_DEV"
 
-  sgdisk --zap-all "$TARGET_DEV"
-  sgdisk \
-    -n 14:0:+128M -t 14:ef00 -c 14:"EFI" \
-    -n 15:0:+384M -t 15:8300 -c 15:"/boot" \
-    -n 1:0:0 -t 1:8300 \
-   "$TARGET_DEV"
+  # NOTE:
+  #  * we just need A_kernel-dtb, B_kernel-dtb for booting without DTBs to work
+  #    if not specified via FDT in extlinux.conf
+  #  * recovery and recovery-dtb is needed so that SDKManager and manual flashing works,
+  #    flashing software can then eforce recovery boot
+  sgdisk -Z \
+    -n 14:0:+$EFI_SIZE -t 14:ef00 -c 14:"ESP" \
+    -n 10::+512K       -t 10:0700 -c 10:"A_kernel-dtb" \
+    -n 11::+512K       -t 11:0700 -c 11:"B_kernel-dtb" \
+    -n 12::+512K       -t 12:0700 -c 12:"recovery-dtb" \
+    -n 13::+100M       -t 13:0700 -c 13:"recovery" \
+    -n 15::+$BOOT_SIZE -t 15:0700 -c 15:"APP" \
+    -n  1::            -t  1:8300 -c  1:"rootfs" \
+    "$TARGET_DEV"
 
 #- format /boot
   mkfs.ext4 "$BOOT_DEV"
   BOOT_ENTRY="UUID=$(blkid -o value -s UUID $BOOT_DEV)"
-  
+
   mkfs.vfat -F32 -n EFI "$EFI_DEV"
   EFI_ENTRY="UUID=$(blkid -o value -s UUID $EFI_DEV)"
 
@@ -108,14 +118,14 @@ set -x
       ds=""
       oIFS="$IFS"
       IFS=/
-      for i in ${ROOT_DS%/*}; do 
+      for i in ${ROOT_DS%/*}; do
         IFS="$oIFS"
         ds="${ds}/$i"
         ds="${ds#/}"
         case "$ds" in
           */* )
             zfs list "$ds" > /dev/null 2>&1 || \
-              zfs create "$ds" -o mountpoint=none 
+              zfs create "$ds" -o mountpoint=none
             ;;
         esac
       done
@@ -178,34 +188,72 @@ set -x
     mkdir -p "$ROOT_DIR/.btrfs"
   fi >> "$ROOT_DIR/etc/fstab"
 
-# cleanup EFI before installing EFI grub to disk
-  UBUNTU="$( efibootmgr | awk '$2 == "Ubuntu" && $0=$1' | sed -r -e 's/^Boot0+/0x0/' -e 's/[*]$//' )"
-  if [ -n "$UBUNTU" ]; then
-    UBUNTU=$(( $UBUNTU ))
-    efibootmgr -B -b $UBUNTU 
-  fi
-  PXEv4="$( efibootmgr  | awk '/PXEv4/ && $0=$1' | sed -r -e 's/^Boot0+/0x0/' -e 's/[*]$//' )"
-  if [ -n "$PXEv4" ]; then
-    PXEv4=$(( $PXEv4 ))
-    efibootmgr -o $PXEv4
-  fi
-
-# grub install
-  CMDLINE=$(echo $(cat /proc/cmdline | tr ' ' '\n' | egrep -v "^(BOOT_IMAGE|root)="))
-  sed -i -r -e '/^#|^ *$|^GRUB_CMDLINE_LINUX_DEFAULT=/ d'    "$ROOT_DIR"/etc/default/grub
-  echo "GRUB_DISABLE_OS_PROBER=true"                      >> "$ROOT_DIR"/etc/default/grub
-  echo "GRUB_CMDLINE_LINUX_DEFAULT='$CMDLINE'"            >> "$ROOT_DIR"/etc/default/grub
+# bootloader installed into /boot/efi/EFI/BOOT
+# regenrate generic initramfs
   ( cd "$ROOT_DIR"
     mount -o rbind /sys sys
-    mount -o bind /dev dev
     mount -o bind /proc proc
-    chroot "$ROOT_DIR" grub-install /dev/nvme0n1
-    chroot "$ROOT_DIR" update-grub
-    rm "$ROOT_DIR"/boot/[Ii]nitrd*
-    chroot "$ROOT_DIR" update-initramfs -kall -c
+    chroot . mount -a
+    #Q: TODO: switch to initramfs instead of Nvidias RAM Disk?
+    #rm "$ROOT_DIR"/boot/[Ii]nitrd*
+    #chroot . update-initramfs -kall -c
   )
+
+# configure bootloader - EXTLINUX-alike
+  # ensure we have a fake link boot -> .
+  rm -f "$ROOT_DIR/boot/boot"
+  ln -s . "$ROOT_DIR/boot/boot"
+  # set correct kernel commandline for kernel and rootfs
+  sed -i -r -e 's| root=[^ ]*| root='"$ROOT_FSTAB_ENTRY"'|' "$ROOT_DIR/boot/extlinux/extlinux.conf"
+  sed -i -r -e 's| rootflags=[^ ]*| rootflags='"$ROOT_OPTS"'|' "$ROOT_DIR/boot/extlinux/extlinux.conf"
 
 #- rescue initial /boot to root partitions
   mount -o bind "$ROOT_DIR" "$ROOT_DIR/mnt"
-  tar cf - --one-file-system --acls --xattrs --numeric-owner -C "$ROOT_DIR" ./boot | \
+  tar cf - --acls --xattrs --numeric-owner -C "$ROOT_DIR" ./boot | \
     tar xf - --acls --xattrs --numeric-owner -C "$ROOT_DIR/mnt"
+
+# cleanup EFI entries for current device
+  for contains in ${TARGET_DEV##*/}; do
+    ENTRY="$( efibootmgr | awk '/'"$contains"'/ && $0=$1' | sed -r -e 's/^Boot0+/0x0/' -e 's/[*]$//' )"
+    if [ -n "$ENTRY" ]; then
+      ENTRY=$(( $ENTRY ))
+      efibootmgr -B -b $ENTRY
+    fi
+  done
+
+#- update efi ordering
+  ENTRIES=
+  ORDER=
+  # get all entries as space separated list
+  for o in $( efibootmgr | sed -n -r -e '/^Boot0/ s/[*].*$//' -e '/^Boot0/ s/^Boot0+/0x0/ p' ); do
+    ENTRIES=" $ENTRIES $(( $o )) "
+  done
+
+  # create EFI entry
+  efibootmgr -C -d $TARGET_DEV -p 14 -L "L4T $TARGET_DEV" -l /EFI/BOOT/BOOTAA64.efi
+
+  # put created entry to top
+  ENTRY="$( efibootmgr | awk '/'"${TARGET_DEV##*/}"'/ && $0=$1' | sed -r -e 's/^Boot0+/0x0/' -e 's/[*]$//' )"
+  if [ -n "$ENTRY" ]; then
+    ENTRY=$(( $ENTRY ))
+    ORDER="$ORDER $ENTRY"
+    ENTRIES="${ENTRIES%% $ENTRY *} ${ENTRIES##* $ENTRY }"
+  fi
+
+  # then PXEv4
+  PXEv4="$( efibootmgr  | awk '/PXEv4/ && $0=$1' | sed -r -e 's/^Boot0+/0x0/' -e 's/[*]$//' )"
+  if [ -n "$PXEv4" ]; then
+    PXEv4=$(( $PXEv4 ))
+    ORDER="$ORDER $PXEv4"
+    ENTRIES="${ENTRIES%% $PXEv4 *} ${ENTRIES##* $PXEv4 }"
+  fi
+
+  # align the rest
+  for o in $ENTRIES; do
+    ORDER="$ORDER $o"
+  done
+  ORDER="${ORDER# }"
+  ORDER="${ORDER% }"
+  ORDER=$(echo "$ORDER" | sed -r -e 's/ /,/g')
+
+  efibootmgr -o $ORDER

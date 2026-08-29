@@ -123,15 +123,19 @@ set +x
 
 root_initrd() {
   local PS4="${PS4%%:*}::root_initrd: "
-set -x
   hostname -F /etc/hostname
   syslogd
+set -x
   net_hw_init
+  sntpc -v pool.ntp.org
   sshd
+
+  # replace /init[1]'s created reboot with busybox's reboot as we use busybox's init
+  rm -f /*bin/reboot
+  ln -s busybox /bin/reboot
+
   exec /bin/busybox init
 set +x
   }
-
-
 
 # vim: ts=2 sw=0 et foldmethod=indent

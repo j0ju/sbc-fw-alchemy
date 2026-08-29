@@ -6,12 +6,12 @@ umask 022
 
 set -x # DEBUG
 
-# inject custom process_bash_reboot, which handles further root options
 DST=/initramfs
 
-# unpack
+# unpack initrd
 mkdir -p "$DST"
-unmkinitramfs /target/boot/initrd "$DST"
+unmkinitramfs /target/boot/initrd.l4t "$DST"
+ls -l "$DST"
 
 # enhance with fully install busybox
 chroot "$DST" /bin/busybox --install -s /bin
@@ -22,6 +22,7 @@ rm -rf "$DST/usr/share/docs"
 # add drivers from /target
 rm -rf "$DST"/lib/modules
 cp -a /target/lib/modules "$DST"/lib/modules
+# remove drivers highlikly never used duing initial boot of initrd
 for keyword in \
   wireless sunxi sound smb
 do
@@ -30,12 +31,22 @@ done
 
 # inject patches
 FSDIR="$0.d"
-cp "$FSDIR"/nv-init-int.sh   "$DST"/
-cp "$FSDIR"/profile          "$DST"/etc/profile
-ln -s profile                "$DST"/etc/bash.bashrc
-cp "$FSDIR"/inittab          "$DST"/etc/inittab
-cp "$FSDIR"/serial-login.sh  "$DST"/lib/serial-login.sh
-chmod 755 "$DST"/lib/serial-login.sh
+
+# inject custom process_bash_reboot, which handles further root options
+cp "$FSDIR"/nv-init-int.sh    "$DST"/
+
+# user convinience
+mkdir -p "$DST"/usr/local/bin
+cp "$FSDIR"/profile           "$DST"/etc/profile
+ln -s profile                 "$DST"/etc/bash.bashrc
+cp "$FSDIR"/inittab           "$DST"/etc/inittab
+cp "$FSDIR"/lib-umount-all.sh "$DST"/lib/unmount-all.sh
+cp "$FSDIR"/serial-login.sh   "$DST"/lib/serial-login.sh
+chmod 755 \
+  "$DST"/lib/serial-login.sh \
+  "$DST"/lib/unmount-all.sh \
+  #
+ln -s ../../../lib/unmount-all.sh "$DST/usr/local/bin/Unmount-All"
 
 # seed hostname
 echo l4t > "$DST"/etc/hostname
@@ -77,6 +88,18 @@ extract_bin_from /target \
   /sbin/mkfs.btrfs /bin/btrfs \
   /sbin/mkfs.vfat /sbin/fsck.vfat \
   /bin/rsync \
+  /bin/lsattr /bin/chattr \
+  /bin/strace \
+  /sbin/nvbootctrl \
+  #
+
+ln -s mkfs.ext4 "$DST/bin/mkfs.ext3"
+ln -s mkfs.ext4 "$DST/bin/mkfs.ext2"
+ln -s fsck.ext4 "$DST/bin/fsck.ext3"
+ln -s fsck.ext4 "$DST/bin/fsck.ext2"
+
+extract_bin_from /OptAlpine \
+  /usr/sbin/sntpc \
   #
 
 # prepare udevd
@@ -94,7 +117,6 @@ cp "$FSDIR"/sshd_config "$DST/etc/ssh"
 # prepare usbutils pciutils
 mkdir -p "$DST/usr/share/misc"
 
-# regenerate /target/boot/initrd - have a bit more advanced debug environment
-( cd /initramfs
-  find . | cpio --create --format=newc --quiet | zstd
-) > /target/boot/initrd
+# add installer for tarballs
+cp "$FSDIR"/rootfs-to.sh  "$DST"/usr/local/bin/rootfs-to.sh
+chmod 0755 "$DST"/usr/local/bin/rootfs-to.sh

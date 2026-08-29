@@ -1,0 +1,6 @@
+#!/bin/bash
+
+mount() { :; }
+whiptail() { :; }
+
+. "${0%.wrap}.sh"

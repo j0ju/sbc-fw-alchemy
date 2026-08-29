@@ -1,8 +1,8 @@
 #!/bin/sh
 # (C) 2025-26 Joerg Jungermann, GPLv2 see LICENSE
 set -eu
-PS4='> ${0##*/}: '
 umask 022
+PS4='> ${0##*/}: '
 
 set -x # DEBUG
 
