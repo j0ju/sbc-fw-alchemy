@@ -58,3 +58,11 @@ chroot "$DST" \
 
 # ensure volatile journal
 rm -rf /var/log/journal
+
+# enable serial console on /dev/ttyTHS1 eg. for RK1
+mkdir -p "$DST/etc/systemd/system/serial-getty@ttyTHS1.service.d/"
+cp "$FSDIR"/+ansible+systemd-consoles.conf "$DST/etc/systemd/system/serial-getty@ttyTHS1.service.d/"
+chroot "$DST" systemctl enable serial-getty@ttyTHS1
+
+cp "$FSDIR"/serial-terminal-size.sh "$DST/etc/profile.d/serial-terminal-size.sh"
+chmod 644 "$DST/etc/profile.d/serial-terminal-size.sh"
