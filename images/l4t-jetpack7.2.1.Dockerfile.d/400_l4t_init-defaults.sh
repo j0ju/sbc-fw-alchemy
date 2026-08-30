@@ -11,10 +11,10 @@ cp "$FSDIR"/l4t_create_default_user.wrap /Linux_for_Tegra/tools/l4t_create_defau
 
 # hostname is l4t
 # default user is nvidia:nvidia
-# autologin is enabled
+# autologin is disabled
 
 cd /Linux_for_Tegra
-bash ./tools/l4t_create_default_user.wrap -u nvidia -p nvidia -a -n l4t
+bash ./tools/l4t_create_default_user.wrap -u nvidia -p nvidia -n l4t
 
 # password less sudo for default user
 cat "$FSDIR"/sudoers > "$DST/etc/sudoers"
@@ -28,26 +28,19 @@ echo "ALGO=zstd" >> "$DST"/etc/default/zramswap
 echo "SIZE=1024" >> "$DST"/etc/default/zramswap
 chroot "$DST" systemctl enable zramswap
 
-
 chroot "$DST" \
   systemctl disable \
     nvfb-swapfile.service \
     ModemManager.service \
     ubuntu-advantage.service \
     ubuntu-advantage-desktop-daemon.service \
+    apparmor.service \
     #
 
 chroot "$DST" \
   systemctl mask \
-    nvfb-swapfile.service \
     ubuntu-advantage.service \
     ubuntu-advantage-desktop-daemon.service \
-    #
-
-chroot "$DST" \
-  dpkg -P \
-    rsyslog \
-    snapd firefox thunderbird gnome-software-plugin-snap \
     #
 
 # cleanup remove motd/phone home
