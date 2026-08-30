@@ -10,12 +10,13 @@ set -eu
 set -x
 
 #- settings
+  umask 022
   TARGET_DEV="$1"
   ROOTFS_TARBALL="$2"
 
   ROOT_DIR=/mnt
 
-  FS_default=ext4 # btrfs
+  FS_default=btrfs # ext4
   FS="${FS:-$FS_default}"
 
   ROOT_SUBVOL="rootfs.$(date +%Y%m%d.%H%M)"
@@ -62,12 +63,14 @@ set -x
   # NOTE:
   #  * we just need A_kernel-dtb, B_kernel-dtb for booting without DTBs to work
   #    if not specified via FDT in extlinux.conf
+  #         -n 10::+512K       -t 11:0700 -c 11:"A_kernel" \
+  #         -n  8::+512K       -t  8:0700 -c  8:"B_kernel" \
+  #         -n  9::+512K       -t  9:0700 -c  9:"B_kernel-dtb" \
   #  * recovery and recovery-dtb is needed so that SDKManager and manual flashing works,
   #    flashing software can then eforce recovery boot
   sgdisk -Z \
     -n 14:0:+$EFI_SIZE -t 14:ef00 -c 14:"ESP" \
-    -n 10::+512K       -t 10:0700 -c 10:"A_kernel-dtb" \
-    -n 11::+512K       -t 11:0700 -c 11:"B_kernel-dtb" \
+    -n 11::+512K       -t 11:0700 -c 11:"A_kernel-dtb" \
     -n 12::+512K       -t 12:0700 -c 12:"recovery-dtb" \
     -n 13::+100M       -t 13:0700 -c 13:"recovery" \
     -n 15::+$BOOT_SIZE -t 15:0700 -c 15:"APP" \
@@ -194,9 +197,8 @@ set -x
     mount -o rbind /sys sys
     mount -o bind /proc proc
     chroot . mount -a
-    #Q: TODO: switch to initramfs instead of Nvidias RAM Disk?
-    #rm "$ROOT_DIR"/boot/[Ii]nitrd*
-    #chroot . update-initramfs -kall -c
+    rm "$ROOT_DIR"/boot/[Ii]nitrd*
+    chroot . update-initramfs -kall -c
   )
 
 # configure bootloader - EXTLINUX-alike
@@ -204,8 +206,17 @@ set -x
   rm -f "$ROOT_DIR/boot/boot"
   ln -s . "$ROOT_DIR/boot/boot"
   # set correct kernel commandline for kernel and rootfs
-  sed -i -r -e 's| root=[^ ]*| root='"$ROOT_FSTAB_ENTRY"'|' "$ROOT_DIR/boot/extlinux/extlinux.conf"
-  sed -i -r -e 's| rootflags=[^ ]*| rootflags='"$ROOT_OPTS"'|' "$ROOT_DIR/boot/extlinux/extlinux.conf"
+  sed -i -r -e 's| rootflags=[^ ]*| |' "$ROOT_DIR/boot/extlinux/extlinux.conf"
+  sed -i -r -e 's| root=[^ ]*| root='"$ROOT_CMDLINE"'|' "$ROOT_DIR/boot/extlinux/extlinux.conf"
+
+# update partitions used by L4T loader for device trees
+  DTB="$(< "$ROOT_DIR/boot/extlinux/extlinux.conf" awk '$1=="FDT" && $0=$2')"
+  for i in /dev/disk/by-partlabel/*kernel-dtb; do
+    dd if="$ROOT_DIR/$DTB" of="$i" bs=128k
+  done
+
+# populate nv_boot_control.conf if avail
+  cp /etc/nv_boot_control.conf "$ROOT_DIR"/etc/nv_boot_control.conf
 
 #- rescue initial /boot to root partitions
   mount -o bind "$ROOT_DIR" "$ROOT_DIR/mnt"
