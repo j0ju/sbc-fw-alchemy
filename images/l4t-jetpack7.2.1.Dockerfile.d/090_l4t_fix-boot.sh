@@ -15,10 +15,6 @@ KVER="$( cd "$DST/lib/modules"; ls -d [0-9]* | sort | head )"
 rm -rf "$DST/boot/boot"
 ln -s . "$DST/boot/boot"
 
-# put DTB to subdir
-mkdir -p "$DST/boot/dtb"
-mv "$DST/boot"/*.dtb* "$DST/boot/dtb"
-
 mv "$DST/boot/Image" "$DST/boot/vmlinuz-$KVER"
 ln -s "vmlinuz-$KVER" "$DST/boot/vmlinuz"
 
