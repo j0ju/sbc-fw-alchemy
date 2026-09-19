@@ -1,7 +1,18 @@
 # (C) 2025-26 Joerg Jungermann, GPLv2 see LICENSE
 # meta: #onestep
 
-FROM sbc:BF-BUNDLE-3.2.2-lts
+# import fresh arm64 alpine for the initramfs add busybox.static
+FROM sbc:aarch64-Alpine-3.24 AS busybox-static
+RUN set -eu ;\
+  rm -f /target/etc/resolv.conf ;\
+  cp /etc/resolv.conf /target/etc/resolv.conf ;\
+  chroot /target apk add busybox-static
+FROM sbc:aarch64-Alpine-3.24 AS alpine
+COPY --from=busybox-static /target/bin/busybox.static /target/sbin/busybox.static
+
+FROM sbc:BF-BUNDLE-3.2.3-lts
+
+COPY --from=alpine /target /initrd.alpine
 
 CMD \
   ulimit -n 1024 ;\

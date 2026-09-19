@@ -7,10 +7,11 @@
 #
 input/artifacts/rshim-4-img-mangler.deb: \
   images/bluefield-img-mangler.Dockerfile.d/rshim-4-img-mangler.sh \
-  input/doca-host_3.2.2-035000-25.10-debian13_amd64.deb \
-  input/doca-host_3.2.2-035000-25.10-debian13_arm64.deb \
+  input/doca-host_3.2.3-25.10-debian13_amd64.deb \
+  input/doca-host_3.2.3-25.10-debian13_arm64.deb \
   #
 	$(E) BUILD $@
+	$(Q) mkdir -p input/artifacts
 	$(Q) ./bin/img-mangler --name rhsim-4-img-mangler sh $(SHOPT) /src/$< $@
 
 .deps/%.built: \
