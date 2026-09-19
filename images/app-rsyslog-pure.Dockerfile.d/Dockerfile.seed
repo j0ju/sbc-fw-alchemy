@@ -65,7 +65,7 @@
 
 # use alpine install rsyslog
 
-FROM alpine:3.23 AS donor
+FROM alpine:3.24 AS donor
 
 ADD lib/img-mangler/alpine-mk-pkg-tarball.sh /
 RUN  set -eux ;\
