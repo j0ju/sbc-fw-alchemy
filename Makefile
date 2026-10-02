@@ -114,7 +114,7 @@ clean-volumes:
 
 .deps/%.workspace: images/%.Workspace.d/prepare.sh .deps/img-mangler.built .deps/%.volume
 	$(E) "WORKSPACE $(<:/workspace.d/prepare.sh=)"
-	$(Q) ./bin/img-mangler -w /workspace --name "make-$$( basename $(@:.workspace=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
+	$(Q) ./bin/img-mangler --init -w /workspace --name "make-$$( basename $(@:.workspace=) )" -e HOME=/workspace -v $(NAME_PFX)$(NAME)-$$( basename $(@:.workspace=) ):/workspace sh /src/$< ; : > $@
 
 .PRECIOUS: %.volume %.workspace
 
