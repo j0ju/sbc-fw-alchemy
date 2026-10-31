@@ -6,13 +6,11 @@ set -eu
 . "$SRC/lib.sh"; init
 set -x
 
-PKG="https://www.mellanox.com/downloads/DOCA/DOCA_v3.2.2/host/doca-host_3.2.2-035000-25.10-debian13_amd64.deb"
-
 cd "$DST"
 #wget "$PKG"
-PKG="${PKG##*/}"
 
-sudo dpkg -i "$PKG"
+sudo dpkg -i *.deb
+rm *.deb
 
 apt-get update
 
@@ -42,5 +40,4 @@ dpkg -P doca-host
 rm -rf \
   /usr/share/doca-host* \
   /etc/systemd/system/rdma-hw.target.wants/ibacm.service \
-  "$PKG" \
 # EO rm -rf
