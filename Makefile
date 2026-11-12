@@ -1,5 +1,5 @@
 # - Makefile -
-# (C) 2019-2025 Joerg Jungermann, GPLv2 see LICENSE
+# (C) 2019-2026 Joerg Jungermann, GPLv2 see LICENSE
 
 include lib/Makefile.Dockerfile.generic
 NAME := sbc

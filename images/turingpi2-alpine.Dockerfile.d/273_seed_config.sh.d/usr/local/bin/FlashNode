@@ -1,4 +1,11 @@
 #!/bin/sh
+# (C) 2023-2026 Joerg Jungermann, GPLv2 see LICENSE
+
+# FlashNode is a script which
+#  * puts a not into MSD mode and
+#  * identifies the storage device node
+#  * and writes an image or decompress a tar of a rootfs to that device node
+
 set -eu
 umask 022
 PS4="${0##*/}: "
@@ -18,7 +25,14 @@ PS4="${0##*/}: "
 
   BOOT_FS=vfat
   BOOT_SIZE=511M
-  BOOT_DIR=boot/firmware
+
+  # directory where boot partition is mounted
+  #  * RPi --> /boot/firmware
+  #  * RK1 --> /boot
+  # see
+  #  find_usb_device()
+  #BOOT_DIR=boot
+  #BOOT_DIR=boot/firmware
 
   SBC_TYPE=
   MOUNT_OPTS=
@@ -183,11 +197,13 @@ find_usb_device() {
       Rockchip )
         USB_DEVICE="/dev/$dev"
         SBC_TYPE=rk1
+        BOOT_DIR=boot
         break
         ;;
       RPi-MSD- )
         USB_DEVICE="/dev/$dev"
         SBC_TYPE=cm4
+        BOOT_DIR=boot/firmware
         break
         ;;
       # TODO: add support for eg Rpi CM5, Radxa CM5, etc
@@ -276,8 +292,6 @@ extract_tarball() {
     $DECOMPRESSOR "$image" | tar xf - -C "$TMPDIR" --xattrs --atime-preserve
   fi
 
-  # TODO: BOOT_DIR: boot or boot/firmware, adapt layout
-
   if [ -f "$TMPDIR/etc/fstab" ]; then
     echo "I: adapt /etc/fstab"
     ( FS=$ROOT_FS MNT=/           BLKDEV="PARTUUID=$ROOT_PARTUUID"
@@ -304,15 +318,15 @@ extract_tarball() {
   if [ -f "$TMPDIR/boot/armbianEnv.txt" ]; then
     echo "I: adapt /boot/armbianEnv.txt"
     ( FS=$ROOT_FS MNT=/           BLKDEV="PARTUUID=$ROOT_PARTUUID"
-      sed -i -r
+      sed -i -r \
         -e 's/^(rootdev=).*/\1'"$BLKDEV"'/' \
         -e 's/^(rootfstype=).*/\1'"$FS"'/' \
       "$TMPDIR/boot/armbianEnv.txt"
     )
-  fi
+   fi
 
   ( cd "$TMPDIR/$BOOT_DIR"
-    echo "I: mount & sync /boot/firmware ($TMPDIR/$BOOT_DIR)"
+    echo "I: mount & sync boot partition ($TMPDIR/$BOOT_DIR)"
     mount "$BOOT_DEV" "$TMPDIR/$BOOT_DIR"
     tar cf - . | ( cd "$TMPDIR/$BOOT_DIR"
       tar xf -

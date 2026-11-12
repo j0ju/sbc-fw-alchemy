@@ -1,5 +1,6 @@
 #!/bin/sh
-set -e
+# (C) 2023-2026 Joerg Jungermann, GPLv2 see LICENSE
+set -ue
 set -x
 
 case "${1:-}" in
