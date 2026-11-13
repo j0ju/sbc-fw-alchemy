@@ -1,0 +1,23 @@
+mlx5e: xsk: pass desc.options to xsk_buff_get_metadata()
+
+Debian linux 6.12.116+deb13-amd64 backports the upstream change that adds a third
+"u32 options" argument to xsk_buff_get_metadata(); metadata is only
+returned when XDP_TX_METADATA is set in the descriptor options.
+The MLNX_OFED compat layer has no check for this and still uses the
+two argument form, failing with:
+
+  en/xsk/tx.c:124: error: too few arguments to function xsk_buff_get_metadata
+
+Kernel specific: apply only when building for 6.12.116+deb13-amd64.
+
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c	2026-11-13 00:33:22.223744733 +0000
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xsk/tx.c	2026-11-13 00:33:22.415757913 +0000
+@@ -121,7 +121,7 @@
+ #endif
+ 		xdptxd.len = desc.len;
+ #ifdef HAVE_XSK_TX_METADATA_OPS
+-		meta = xsk_buff_get_metadata(pool, desc.addr);
++		meta = xsk_buff_get_metadata(pool, desc.addr, desc.options);
+ #endif
+ 
+ #ifdef HAVE_XSK_BUFF_ALLOC
