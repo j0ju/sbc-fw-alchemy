@@ -12,13 +12,62 @@ BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
 BR2_SYSTEM_DHCP="eth0"
 BR2_INIT_SYSV=y
 BR2_TARGET_TZ_INFO=y
-BR2_TOOLCHAIN_BUILDROOT_CXX=y
 BR2_SVN="svn"
 BR2_CCACHE=y
 BR2_RELRO_NONE=y
 
+# Downloads. On 2026-09-06 ftpmirror.gnu.org answered "504 Gateway Time-out"
+# after ~60 s, and wget retries three times (BR2_WGET="wget -nd -t 3"), so
+# fifteen GNU tarballs cost 2020 s of a 6772 s CI build before Buildroot fell
+# back to sources.buildroot.net -- which serves every hashed tarball from a
+# CDN. Ask that mirror first (it is tried as <site>/<pkg>/<file>); a miss
+# there still falls through to the package's own site.
+BR2_PRIMARY_SITE="https://sources.buildroot.net"
+
+# Top-level parallel build (SQU-104 phase 2): every package gets its own
+# host/target staging so independent packages build at the same time instead
+# of strictly in sequence. Requires `make -j` from scripts/build.sh; a
+# package with an undeclared dependency shows up as a build failure here
+# rather than working by accident.
+BR2_PER_PACKAGE_DIRECTORIES=y
+
 # Kernel
+#
+# Pin the version. Without BR2_LINUX_KERNEL_CUSTOM_VERSION the kernel
+# follows Buildroot's "latest" default, so the board's kernel changed
+# silently with every Buildroot bump -- that is how it ended up on
+# 6.8.12, which is not an LTS series and is out of support. Name the
+# version here so a Buildroot upgrade and a kernel upgrade are two
+# separate, reviewable changes.
+#
+# 6.12 is a longterm series (maintained to Dec 2026 at least); .109 is
+# its current point release. Buildroot 2025.02.17 defaults to .104, and
+# linux/linux.hash lists only the release each Buildroot was cut against,
+# so moving off .104 also moves off the one sum Buildroot has for us. It
+# will not complain: linux.mk puts a custom-version kernel tarball in
+# BR_NO_CHECK_HASH_FOR, so a missing sum means the kernel is downloaded
+# unverified, quietly. buildroot_patches/0003 supplies ours, from
+# kernel.org's signed sha256sums.asc. A kernel bump is therefore two
+# files: this one and that patch.
 BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="6.12.109"
+# The headers series must be named too. BR2_TOOLCHAIN_HEADERS_AT_LEAST_*
+# is selected by BR2_LINUX_KERNEL_LATEST_VERSION, NOT by a custom version
+# (linux/Config.in), so with BR2_KERNEL_HEADERS_AS_KERNEL a custom version
+# alone leaves the series to a kconfig default. On 2024.05.1 that default
+# happens to land on 6.8; on a newer Buildroot it does not, and the failure
+# is silent -- headers fall back to "2.6", which makes glibc unselectable,
+# so the toolchain quietly becomes uclibc without wchar or locale and eight
+# packages (dosfstools, f2fs-tools, iproute2, libgpiod, parted, ...) vanish
+# from the image. Name the series so the pin is a pin.
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_12=y
+# gcc 13 is this Buildroot release's default and was never named here. It is
+# named now because CI's prebuilt toolchain (tp2bmc/configs/
+# ci-external-toolchain.fragment) must state the gcc it carries, and
+# tests/toolchain-fragment.sh checks that statement against THIS file. A
+# default cannot be checked; a line can. No change to what is built.
+BR2_GCC_VERSION_13_X=y
 BR2_LINUX_KERNEL_PATCH="$(BR2_EXTERNAL_TP2BMC_PATH)/patches/linux"
 BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
 BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/linux_defconfig"
@@ -37,6 +86,7 @@ BR2_TARGET_ROOTFS_TAR_GZIP=y
 BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_MDEV=y
 BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/overlay"
 BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/post_build.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/post_image.sh"
 
 # Bootloader
 BR2_TARGET_UBOOT=y
@@ -52,6 +102,8 @@ BR2_TARGET_UBOOT_NEEDS_OPENSSL=y
 BR2_TARGET_UBOOT_FORMAT_CUSTOM=y
 BR2_TARGET_UBOOT_FORMAT_CUSTOM_NAME="u-boot-sunxi-with-spl.bin"
 BR2_TARGET_UBOOT_CUSTOM_DTS_PATH="$(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/sun8i-t113s-turing-pi2.dtsi $(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/sun8i-t113s-turing-pi2-v2.4.dts $(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/sun8i-t113s-turing-pi2-v2.5.dts"
+# fw-alchemy: u-boot patches, copied in by images/turingpi2-buildroot.Workspace.d/prepare.sh
+BR2_TARGET_UBOOT_PATCH="$(BR2_EXTERNAL_TP2BMC_PATH)/patches/uboot"
 
 # Host packages
 BR2_PACKAGE_HOST_DOSFSTOOLS=y
@@ -64,9 +116,6 @@ BR2_PACKAGE_HOST_UBOOT_TOOLS=y
 
 # Packages
 BR2_PACKAGE_BUSYBOX_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_TP2BMC_PATH)/board/tp2bmc/busybox.fragment"
-BR2_PACKAGE_AVAHI_DAEMON=y
-BR2_PACKAGE_AVAHI=y
-BR2_PACKAGE_BASH=y
 BR2_PACKAGE_CA_CERTIFICATES=y
 BR2_PACKAGE_CHRONY=y
 BR2_PACKAGE_DOSFSTOOLS_FSCK_FAT=y
@@ -77,10 +126,9 @@ BR2_PACKAGE_E2FSPROGS=y
 BR2_PACKAGE_F2FS_TOOLS=y
 BR2_PACKAGE_GPTFDISK_SGDISK=y
 BR2_PACKAGE_GPTFDISK=y
-BR2_PACKAGE_HTOP=y
-BR2_PACKAGE_I2C_TOOLS=y
 BR2_PACKAGE_IFUPDOWN_NG=y
 BR2_PACKAGE_IPROUTE2=y
+BR2_PACKAGE_LIBAIO=y
 BR2_PACKAGE_LIBCURL_CURL=y
 BR2_PACKAGE_LIBCURL=y
 BR2_PACKAGE_LIBEVENT=y
@@ -90,23 +138,23 @@ BR2_PACKAGE_LIBOPENSSL_BIN=y
 BR2_PACKAGE_LIBOPENSSL=y
 BR2_PACKAGE_LIBTIRPC=y
 BR2_PACKAGE_LIBUBOOTENV=y
+BR2_PACKAGE_MDNSD=y
 BR2_PACKAGE_MTD_MKFSUBIFS=y
 BR2_PACKAGE_MTD_MTDPART=y
 BR2_PACKAGE_MTD_UBIFS_UTILS=y
 BR2_PACKAGE_MTD=y
-BR2_PACKAGE_NSS_MDNS=y
 BR2_PACKAGE_OPENSSH=y
 BR2_PACKAGE_OPENSSL=y
 BR2_PACKAGE_PARTED=y
 BR2_PACKAGE_PICOCOM=y
 BR2_PACKAGE_START_STOP_DAEMON=y
-BR2_PACKAGE_TREE=y
 BR2_PACKAGE_UTIL_LINUX_BINARIES=y
 BR2_PACKAGE_UTIL_LINUX_UUIDD=y
 BR2_PACKAGE_SSHPASS=y
 
 # Custom packages
 BR2_PACKAGE_BMCD=y
+BR2_PACKAGE_BMC_INSTALLER=y
 BR2_PACKAGE_BMC_UI=y
 BR2_PACKAGE_ROCKUSB=y
 BR2_PACKAGE_TPI=y

@@ -1,0 +1,50 @@
+From: fw-alchemy
+Subject: [PATCH] sunxi: env: prefer EXT4 environment on MMC boot
+
+env_get_location() for sunxi only knows FAT and raw MMC on MMC boot, so
+CONFIG_ENV_IS_IN_EXT4 is built but never used. SD cards with an ext4 boot
+partition (CONFIG_ENV_EXT4_FILE, e.g. boot/uboot.env) then always fall back
+to the default environment and "env save" fails.
+
+On MMC boot try EXT4 first, then FAT, then raw MMC, each only if enabled.
+NAND and SPI boot are unchanged.
+
+---
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -136,14 +136,17 @@
+ 
+ /*
+  * Try to use the environment from the boot source first.
+- * For MMC, this means a FAT partition on the boot device (SD or eMMC).
+- * If the raw MMC environment is also enabled, this is tried next.
++ * For MMC, this means an EXT4 partition on the boot device (SD or eMMC), if
++ * enabled, then a FAT partition. If the raw MMC environment is also enabled,
++ * this is tried next.
+  * When booting from NAND we try UBI first, then NAND directly.
+  * SPI flash falls back to FAT (on SD card).
+  */
+ enum env_location env_get_location(enum env_operation op, int prio)
+ {
+-	if (prio > 1)
++	int n = 0;
++
++	if (prio > 2)
+ 		return ENVL_UNKNOWN;
+ 
+ 	/* NOWHERE is exclusive, no other option can be defined. */
+@@ -153,9 +156,12 @@
+ 	switch (sunxi_get_boot_device()) {
+ 	case BOOT_DEVICE_MMC1:
+ 	case BOOT_DEVICE_MMC2:
+-		if (prio == 0 && IS_ENABLED(CONFIG_ENV_IS_IN_FAT))
++		/* n counts only enabled locations, prio picks the n-th one */
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_EXT4) && prio == n++)
++			return ENVL_EXT4;
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_FAT) && prio == n++)
+ 			return ENVL_FAT;
+-		if (IS_ENABLED(CONFIG_ENV_IS_IN_MMC))
++		if (IS_ENABLED(CONFIG_ENV_IS_IN_MMC) && prio == n++)
+ 			return ENVL_MMC;
+ 		break;
+ 	case BOOT_DEVICE_NAND:
